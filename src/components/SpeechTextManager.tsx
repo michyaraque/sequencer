@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { SpeechText } from "@/types/dialog";
 import SpeechTextEditor from "./SpeechTextEditor";
 import { exportSpeechTexts, downloadSpeechTextsFile, importSpeechTexts } from "@/utils/export";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface SpeechTextManagerProps {
   speechTexts: SpeechText[];
@@ -23,6 +24,8 @@ export default function SpeechTextManager({
   const [editingText, setEditingText] = useState<SpeechText | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { showConfirm } = useConfirm();
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -60,8 +63,15 @@ export default function SpeechTextManager({
     setIsCreating(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this speech text?")) {
+  const handleDelete = async (id: string) => {
+    const confirmed = await showConfirm({
+      message: "Are you sure you want to delete this speech text?",
+      title: "Delete Speech Text",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+
+    if (confirmed) {
       onDelete(id);
     }
   };

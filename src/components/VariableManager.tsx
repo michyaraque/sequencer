@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Variable } from "@/types/dialog";
 import VariableEditor from "./VariableEditor";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface VariableManagerProps {
   variables: Variable[];
@@ -22,6 +23,8 @@ export default function VariableManager({
   const [editingVariable, setEditingVariable] = useState<Variable | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { showConfirm } = useConfirm();
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -59,8 +62,15 @@ export default function VariableManager({
     setIsCreating(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this variable?")) {
+  const handleDelete = async (id: string) => {
+    const confirmed = await showConfirm({
+      message: "Are you sure you want to delete this variable?",
+      title: "Delete Variable",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+
+    if (confirmed) {
       onDelete(id);
     }
   };

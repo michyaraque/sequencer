@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { NPC } from "@/types/dialog";
 import NPCEditor from "./NPCEditor";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface NPCManagerProps {
   npcs: NPC[];
@@ -16,6 +17,8 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
   const [editingNPC, setEditingNPC] = useState<NPC | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { showConfirm } = useConfirm();
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -53,8 +56,15 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
     setIsCreating(false);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this NPC?")) {
+  const handleDelete = async (id: string) => {
+    const confirmed = await showConfirm({
+      message: "Are you sure you want to delete this NPC?",
+      title: "Delete NPC",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+
+    if (confirmed) {
       onDelete(id);
     }
   };
