@@ -22,6 +22,8 @@ import DialogNode, {
   ChoiceNode,
   CustomActionNode,
   EndSpeechNode,
+  BotDialogNode,
+  ShowMessageNode,
   CustomNodeProps
 } from "@/components/DialogNode";
 import AnnotationNode from "@/components/AnnotationNode";
@@ -74,6 +76,10 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
       return { ...baseData, actionId: "98", label: "Custom Action" };
     case "endSpeech":
       return { ...baseData, actionId: "99", label: "End Speech" };
+    case "botDialog":
+      return { ...baseData, actionId: "3", label: "Bot Dialog" }; // Default to Talk
+    case "showMessage":
+      return { ...baseData, actionId: "5", label: "Show Message" }; // Default to Private
     default:
       return { ...baseData, actionId: "1001", label: `New Node ${nodeId}` };
   }
@@ -121,6 +127,8 @@ function FlowEditor() {
       choice: createNodeWithProps(ChoiceNode),
       customAction: createNodeWithProps(CustomActionNode),
       endSpeech: createNodeWithProps(EndSpeechNode),
+      botDialog: createNodeWithProps(BotDialogNode),
+      showMessage: createNodeWithProps(ShowMessageNode),
       annotation: AnnotationNode,
     };
   }, []);

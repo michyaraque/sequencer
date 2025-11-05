@@ -309,6 +309,10 @@ function BaseDialogNode({
                       className="h-9"
                       value={searchQuery}
                       onValueChange={setSearchQuery}
+                      onKeyDown={(e) => {
+                        // Prevent ReactFlow from handling keyboard events
+                        e.stopPropagation();
+                      }}
                     />
                     <CommandList>
                       <CommandEmpty>No speech found.</CommandEmpty>
@@ -532,6 +536,90 @@ export const EndSpeechNode = memo((props: CustomNodeProps) => (
     badgeColor="bg-red-700"
   />
 ));
+
+// Bot Dialog Node (Action ID 2, 3, 4 - Whisper, Talk, Shout)
+export const BotDialogNode = memo((props: CustomNodeProps) => {
+  const { data, id } = props;
+  const { updateNodeData } = useReactFlow();
+
+  const botDialogTypes = {
+    "2": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
+    "3": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
+    "4": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
+  };
+
+  const currentType = botDialogTypes[data.actionId as keyof typeof botDialogTypes] || botDialogTypes["3"];
+
+  const handleTypeChange = (value: string) => {
+    updateNodeData(id, { actionId: value });
+  };
+
+  return (
+    <div>
+      <BaseDialogNode
+        {...props}
+        showTargetHandle={true}
+        showSourceHandle={true}
+        accentColor={currentType.color}
+        borderColor={currentType.border}
+        badgeColor={currentType.badge}
+      />
+      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+        <Select value={data.actionId} onValueChange={handleTypeChange}>
+          <SelectTrigger className="w-24 h-6 text-xs bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="2">Whisper</SelectItem>
+            <SelectItem value="3">Talk</SelectItem>
+            <SelectItem value="4">Shout</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+});
+
+// Show Message Node (Action ID 5, 6 - Private, Public)
+export const ShowMessageNode = memo((props: CustomNodeProps) => {
+  const { data, id } = props;
+  const { updateNodeData } = useReactFlow();
+
+  const messageTypes = {
+    "5": { label: "Private", color: "bg-violet-50", border: "border-violet-300", badge: "bg-violet-700" },
+    "6": { label: "Public", color: "bg-fuchsia-50", border: "border-fuchsia-300", badge: "bg-fuchsia-700" },
+  };
+
+  const currentType = messageTypes[data.actionId as keyof typeof messageTypes] || messageTypes["5"];
+
+  const handleTypeChange = (value: string) => {
+    updateNodeData(id, { actionId: value });
+  };
+
+  return (
+    <div>
+      <BaseDialogNode
+        {...props}
+        showTargetHandle={true}
+        showSourceHandle={true}
+        accentColor={currentType.color}
+        borderColor={currentType.border}
+        badgeColor={currentType.badge}
+      />
+      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+        <Select value={data.actionId} onValueChange={handleTypeChange}>
+          <SelectTrigger className="w-24 h-6 text-xs bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="5">Private</SelectItem>
+            <SelectItem value="6">Public</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+});
 
 // Default export for backward compatibility
 const DialogNode = memo((props: CustomNodeProps) => (

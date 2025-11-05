@@ -287,6 +287,34 @@ export default function Sidebar({
 
           <div
             draggable
+            onDragStart={(e) => onDragStart(e, "botDialog")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare size={18} className="text-indigo-600" />
+              <span className="font-semibold text-neutral-800">Bot Dialog</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Bot dialog - Whisper, Talk, or Shout
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "showMessage")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare size={18} className="text-violet-600" />
+              <span className="font-semibold text-neutral-800">Show Message</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Show message - Private or Public
+            </p>
+          </div>
+
+          <div
+            draggable
             onDragStart={(e) => onDragStart(e, "annotation")}
             className="bg-white p-3 rounded-lg border-2 border-yellow-300 cursor-grab active:cursor-grabbing hover:border-yellow-500 hover:shadow-md transition-all bg-yellow-50"
           >
