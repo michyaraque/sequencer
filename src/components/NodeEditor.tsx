@@ -54,7 +54,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             type="text"
             value={selectedNode.data.label || ""}
             onChange={(e) => handleChange("label", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
+            className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-neutral-900/10 hover:bg-neutral-900/15"
             placeholder="Node label"
           />
         </div>
@@ -111,7 +111,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             type="text"
             value={selectedNode.data.nextNodeId || ""}
             onChange={(e) => handleChange("nextNodeId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 font-mono bg-white"
+            className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 font-mono bg-neutral-900/10 hover:bg-neutral-900/15"
             placeholder="-1"
           />
         </div>
@@ -249,7 +249,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     type="number"
                     value={selectedNode.data.value3 || ""}
                     onChange={(e) => handleChange("value3", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono"
+                    className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500  bg-neutral-900/10 hover:bg-neutral-900/15 font-mono"
                     placeholder="0"
                   />
                 </div>

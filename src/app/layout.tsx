@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Game Dialoguer - Dialog System Editor",
-  description: "Visual dialog node editor for game development",
+  title: "Wired Dialog Designer - Dialog System Editor",
+  description: "Visual dialog node editor for habbo game development",
 };
 
 export default function RootLayout({

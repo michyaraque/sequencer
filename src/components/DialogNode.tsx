@@ -214,7 +214,7 @@ function BaseDialogNode({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2 mb-2 pr-24">
-          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono flex-shrink-0`}>
+          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0`}>
             ID: {id}
           </div>
           {data.label && (
@@ -228,8 +228,9 @@ function BaseDialogNode({
           {showBotId && (
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
-              <div className="flex gap-1 min-w-0 flex-1">
+              <div className="flex gap-1 min-w-0 flex-1 ">
                 <Select
+
                   value={data.botId || "#(bot_id)"}
                   onValueChange={handleBotIdChange}
                 >
@@ -251,7 +252,7 @@ function BaseDialogNode({
                 </Select>
                 <button
                   onClick={handleCreateNPC}
-                  className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                   title="Crear nuevo NPC"
                 >
                   <Plus size={12} />
@@ -262,7 +263,7 @@ function BaseDialogNode({
 
           {showSpeech && (
             <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+              <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
               <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
                 <Popover
                   open={speechComboboxOpen}
@@ -372,7 +373,7 @@ function BaseDialogNode({
                 </Popover>
                 {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                   <div
-                    className="flex-shrink-0 flex items-center"
+                    className="shrink-0 flex items-center"
                     title={displaySpeech.isTranslated
                       ? "Traducido en idioma seleccionado"
                       : "Usando versión en inglés (traducción no disponible)"}
@@ -386,7 +387,7 @@ function BaseDialogNode({
                 )}
                 <button
                   onClick={handleCreateSpeech}
-                  className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                   title="Crear nuevo speech"
                 >
                   <Plus size={10} />
@@ -423,7 +424,8 @@ export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={false}
     showSourceHandle={true}
-    showSpeech={true}
+    showSpeech={false}
+    showBotId={false}
     accentColor="bg-green-50"
     borderColor="border-green-300"
     badgeColor="bg-green-700"
@@ -638,7 +640,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2 mb-2 pr-24">
-          <div className={`${currentMode.badge} text-white px-2 py-1 rounded text-xs font-bold font-mono flex-shrink-0`}>
+          <div className={`${currentMode.badge} text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0`}>
             ID: {id}
           </div>
           {data.label && (
@@ -675,7 +677,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
               </Select>
               <button
                 onClick={handleCreateNPC}
-                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new NPC"
               >
                 <Plus size={12} />
@@ -685,7 +687,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
 
           {/* Speech */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
               <Popover
                 open={speechComboboxOpen}
@@ -699,7 +701,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={speechComboboxOpen}
-                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden"
+                    className="h-[33px] px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden bg-neutral-900/10 hover:bg-neutral-900/15"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <span className="truncate flex-1 text-left">
@@ -795,7 +797,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
               </Popover>
               {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                 <div
-                  className="flex-shrink-0 flex items-center"
+                  className="shrink-0 flex items-center"
                   title={displaySpeech.isTranslated
                     ? "Translated in selected language"
                     : "Using English version (translation not available)"}
@@ -809,7 +811,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
               )}
               <button
                 onClick={handleCreateSpeech}
-                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new speech"
               >
                 <Plus size={10} />
@@ -966,7 +968,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2 mb-2 pr-24">
-          <div className={`${badge} text-white px-2 py-1 rounded text-xs font-bold font-mono flex-shrink-0`}>
+          <div className={`${badge} text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0`}>
             ID: {id}
           </div>
           {data.label && (
@@ -979,7 +981,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
           {/* Speech */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
               <Popover
                 open={speechComboboxOpen}
@@ -993,7 +995,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={speechComboboxOpen}
-                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden"
+                    className="h-[35px] px-2 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden bg-neutral-900/10 hover:bg-neutral-900/15"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <span className="truncate flex-1 text-left">
@@ -1089,7 +1091,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
               </Popover>
               {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                 <div
-                  className="flex-shrink-0 flex items-center"
+                  className="shrink-0 flex items-center"
                   title={displaySpeech.isTranslated
                     ? "Translated in selected language"
                     : "Using English version (translation not available)"}
@@ -1103,7 +1105,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
               )}
               <button
                 onClick={handleCreateSpeech}
-                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new speech"
               >
                 <Plus size={10} />
@@ -1125,10 +1127,25 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
                   <SelectItem value="-1">-1 (Default)</SelectItem>
-                  <SelectItem value="0">0 (Style 0)</SelectItem>
-                  <SelectItem value="1">1 (Style 1)</SelectItem>
-                  <SelectItem value="2">2 (Style 2)</SelectItem>
-                  <SelectItem value="3">3 (Style 3)</SelectItem>
+                  <SelectItem value="200">Notification Red</SelectItem>
+                  <SelectItem value="201">Notification Green</SelectItem>
+                  <SelectItem value="202">Notification Blue</SelectItem>
+                  <SelectItem value="210">Notification Alert</SelectItem>
+                  <SelectItem value="211">Notification Info</SelectItem>
+                  <SelectItem value="212">Notification Warning</SelectItem>
+                  <SelectItem value="220">Notification Wrong</SelectItem>
+                  <SelectItem value="221">Notification Wrong Circle</SelectItem>
+                  <SelectItem value="222">Notification Correct</SelectItem>
+                  <SelectItem value="223">Notification Correct Circle</SelectItem>
+                  <SelectItem value="224">Notification Question Mark</SelectItem>
+                  <SelectItem value="225">Notification Question Mark Circle</SelectItem>
+                  <SelectItem value="226">Notification Arrow Up</SelectItem>
+                  <SelectItem value="227">Notification Arrow Up Circle</SelectItem>
+                  <SelectItem value="228">Notification Arrow Down</SelectItem>
+                  <SelectItem value="229">Notification Arrow Down Circle</SelectItem>
+                  <SelectItem value="250">Notification Skull</SelectItem>
+                  <SelectItem value="251">Notification Skull 2</SelectItem>
+                  <SelectItem value="252">Notification Magnifier</SelectItem>
                 </SelectContent>
               </Select>
             </div>
