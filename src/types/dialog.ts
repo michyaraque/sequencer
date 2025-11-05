@@ -1,0 +1,78 @@
+export interface DialogNodeData extends Record<string, unknown> {
+  botId: string;
+  userId: string;
+  nextNodeId: string;
+  speechId: string;
+  speechSpeed: string;
+  actionId: string;
+  value1: string;
+  value2: string;
+  value3: string;
+  label: string;
+}
+
+export const ACTION_TYPES = {
+  1: "Initialize Speech",
+  2: "Next Speech",
+  3: "Change Variable",
+  4: "Condition Variable",
+  5: "Change Variable Variable",
+  6: "Condition Variable Variable",
+  7: "Choice",
+  98: "Custom Action",
+  99: "End Speech",
+} as const;
+
+export const SPEECH_SPEEDS = {
+  "1": "Slow",
+  "2": "Normal",
+  "3": "Fast",
+} as const;
+
+export interface ExportFormat {
+  index: number;
+  botId: string;
+  userId: string;
+  nextNodeId: string;
+  textId: string;
+  textSpeed: string;
+  actionId: string;
+  value1: string;
+  value2: string;
+  value3: string;
+}
+
+export interface SpeechText {
+  id: string;
+  languageId: number; // 1 = 100000, 2 = 200000, etc.
+  text: string; // Text with formatting tags
+  label: string; // Display label
+}
+
+export const LANGUAGE_PREFIXES = {
+  1: 100000,
+  2: 200000,
+  3: 300000,
+  4: 400000,
+} as const;
+
+export const FORMATTING_TAGS = {
+  bold: { open: "[b]", close: "[/b]" },
+  underline: { open: "[u]", close: "[/u]" },
+  italic: { open: "[i]", close: "[/i]" },
+  blue: { open: "[blue]", close: "[/blue]" },
+  cyan: { open: "[cyan]", close: "[/cyan]" },
+  purple: { open: "[purple]", close: "[/purple]" },
+  red: { open: "[red]", close: "[/red]" },
+} as const;
+
+export interface NPC {
+  id: string;
+  name: string;
+}
+
+export interface Variable {
+  id: string;
+  name: string;
+  description?: string;
+}

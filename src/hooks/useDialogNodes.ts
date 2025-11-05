@@ -1,0 +1,325 @@
+import { useState, useCallback, useRef } from "react";
+import { Node, Edge, applyNodeChanges, applyEdgeChanges, addEdge, OnNodesChange, OnEdgesChange, OnConnect, useReactFlow } from "@xyflow/react";
+import { DialogNodeData } from "@/types/dialog";
+
+interface UseDialogNodesProps {
+  initialNodes: Node<DialogNodeData>[];
+  saveToHistory: (nodes: Node<DialogNodeData>[], edges: Edge[]) => void;
+}
+
+export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesProps) {
+  const [nodes, setNodes] = useState<Node<DialogNodeData>[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [selectedNode, setSelectedNode] = useState<Node<DialogNodeData> | null>(null);
+  const connectingNodeId = useRef<string | null>(null);
+  const { screenToFlowPosition } = useReactFlow();
+
+  const onNodesChange: OnNodesChange = useCallback(
+    /*@ts-ignore*/
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    []
+  );
+
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => {
+      let newNodes: Node<DialogNodeData>[] = [];
+      let newEdges: Edge[] = [];
+
+      setEdges((eds) => {
+        newEdges = applyEdgeChanges(changes, eds);
+        return newEdges;
+      });
+
+      changes.forEach((change) => {
+        if (change.type === "remove") {
+          setEdges((currentEdges) => {
+            const edgeToRemove = currentEdges.find((e) => e.id === change.id);
+            if (edgeToRemove) {
+              setNodes((nds) => {
+                newNodes = nds.map((node) => {
+                  if (node.id === edgeToRemove.source) {
+                    return {
+                      ...node,
+                      data: { ...node.data, nextNodeId: "-1" },
+                    };
+                  }
+                  return node;
+                });
+                return newNodes;
+              });
+
+              setSelectedNode((prev) => {
+                if (prev && prev.id === edgeToRemove.source) {
+                  return {
+                    ...prev,
+                    data: { ...prev.data, nextNodeId: "-1" },
+                  };
+                }
+                return prev;
+              });
+
+              setTimeout(() => saveToHistory(newNodes, newEdges), 0);
+            }
+            return currentEdges;
+          });
+        }
+      });
+    },
+    [saveToHistory]
+  );
+
+  const onConnectStart = useCallback((_: any, { nodeId }: { nodeId: string | null }) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      if (!connectingNodeId.current) return;
+
+      const targetIsPane = (event.target as Element).classList.contains("react-flow__pane");
+
+      if (targetIsPane) {
+        const position = screenToFlowPosition({
+          x: (event as MouseEvent).clientX,
+          y: (event as MouseEvent).clientY,
+        });
+
+        let newNodes: Node<DialogNodeData>[] = [];
+        let newEdges: Edge[] = [];
+
+        setNodes((nds) => {
+          const newNodeId = `${nds.length + 1}`;
+          const newNode: Node<DialogNodeData> = {
+            id: newNodeId,
+            type: "dialogNode",
+            position,
+            data: {
+              botId: "#(bot_id)",
+              userId: "#(user_id)",
+              nextNodeId: "-1",
+              speechId: "SpeechId",
+              speechSpeed: "1/2/3",
+              actionId: "1001",
+              value1: "-1",
+              value2: "-1",
+              value3: "-1",
+              label: `New Node ${newNodeId}`,
+            },
+          };
+
+          setEdges((eds) => {
+            newEdges = [
+              ...eds,
+              {
+                id: `${connectingNodeId.current}-${newNodeId}`,
+                source: connectingNodeId.current!,
+                target: newNodeId,
+              },
+            ];
+            return newEdges;
+          });
+
+          newNodes = nds.map((node) => {
+            if (node.id === connectingNodeId.current) {
+              return {
+                ...node,
+                data: { ...node.data, nextNodeId: newNodeId },
+              };
+            }
+            return node;
+          }).concat(newNode);
+
+          setTimeout(() => saveToHistory(newNodes, newEdges), 0);
+          return newNodes;
+        });
+      }
+
+      connectingNodeId.current = null;
+    },
+    [screenToFlowPosition, saveToHistory]
+  );
+
+  const onConnect: OnConnect = useCallback(
+    (params) => {
+      let newNodes: Node<DialogNodeData>[] = [];
+      let newEdges: Edge[] = [];
+
+      setEdges((eds) => {
+        newEdges = addEdge(params, eds);
+        return newEdges;
+      });
+
+      if (params.source && params.target) {
+        setNodes((nds) => {
+          newNodes = nds.map((node) => {
+            if (node.id === params.source) {
+              return {
+                ...node,
+                data: { ...node.data, nextNodeId: params.target as string },
+              };
+            }
+            return node;
+          });
+          return newNodes;
+        });
+
+        setSelectedNode((prev) => {
+          if (prev && prev.id === params.source) {
+            return {
+              ...prev,
+              data: { ...prev.data, nextNodeId: params.target as string },
+            };
+          }
+          return prev;
+        });
+
+        setTimeout(() => saveToHistory(newNodes, newEdges), 0);
+      }
+    },
+    [saveToHistory]
+  );
+
+  const onNodeClick = useCallback((_: React.MouseEvent, node: Node<DialogNodeData>) => {
+    setSelectedNode(node);
+  }, []);
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
+
+  const addNewNode = useCallback(() => {
+    setNodes((nds) => {
+      const newNodeId = `${nds.length + 1}`;
+      const newNode: Node<DialogNodeData> = {
+        id: newNodeId,
+        type: "dialogNode",
+        position: {
+          x: Math.random() * 400 + 100,
+          y: Math.random() * 400 + 100,
+        },
+        data: {
+          botId: "#(bot_id)",
+          userId: "#(user_id)",
+          nextNodeId: "-1",
+          speechId: "SpeechId",
+          speechSpeed: "1/2/3",
+          actionId: "1001",
+          value1: "-1",
+          value2: "-1",
+          value3: "-1",
+          label: `New Node ${newNodeId}`,
+        },
+      };
+      const newNodes = [...nds, newNode];
+      setTimeout(() => saveToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+  }, [edges, saveToHistory]);
+
+  const updateNodeData = useCallback((nodeId: string, data: Partial<DialogNodeData>) => {
+    let newNodes: Node<DialogNodeData>[] = [];
+
+    setNodes((nds) => {
+      newNodes = nds.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            data: { ...node.data, ...data },
+          };
+        }
+        return node;
+      });
+      return newNodes;
+    });
+
+    setSelectedNode((prevSelected) => {
+      if (prevSelected && prevSelected.id === nodeId) {
+        return {
+          ...prevSelected,
+          data: { ...prevSelected.data, ...data },
+        };
+      }
+      return prevSelected;
+    });
+
+    setTimeout(() => saveToHistory(newNodes, edges), 100);
+  }, [edges, saveToHistory]);
+
+  const deleteSelectedNode = useCallback(() => {
+    if (selectedNode) {
+      let newNodes: Node<DialogNodeData>[] = [];
+      let newEdges: Edge[] = [];
+
+      setNodes((nds) => {
+        newNodes = nds.filter((node) => node.id !== selectedNode.id).map((node) => {
+          if (node.data.nextNodeId === selectedNode.id) {
+            return {
+              ...node,
+              data: { ...node.data, nextNodeId: "-1" },
+            };
+          }
+          return node;
+        });
+        return newNodes;
+      });
+
+      setEdges((eds) => {
+        newEdges = eds.filter(
+          (edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id
+        );
+        return newEdges;
+      });
+
+      setSelectedNode(null);
+      setTimeout(() => saveToHistory(newNodes, newEdges), 0);
+    }
+  }, [selectedNode, saveToHistory]);
+
+  const deleteNodesByIds = useCallback((nodeIds: string[]) => {
+    let newNodes: Node<DialogNodeData>[] = [];
+    let newEdges: Edge[] = [];
+
+    setNodes((nds) => {
+      newNodes = nds.filter((node) => !nodeIds.includes(node.id)).map((node) => {
+        if (nodeIds.includes(node.data.nextNodeId)) {
+          return {
+            ...node,
+            data: { ...node.data, nextNodeId: "-1" },
+          };
+        }
+        return node;
+      });
+      return newNodes;
+    });
+
+    setEdges((eds) => {
+      newEdges = eds.filter(
+        (edge) => !nodeIds.includes(edge.source) && !nodeIds.includes(edge.target)
+      );
+      return newEdges;
+    });
+
+    setSelectedNode(null);
+    saveToHistory(newNodes, newEdges);
+  }, [saveToHistory]);
+
+  return {
+    nodes,
+    setNodes,
+    edges,
+    setEdges,
+    selectedNode,
+    setSelectedNode,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    onConnectStart,
+    onConnectEnd,
+    onNodeClick,
+    onPaneClick,
+    addNewNode,
+    updateNodeData,
+    deleteSelectedNode,
+    deleteNodesByIds,
+  };
+}

@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Game Dialog for Wired
 
-## Getting Started
+A visual branching dialogue editor for Habbo using node-based flow. Built with **React** and **React-Flow**, this tool allows creating complex NPC dialog systems without placing endless WIRED boxes in a room.
 
-First, run the development server:
+Inspired by traditional game dialogue tools like Dialogue Designer, but adapted to how **bots**, **text connectors**, and **captured values** work inside Habbo.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Purpose
+
+Design and manage conversations as **nodes**.  
+Each node represents part of a dialog and contains:
+- Text spoken by the bot
+- Player choices
+- Optional conditions
+- Optional effects (such as variable changes, giving items, etc.)
+- Next node references
+
+All logic is represented visually in a flow graph.
+
+## Core Idea
+
+Instead of building logic entirely through WIRED, the editor generates structured numeric command strings that bots can parse. Each action follows a compact format:
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ACTIONID|VALUE1|VALUE2|VALUE3
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Meaning depends on the action type.
 
-## Learn More
+### Example Actions
 
-To learn more about Next.js, take a look at the following resources:
+| Action Example | Meaning |
+|---|---|
+| `1004|variableId|amount` | Modify a variable (coins, reputation, etc.) |
+| `nodeId|nextNodeId` | Go to next dialogue node |
+| `passNode|failNode` | Conditional branching |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Bots can also include identifiers to handle multi-user interactions without flood issues:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
+BOTID|USERID|SPEECHID|ACTIONID|VALUE
+30583|37191283|281114|1003|5
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+````
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Multiple bots can be used to distribute load.
+
+## Node Structure Example
+
+```json
+{
+  "id": 2372,
+  "text": "What would you like to do?",
+  "options": [
+    {
+      "text": "Buy",
+      "conditions": ["coins>=5"],
+      "effects": ["1004|coins|subtract|5"],
+      "next": 2373
+    },
+    {
+      "text": "Sell",
+      "conditions": [],
+      "effects": [],
+      "next": 2375
+    }
+  ]
+}
+````
+
+## Workflow
+
+1. Create nodes visually using React-Flow.
+2. Add conditions and effects to each option.
+3. Export the node graph into a compact command list.
+4. Bot interprets and triggers dialog responses inside the room.
+5. Player interacts without requiring complex WIRED setups.
+
+## Features
+
+* Node-based visual editor
+* Multi-option branching dialogs
+* Conditional checks
+* Stackable condition chains
+* Multiple effects per option
+* Export to bot-readable instruction sets
+* Optional node storage inside furnis for room persistence
+
+## Installation
+
+```bash
+git clone https://github.com/michyaraque/game-dialog-for-wired.git
+cd game-dialog-for-wired
+npm install
+npm run dev
+```
+
+## Tech Stack
+
+* Nextjs 16
+* React-Flow
+* Zustand
+* Optional JSON or DB persistence layer
+
+## License
+
+Open for creative use in Habbo-related or custom game projects.
