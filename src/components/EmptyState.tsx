@@ -92,10 +92,17 @@ export default function EmptyState({ onCreateProject, onImportProject, onLoadRec
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 {recentProjects.map((project) => (
-                  <button
+                  <div
                     key={project.id}
                     onClick={() => handleLoadRecent(project)}
-                    className="group relative bg-white border-2 border-neutral-200 rounded-lg p-4 text-left hover:border-neutral-400 hover:shadow-md transition-all"
+                    className="group relative bg-white border-2 border-neutral-200 rounded-lg p-4 text-left hover:border-neutral-400 hover:shadow-md transition-all cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleLoadRecent(project);
+                      }
+                    }}
                   >
                     <button
                       onClick={(e) => handleRemoveRecent(e, project.id)}
@@ -123,7 +130,7 @@ export default function EmptyState({ onCreateProject, onImportProject, onLoadRec
                         </div>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
