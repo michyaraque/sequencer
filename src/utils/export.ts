@@ -70,8 +70,12 @@ export function exportToDialogFormat(nodes: Node<DialogNodeData>[]): string {
   const lines = nodes.map((node, index) => {
     const data = node.data;
 
+    // Replace placeholder values with -1
+    const botId = data.botId === "#(bot_id)" ? "-1" : (data.botId || "-1");
+    const userId = data.userId === "#(user_id)" ? "-1" : (data.userId || "-1");
+
     // Format: index=#(bot_id)|#(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
-    return `${index}=${data.botId || "-1"}|${data.userId || "-1"}|${data.nextNodeId || "-1"}|${data.speechId || "-1"}|${data.speechSpeed || "1/2/3"}|${data.actionId || "1001"}|${data.value1 || "-1"}|${data.value2 || "-1"}|${data.value3 || "-1"}`;
+    return `${index}=${botId}|${userId}|${data.nextNodeId || "-1"}|${data.speechId || "-1"}|${data.speechSpeed || "1/2/3"}|${data.actionId || "1001"}|${data.value1 || "-1"}|${data.value2 || "-1"}|${data.value3 || "-1"}`;
   });
 
   return lines.join("\n");

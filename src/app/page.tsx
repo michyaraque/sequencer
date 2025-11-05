@@ -42,6 +42,8 @@ import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
+import { useRoomsStore } from "@/store/useRoomsStore";
+import RoomTabs from "@/components/RoomTabs";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
@@ -105,6 +107,36 @@ function FlowEditor() {
   const setProjectName = useGameDialogStore((state) => state.setProjectName);
   const storedNodes = useGameDialogStore((state) => state.nodes);
   const storedEdges = useGameDialogStore((state) => state.edges);
+
+  const currentRoom = useRoomsStore((state) => state.getCurrentRoom());
+  const currentRoomId = useRoomsStore((state) => state.currentRoomId);
+  const updateRoomData = useRoomsStore((state) => state.updateRoomData);
+
+  useEffect(() => {
+    if (currentRoom) {
+      useGameDialogStore.getState().setNodes(currentRoom.nodes);
+      useGameDialogStore.getState().setEdges(currentRoom.edges);
+      useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
+      useGameDialogStore.getState().setNPCs(currentRoom.npcs);
+      useGameDialogStore.getState().setVariables(currentRoom.variables);
+      useGameDialogStore.getState().setProjectName(currentRoom.projectName);
+      useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
+    }
+  }, [currentRoomId]);
+
+  useEffect(() => {
+    if (currentRoomId && storedNodes && storedEdges) {
+      updateRoomData(currentRoomId, {
+        nodes: storedNodes,
+        edges: storedEdges,
+        speechTexts,
+        npcs,
+        variables,
+        projectName,
+        selectedLanguage,
+      });
+    }
+  }, [storedNodes, storedEdges, speechTexts, npcs, variables, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
   // Create node types with callbacks
   const nodeTypes: NodeTypes = useMemo(() => {
@@ -487,6 +519,7 @@ function FlowEditor() {
         onImportProject={handleImportProject}
       />
       <div className="flex-1 flex flex-col">
+        <RoomTabs />
         <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center gap-3">
           <div className="flex items-center gap-2">
             <button
