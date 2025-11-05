@@ -146,10 +146,10 @@ function BaseDialogNode({
   }, [speechTexts]);
 
   const languageNames: Record<number, string> = {
-    1: "English (100000)",
-    2: "Spanish (200000)",
-    3: "Portuguese (300000)",
-    4: "French (400000)",
+    1: "English",
+    2: "Spanish",
+    3: "Portuguese",
+    4: "French",
   };
 
   const handleSpeechChange = useCallback((value: string) => {
