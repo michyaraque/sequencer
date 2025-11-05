@@ -1,12 +1,19 @@
 "use client";
 
-import { memo } from "react";
-import { Handle, Position, NodeProps, Node } from "@xyflow/react";
+import { memo, useCallback } from "react";
+import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { DialogNodeData, ACTION_TYPES } from "@/types/dialog";
+import { useGameDialogStore } from "@/store/gameDialogStore";
+import { Plus } from "lucide-react";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
-interface BaseDialogNodeProps extends NodeProps<DialogRFNode> {
+// Extended node props with custom callbacks
+export interface CustomNodeProps extends NodeProps<DialogRFNode> {
+  onOpenSpeechManager?: () => void;
+}
+
+interface BaseDialogNodeProps extends CustomNodeProps {
   showTargetHandle?: boolean;
   showSourceHandle?: boolean;
   accentColor?: string;
@@ -22,9 +29,24 @@ function BaseDialogNode({
   showSourceHandle = true,
   accentColor = "bg-neutral-50",
   borderColor = "border-neutral-300",
-  badgeColor = "bg-neutral-800"
+  badgeColor = "bg-neutral-800",
+  onOpenSpeechManager
 }: BaseDialogNodeProps) {
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
+  const speechTexts = useGameDialogStore((state) => state.speechTexts);
+  const { updateNodeData } = useReactFlow();
+
+  const handleSpeechChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation();
+    updateNodeData(id, { speechId: e.target.value });
+  }, [id, updateNodeData]);
+
+  const handleCreateSpeech = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onOpenSpeechManager) {
+      onOpenSpeechManager();
+    }
+  }, [onOpenSpeechManager]);
 
   return (
     <div
@@ -68,12 +90,31 @@ function BaseDialogNode({
             </span>
           </div>
 
-          {data.speechId !== "-1" && data.speechId && (
-            <div className="flex justify-between gap-2">
-              <span className="font-medium text-neutral-500">Speech:</span>
-              <span className="font-mono text-neutral-900">{data.speechId}</span>
+          <div className="flex flex-col gap-1">
+            <span className="font-medium text-neutral-500">Speech:</span>
+            <div className="flex gap-1">
+              <select
+                value={data.speechId || "-1"}
+                onChange={handleSpeechChange}
+                onClick={(e) => e.stopPropagation()}
+                className="flex-1 px-2 py-1 text-xs border border-neutral-300 rounded bg-white font-mono hover:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+              >
+                <option value="-1">-1 (None)</option>
+                {speechTexts.map((st) => (
+                  <option key={st.id} value={st.id}>
+                    {st.id} - {st.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleCreateSpeech}
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors"
+                title="Create new speech"
+              >
+                <Plus size={12} />
+              </button>
             </div>
-          )}
+          </div>
 
           {data.value1 !== "-1" && data.value1 && (
             <div className="flex justify-between gap-2">
@@ -98,7 +139,7 @@ function BaseDialogNode({
 }
 
 // Initialize Speech Node (Action ID 1) - Can only send connections
-export const InitializeSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={false}
@@ -110,7 +151,7 @@ export const InitializeSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Next Speech Node (Action ID 2)
-export const NextSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+export const NextSpeechNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -122,7 +163,7 @@ export const NextSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Change Variable Node (Action ID 3)
-export const ChangeVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+export const ChangeVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -134,7 +175,7 @@ export const ChangeVariableNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Condition Variable Node (Action ID 4)
-export const ConditionVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+export const ConditionVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -146,7 +187,7 @@ export const ConditionVariableNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Change Variable Variable Node (Action ID 5)
-export const ChangeVariableVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -158,7 +199,7 @@ export const ChangeVariableVariableNode = memo((props: NodeProps<DialogRFNode>) 
 ));
 
 // Condition Variable Variable Node (Action ID 6)
-export const ConditionVariableVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -170,7 +211,7 @@ export const ConditionVariableVariableNode = memo((props: NodeProps<DialogRFNode
 ));
 
 // Choice Node (Action ID 7)
-export const ChoiceNode = memo((props: NodeProps<DialogRFNode>) => (
+export const ChoiceNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -182,7 +223,7 @@ export const ChoiceNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Custom Action Node (Action ID 98)
-export const CustomActionNode = memo((props: NodeProps<DialogRFNode>) => (
+export const CustomActionNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -194,7 +235,7 @@ export const CustomActionNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // End Speech Node (Action ID 99)
-export const EndSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+export const EndSpeechNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -206,7 +247,7 @@ export const EndSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
 ));
 
 // Default export for backward compatibility
-const DialogNode = memo((props: NodeProps<DialogRFNode>) => (
+const DialogNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}

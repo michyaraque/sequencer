@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload } from "lucide-react";
@@ -14,7 +14,8 @@ import DialogNode, {
   ConditionVariableVariableNode,
   ChoiceNode,
   CustomActionNode,
-  EndSpeechNode
+  EndSpeechNode,
+  CustomNodeProps
 } from "@/components/DialogNode";
 import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
@@ -28,19 +29,6 @@ import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useReactFlow } from "@xyflow/react";
-
-const nodeTypes: NodeTypes = {
-  dialogNode: DialogNode,
-  initializeSpeech: InitializeSpeechNode,
-  nextSpeech: NextSpeechNode,
-  changeVariable: ChangeVariableNode,
-  conditionVariable: ConditionVariableNode,
-  changeVariableVariable: ChangeVariableVariableNode,
-  conditionVariableVariable: ConditionVariableVariableNode,
-  choice: ChoiceNode,
-  customAction: CustomActionNode,
-  endSpeech: EndSpeechNode,
-};
 
 // Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -107,6 +95,28 @@ function FlowEditor() {
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
   const variables = useGameDialogStore((state) => state.variables);
+
+  // Create node types with callbacks
+  const nodeTypes: NodeTypes = useMemo(() => {
+    const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
+      return (props: CustomNodeProps) => (
+        <Component {...props} onOpenSpeechManager={() => setShowSpeechTextManager(true)} />
+      );
+    };
+
+    return {
+      dialogNode: createNodeWithProps(DialogNode),
+      initializeSpeech: createNodeWithProps(InitializeSpeechNode),
+      nextSpeech: createNodeWithProps(NextSpeechNode),
+      changeVariable: createNodeWithProps(ChangeVariableNode),
+      conditionVariable: createNodeWithProps(ConditionVariableNode),
+      changeVariableVariable: createNodeWithProps(ChangeVariableVariableNode),
+      conditionVariableVariable: createNodeWithProps(ConditionVariableVariableNode),
+      choice: createNodeWithProps(ChoiceNode),
+      customAction: createNodeWithProps(CustomActionNode),
+      endSpeech: createNodeWithProps(EndSpeechNode),
+    };
+  }, []);
 
   const addSpeechText = useGameDialogStore((state) => state.addSpeechText);
   const editSpeechText = useGameDialogStore((state) => state.editSpeechText);
