@@ -42,7 +42,7 @@ import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
-import { useAlert } from "@/components/AlertProvider";
+import { toast } from "sonner";
 
 // Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -101,8 +101,6 @@ function FlowEditor() {
   const setProjectName = useGameDialogStore((state) => state.setProjectName);
   const storedNodes = useGameDialogStore((state) => state.nodes);
   const storedEdges = useGameDialogStore((state) => state.edges);
-
-  const { showAlert } = useAlert();
 
   // Create node types with callbacks
   const nodeTypes: NodeTypes = useMemo(() => {
@@ -278,7 +276,15 @@ function FlowEditor() {
     setEdges,
     setSelectedNode,
     saveToHistory,
-    onShowAlert: (message, variant) => showAlert({ message, variant }),
+    onShowAlert: (message, variant) => {
+      if (variant === 'success') {
+        toast.success(message);
+      } else if (variant === 'error') {
+        toast.error(message);
+      } else {
+        toast(message);
+      }
+    },
   });
 
   // Project-wide export/import handlers
@@ -321,9 +327,9 @@ function FlowEditor() {
             // Save to history
             saveToHistory(project.nodes, project.edges);
 
-            showAlert({ message: 'Project imported successfully!', variant: 'success' });
+            toast.success('Project imported successfully!');
           } else {
-            showAlert({ message: 'Failed to import project. Invalid file format.', variant: 'error' });
+            toast.error('Failed to import project. Invalid file format.');
           }
         };
         reader.readAsText(file);
@@ -359,8 +365,8 @@ function FlowEditor() {
     setEdges([]);
     saveToHistory([initialNode], []);
 
-    showAlert({ message: `Project "${projectName}" created successfully!`, variant: 'success' });
-  }, [setProjectName, setNodes, setEdges, saveToHistory, showAlert]);
+    toast.success(`Project "${projectName}" created successfully!`);
+  }, [setProjectName, setNodes, setEdges, saveToHistory]);
 
   const handleLoadRecentProject = useCallback(() => {
     // Reload nodes and edges from store
@@ -371,11 +377,11 @@ function FlowEditor() {
       setNodes(currentStoredNodes);
       setEdges(currentStoredEdges);
       saveToHistory(currentStoredNodes, currentStoredEdges);
-      showAlert({ message: 'Project loaded successfully!', variant: 'success' });
+      toast.success('Project loaded successfully!');
     } else {
-      showAlert({ message: 'No project data found in storage', variant: 'error' });
+      toast.error('No project data found in storage');
     }
-  }, [setNodes, setEdges, saveToHistory, showAlert]);
+  }, [setNodes, setEdges, saveToHistory]);
 
   // Update recent projects when user works on the project
   useEffect(() => {

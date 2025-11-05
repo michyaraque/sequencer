@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { NPC } from "@/types/dialog";
-import { useAlert } from "@/components/AlertProvider";
+import { toast } from "sonner";
 
 interface NPCEditorProps {
   npc: NPC | null;
@@ -15,11 +15,9 @@ export default function NPCEditor({ npc, onSave, onCancel, existingIds }: NPCEdi
   const [id, setId] = useState(npc?.id || "");
   const [name, setName] = useState(npc?.name || "");
 
-  const { showAlert } = useAlert();
-
   const handleSave = () => {
     if (!id.trim() || !name.trim()) {
-      showAlert({ message: "ID and name are required!", variant: "error" });
+      toast.error("ID and name are required!");
       return;
     }
 
@@ -29,7 +27,7 @@ export default function NPCEditor({ npc, onSave, onCancel, existingIds }: NPCEdi
     };
 
     if (existingIds.includes(newNPC.id) && npc?.id !== newNPC.id) {
-      showAlert({ message: `NPC ID ${newNPC.id} already exists!`, variant: "error" });
+      toast.error(`NPC ID ${newNPC.id} already exists!`);
       return;
     }
 

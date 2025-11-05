@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { SpeechText, FORMATTING_TAGS, LANGUAGE_PREFIXES } from "@/types/dialog";
-import { useAlert } from "@/components/AlertProvider";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -40,8 +40,6 @@ export default function SpeechTextEditor({
   const [localId, setLocalId] = useState(initialLocalId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { showAlert } = useAlert();
-
   const applyFormatting = useCallback((tag: keyof typeof FORMATTING_TAGS) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -68,7 +66,7 @@ export default function SpeechTextEditor({
 
   const handleSave = () => {
     if (!text.trim()) {
-      showAlert({ message: "Text content is required!", variant: "error" });
+      toast.error("Text content is required!");
       return;
     }
 
@@ -81,7 +79,7 @@ export default function SpeechTextEditor({
 
     // Check if ID already exists (and it's not the current one being edited)
     if (existingIds.includes(newSpeechText.id) && speechText?.id !== newSpeechText.id) {
-      showAlert({ message: `Speech ID ${newSpeechText.id} already exists!`, variant: "error" });
+      toast.error(`Speech ID ${newSpeechText.id} already exists!`);
       return;
     }
 
