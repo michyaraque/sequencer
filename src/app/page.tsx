@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
@@ -111,9 +111,15 @@ function FlowEditor() {
   const currentRoom = useRoomsStore((state) => state.getCurrentRoom());
   const currentRoomId = useRoomsStore((state) => state.currentRoomId);
   const updateRoomData = useRoomsStore((state) => state.updateRoomData);
+  const rooms = useRoomsStore((state) => state.rooms);
+  const hasRooms = rooms.length > 0;
 
+  const isLoadingRoom = useRef(false);
+
+  // Load room data when switching rooms
   useEffect(() => {
     if (currentRoom) {
+      isLoadingRoom.current = true;
       useGameDialogStore.getState().setNodes(currentRoom.nodes);
       useGameDialogStore.getState().setEdges(currentRoom.edges);
       useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
@@ -121,11 +127,17 @@ function FlowEditor() {
       useGameDialogStore.getState().setVariables(currentRoom.variables);
       useGameDialogStore.getState().setProjectName(currentRoom.projectName);
       useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
+
+      // Allow saving again after a brief delay
+      setTimeout(() => {
+        isLoadingRoom.current = false;
+      }, 100);
     }
   }, [currentRoomId]);
 
+  // Save changes back to room (but not when loading)
   useEffect(() => {
-    if (currentRoomId && storedNodes && storedEdges) {
+    if (currentRoomId && !isLoadingRoom.current) {
       updateRoomData(currentRoomId, {
         nodes: storedNodes,
         edges: storedEdges,
@@ -605,7 +617,7 @@ function FlowEditor() {
         </div>
 
         <div className="flex-1 relative">
-          {nodes.length === 0 ? (
+          {!hasRooms ? (
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}

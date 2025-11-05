@@ -22,9 +22,12 @@ export default function RoomTabs() {
   const addRoom = useRoomsStore((state) => state.addRoom);
   const deleteRoom = useRoomsStore((state) => state.deleteRoom);
   const switchRoom = useRoomsStore((state) => state.switchRoom);
+  const renameRoom = useRoomsStore((state) => state.renameRoom);
 
   const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
   const [confirmationText, setConfirmationText] = useState("");
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
 
   const handleAddRoom = () => {
     const newRoomNumber = rooms.length + 1;
@@ -66,6 +69,34 @@ export default function RoomTabs() {
     setConfirmationText("");
   };
 
+  const handleDoubleClick = (e: React.MouseEvent, roomId: string, currentName: string) => {
+    e.stopPropagation();
+    setEditingRoomId(roomId);
+    setEditingName(currentName);
+  };
+
+  const handleRenameSubmit = (roomId: string) => {
+    if (editingName.trim() && editingName !== "") {
+      renameRoom(roomId, editingName.trim());
+      toast.success(`Room renamed to "${editingName.trim()}"`);
+    }
+    setEditingRoomId(null);
+    setEditingName("");
+  };
+
+  const handleRenameCancel = () => {
+    setEditingRoomId(null);
+    setEditingName("");
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent, roomId: string) => {
+    if (e.key === "Enter") {
+      handleRenameSubmit(roomId);
+    } else if (e.key === "Escape") {
+      handleRenameCancel();
+    }
+  };
+
   const deletingRoom = rooms.find(r => r.id === deletingRoomId);
 
   return (
@@ -74,15 +105,34 @@ export default function RoomTabs() {
         {rooms.map((room) => (
           <div
             key={room.id}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-t-md cursor-pointer transition-colors group ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-t-md transition-colors group ${
               currentRoomId === room.id
                 ? "bg-white border border-b-0 border-neutral-300 font-medium text-neutral-900"
                 : "bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900"
-            }`}
-            onClick={() => switchRoom(room.id)}
+            } ${editingRoomId !== room.id ? "cursor-pointer" : ""}`}
+            onClick={() => editingRoomId !== room.id && switchRoom(room.id)}
           >
-            <span className="text-sm whitespace-nowrap">{room.name}</span>
-            {rooms.length > 1 && (
+            {editingRoomId === room.id ? (
+              <Input
+                type="text"
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                onBlur={() => handleRenameSubmit(room.id)}
+                onKeyDown={(e) => handleRenameKeyDown(e, room.id)}
+                className="h-6 px-2 py-0 text-sm min-w-[100px]"
+                autoFocus
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span
+                className="text-sm whitespace-nowrap"
+                onDoubleClick={(e) => handleDoubleClick(e, room.id, room.name)}
+                title="Double-click to rename"
+              >
+                {room.name}
+              </span>
+            )}
+            {rooms.length > 1 && editingRoomId !== room.id && (
               <button
                 onClick={(e) => handleDeleteClick(e, room.id)}
                 className={`p-0.5 rounded hover:bg-neutral-300 transition-colors ${
