@@ -771,7 +771,7 @@ function FlowEditor() {
             {nodes.filter(n => n.selected).length > 0 && (
               <button
                 onClick={() => setShowSaveSequenceDialog(true)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                className="px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2"
                 title="Save selected nodes as sequence"
               >
                 <Save size={18} />
