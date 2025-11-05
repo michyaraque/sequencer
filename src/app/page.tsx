@@ -14,14 +14,12 @@ import {
 
 import DialogNode, {
   InitializeSpeechNode,
-  NextSpeechNode,
   ChangeVariableNode,
   ConditionVariableNode,
   ChangeVariableVariableNode,
   ConditionVariableVariableNode,
   ChoiceNode,
   CustomActionNode,
-  EndSpeechNode,
   BotDialogNode,
   ShowMessageNode,
   CustomNodeProps
@@ -60,8 +58,6 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
   switch (nodeType) {
     case "initializeSpeech":
       return { ...baseData, actionId: "1", label: "Initialize Speech" };
-    case "nextSpeech":
-      return { ...baseData, actionId: "2", label: "Next Speech" };
     case "changeVariable":
       return { ...baseData, actionId: "3", label: "Change Variable" };
     case "conditionVariable":
@@ -74,8 +70,6 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
       return { ...baseData, actionId: "7", label: "Choice" };
     case "customAction":
       return { ...baseData, actionId: "98", label: "Custom Action" };
-    case "endSpeech":
-      return { ...baseData, actionId: "99", label: "End Speech" };
     case "botDialog":
       return { ...baseData, actionId: "3", label: "Bot Dialog" }; // Default to Talk
     case "showMessage":
@@ -117,14 +111,12 @@ function FlowEditor() {
     return {
       dialogNode: createNodeWithProps(DialogNode),
       initializeSpeech: createNodeWithProps(InitializeSpeechNode),
-      nextSpeech: createNodeWithProps(NextSpeechNode),
       changeVariable: createNodeWithProps(ChangeVariableNode),
       conditionVariable: createNodeWithProps(ConditionVariableNode),
       changeVariableVariable: createNodeWithProps(ChangeVariableVariableNode),
       conditionVariableVariable: createNodeWithProps(ConditionVariableVariableNode),
       choice: createNodeWithProps(ChoiceNode),
       customAction: createNodeWithProps(CustomActionNode),
-      endSpeech: createNodeWithProps(EndSpeechNode),
       botDialog: createNodeWithProps(BotDialogNode),
       showMessage: createNodeWithProps(ShowMessageNode),
       annotation: AnnotationNode,

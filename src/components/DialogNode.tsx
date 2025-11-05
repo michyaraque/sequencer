@@ -80,6 +80,7 @@ export interface CustomNodeProps extends NodeProps<DialogRFNode> {
 interface BaseDialogNodeProps extends CustomNodeProps {
   showTargetHandle?: boolean;
   showSourceHandle?: boolean;
+  showSpeech?: boolean;
   accentColor?: string;
   borderColor?: string;
   badgeColor?: string;
@@ -91,6 +92,7 @@ function BaseDialogNode({
   id,
   showTargetHandle = true,
   showSourceHandle = true,
+  showSpeech = true,
   accentColor = "bg-neutral-50",
   borderColor = "border-neutral-300",
   badgeColor = "bg-neutral-800",
@@ -269,143 +271,145 @@ function BaseDialogNode({
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 min-w-0">
-            <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
-            <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
-              <Popover
-                open={speechComboboxOpen}
-                onOpenChange={(open) => {
-                  setSpeechComboboxOpen(open);
-                  if (!open) setSearchQuery("");
-                }}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={speechComboboxOpen}
-                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden"
+          {showSpeech && (
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+              <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
+                <Popover
+                  open={speechComboboxOpen}
+                  onOpenChange={(open) => {
+                    setSpeechComboboxOpen(open);
+                    if (!open) setSearchQuery("");
+                  }}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={speechComboboxOpen}
+                      className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="truncate flex-1 text-left">
+                        {displaySpeech.speechId === "-1"
+                          ? "-1 (None)"
+                          : speechTextObj
+                            ? truncateText(speechTextObj.text)
+                            : data.speechId
+                        }
+                      </span>
+                      <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[300px] p-0"
+                    align="start"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="truncate flex-1 text-left">
-                      {displaySpeech.speechId === "-1"
-                        ? "-1 (None)"
-                        : speechTextObj
-                          ? truncateText(speechTextObj.text)
-                          : data.speechId
-                      }
-                    </span>
-                    <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[300px] p-0"
-                  align="start"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Command>
-                    <CommandInput
-                      placeholder="Search by ID or text..."
-                      className="h-9"
-                      value={searchQuery}
-                      onValueChange={setSearchQuery}
-                      onKeyDown={(e) => {
-                        // Prevent ReactFlow from handling keyboard events
-                        e.stopPropagation();
-                      }}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No speech found.</CommandEmpty>
+                    <Command>
+                      <CommandInput
+                        placeholder="Search by ID or text..."
+                        className="h-9"
+                        value={searchQuery}
+                        onValueChange={setSearchQuery}
+                        onKeyDown={(e) => {
+                          // Prevent ReactFlow from handling keyboard events
+                          e.stopPropagation();
+                        }}
+                      />
+                      <CommandList>
+                        <CommandEmpty>No speech found.</CommandEmpty>
 
-                      {/* Create new speech option when searching */}
-                      {searchQuery && (
-                        <CommandGroup heading="Create New">
+                        {/* Create new speech option when searching */}
+                        {searchQuery && (
+                          <CommandGroup heading="Create New">
+                            <CommandItem
+                              onSelect={() => handleCreateNewSpeech(searchQuery)}
+                              className="text-blue-600"
+                            >
+                              <Plus className="mr-2 h-4 w-4" />
+                              Create "{searchQuery}"
+                            </CommandItem>
+                          </CommandGroup>
+                        )}
+
+                        {/* None option */}
+                        <CommandGroup heading="General">
                           <CommandItem
-                            onSelect={() => handleCreateNewSpeech(searchQuery)}
-                            className="text-blue-600"
+                            value="-1-none"
+                            onSelect={() => {
+                              handleSpeechChange("-1");
+                              setSpeechComboboxOpen(false);
+                              setSearchQuery("");
+                            }}
                           >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Create "{searchQuery}"
+                            -1 (None)
+                            <Check
+                              className={cn(
+                                "ml-auto h-4 w-4",
+                                data.speechId === "-1" ? "opacity-100" : "opacity-0"
+                              )}
+                            />
                           </CommandItem>
                         </CommandGroup>
-                      )}
 
-                      {/* None option */}
-                      <CommandGroup heading="General">
-                        <CommandItem
-                          value="-1-none"
-                          onSelect={() => {
-                            handleSpeechChange("-1");
-                            setSpeechComboboxOpen(false);
-                            setSearchQuery("");
-                          }}
-                        >
-                          -1 (None)
-                          <Check
-                            className={cn(
-                              "ml-auto h-4 w-4",
-                              data.speechId === "-1" ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      </CommandGroup>
+                        {/* Speeches grouped by language - only show English */}
+                        {Object.entries(speechesByLanguage).map(([langId, speeches]) => {
+                          // Only show English (languageId = 1)
+                          if (parseInt(langId) !== 1 || speeches.length === 0) return null;
 
-                      {/* Speeches grouped by language - only show English */}
-                      {Object.entries(speechesByLanguage).map(([langId, speeches]) => {
-                        // Only show English (languageId = 1)
-                        if (parseInt(langId) !== 1 || speeches.length === 0) return null;
-
-                        return (
-                          <CommandGroup key={langId} heading={languageNames[parseInt(langId)]}>
-                            {speeches.map((st) => (
-                              <CommandItem
-                                key={st.id}
-                                value={`${st.id}-${st.text}`.toLowerCase()}
-                                onSelect={() => {
-                                  handleSpeechChange(st.id);
-                                  setSpeechComboboxOpen(false);
-                                  setSearchQuery("");
-                                }}
-                              >
-                                {truncateText(st.text)}
-                                <Check
-                                  className={cn(
-                                    "ml-auto h-4 w-4",
-                                    data.speechId === st.id ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        );
-                      })}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
-                <div
-                  className="flex-shrink-0 flex items-center"
-                  title={displaySpeech.isTranslated
-                    ? "Translated in selected language"
-                    : "Using English version (translation not available)"}
+                          return (
+                            <CommandGroup key={langId} heading={languageNames[parseInt(langId)]}>
+                              {speeches.map((st) => (
+                                <CommandItem
+                                  key={st.id}
+                                  value={`${st.id}-${st.text}`.toLowerCase()}
+                                  onSelect={() => {
+                                    handleSpeechChange(st.id);
+                                    setSpeechComboboxOpen(false);
+                                    setSearchQuery("");
+                                  }}
+                                >
+                                  {truncateText(st.text)}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto h-4 w-4",
+                                      data.speechId === st.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          );
+                        })}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
+                  <div
+                    className="flex-shrink-0 flex items-center"
+                    title={displaySpeech.isTranslated
+                      ? "Translated in selected language"
+                      : "Using English version (translation not available)"}
+                  >
+                    {displaySpeech.isTranslated ? (
+                      <CheckCircle2 size={12} className="text-green-600" />
+                    ) : (
+                      <AlertCircle size={12} className="text-amber-500" />
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={handleCreateSpeech}
+                  className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  title="Create new speech"
                 >
-                  {displaySpeech.isTranslated ? (
-                    <CheckCircle2 size={12} className="text-green-600" />
-                  ) : (
-                    <AlertCircle size={12} className="text-amber-500" />
-                  )}
-                </div>
-              )}
-              <button
-                onClick={handleCreateSpeech}
-                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
-                title="Create new speech"
-              >
-                <Plus size={10} />
-              </button>
+                  <Plus size={10} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {data.value1 !== "-1" && data.value1 && (
             <div className="flex justify-between gap-2">
@@ -435,21 +439,10 @@ export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={false}
     showSourceHandle={true}
+    showSpeech={true}
     accentColor="bg-green-50"
     borderColor="border-green-300"
     badgeColor="bg-green-700"
-  />
-));
-
-// Next Speech Node (Action ID 2)
-export const NextSpeechNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    accentColor="bg-blue-50"
-    borderColor="border-blue-300"
-    badgeColor="bg-blue-700"
   />
 ));
 
@@ -459,6 +452,7 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-purple-50"
     borderColor="border-purple-300"
     badgeColor="bg-purple-700"
@@ -471,6 +465,7 @@ export const ConditionVariableNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-orange-50"
     borderColor="border-orange-300"
     badgeColor="bg-orange-700"
@@ -483,6 +478,7 @@ export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-purple-100"
     borderColor="border-purple-400"
     badgeColor="bg-purple-800"
@@ -495,6 +491,7 @@ export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-orange-100"
     borderColor="border-orange-400"
     badgeColor="bg-orange-800"
@@ -507,6 +504,7 @@ export const ChoiceNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-cyan-50"
     borderColor="border-cyan-300"
     badgeColor="bg-cyan-700"
@@ -519,21 +517,10 @@ export const CustomActionNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-amber-50"
     borderColor="border-amber-300"
     badgeColor="bg-amber-700"
-  />
-));
-
-// End Speech Node (Action ID 99)
-export const EndSpeechNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={false}
-    accentColor="bg-red-50"
-    borderColor="border-red-300"
-    badgeColor="bg-red-700"
   />
 ));
 
@@ -560,6 +547,7 @@ export const BotDialogNode = memo((props: CustomNodeProps) => {
         {...props}
         showTargetHandle={true}
         showSourceHandle={true}
+        showSpeech={true}
         accentColor={currentType.color}
         borderColor={currentType.border}
         badgeColor={currentType.badge}
@@ -602,6 +590,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
         {...props}
         showTargetHandle={true}
         showSourceHandle={true}
+        showSpeech={true}
         accentColor={currentType.color}
         borderColor={currentType.border}
         badgeColor={currentType.badge}
@@ -627,6 +616,7 @@ const DialogNode = memo((props: CustomNodeProps) => (
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
+    showSpeech={false}
     accentColor="bg-neutral-50"
     borderColor="border-neutral-300"
     badgeColor="bg-neutral-800"

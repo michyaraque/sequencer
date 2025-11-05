@@ -203,20 +203,6 @@ export default function Sidebar({
 
           <div
             draggable
-            onDragStart={(e) => onDragStart(e, "nextSpeech")}
-            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <MessageSquareDashed size={18} className="text-blue-600" />
-              <span className="font-semibold text-neutral-800">Next Speech</span>
-            </div>
-            <p className="text-xs text-neutral-600">
-              Continue dialog flow
-            </p>
-          </div>
-
-          <div
-            draggable
             onDragStart={(e) => onDragStart(e, "changeVariable")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
@@ -298,22 +284,6 @@ export default function Sidebar({
               Custom action node
             </p>
           </div>
-
-          <div
-            draggable
-            onDragStart={(e) => onDragStart(e, "endSpeech")}
-            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <MessageSquareDashed size={18} className="text-red-600" />
-              <span className="font-semibold text-neutral-800">End Speech</span>
-            </div>
-            <p className="text-xs text-neutral-600">
-              End dialog - cannot receive connections
-            </p>
-          </div>
-
-         
 
           <div
             draggable
