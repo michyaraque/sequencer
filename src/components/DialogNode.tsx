@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
-// Helper function to get speech in selected language with fallback to English
 function getSpeechIdInLanguage(
   baseSpeechId: string,
   selectedLanguage: number,
@@ -45,21 +44,15 @@ function getSpeechIdInLanguage(
     return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
   }
 
-  // Calculate local ID (remove language prefix)
   const localId = numericId % 100000;
-
-  // Calculate target speech ID in selected language
   const targetPrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
   const targetSpeechId = (targetPrefix + localId).toString();
-
-  // Check if speech exists in selected language
   const speechExists = speechTexts.some(st => st.id === targetSpeechId);
 
   if (speechExists) {
     return { speechId: targetSpeechId, isTranslated: true, localId };
   }
 
-  // Fallback to English (language 1)
   const englishId = (100000 + localId).toString();
   const englishExists = speechTexts.some(st => st.id === englishId);
 
@@ -67,11 +60,9 @@ function getSpeechIdInLanguage(
     return { speechId: englishId, isTranslated: false, localId };
   }
 
-  // If nothing exists, return original
   return { speechId: baseSpeechId, isTranslated: selectedLanguage === 1, localId };
 }
 
-// Extended node props with custom callbacks
 export interface CustomNodeProps extends NodeProps<DialogRFNode> {
   onOpenSpeechManager?: () => void;
   onOpenNPCManager?: () => void;
@@ -110,23 +101,23 @@ function BaseDialogNode({
   const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Helper function to truncate text for display
+
   const truncateText = (text: string, maxLength: number = 50) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };
 
-  // Calculate display speech in selected language with fallback to English
+
   const displaySpeech = useMemo(() => {
     return getSpeechIdInLanguage(data.speechId || "-1", selectedLanguage, speechTexts);
   }, [data.speechId, selectedLanguage, speechTexts]);
 
-  // Get the speech text object for display
+
   const speechTextObj = useMemo(() => {
     return speechTexts.find(st => st.id === displaySpeech.speechId);
   }, [speechTexts, displaySpeech.speechId]);
 
-  // Group speeches by language
+
   const speechesByLanguage = useMemo(() => {
     const grouped: Record<number, SpeechText[]> = {
       1: [],
@@ -220,9 +211,8 @@ function BaseDialogNode({
       )}
 
       <div className="space-y-2">
-        {/* Node ID Badge */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono`}>
+        <div className="flex items-center justify-between gap-2 mb-2 pr-24">
+          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono flex-shrink-0`}>
             ID: {id}
           </div>
           {data.label && (
@@ -246,7 +236,7 @@ function BaseDialogNode({
                     onClick={(e) => e.stopPropagation()}
                     size="sm"
                   >
-                    <SelectValue placeholder="Select Bot ID" />
+                    <SelectValue placeholder="Seleccionar Bot ID" />
                   </SelectTrigger>
                   <SelectContent onClick={(e) => e.stopPropagation()}>
                     <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
@@ -260,20 +250,13 @@ function BaseDialogNode({
                 <button
                   onClick={handleCreateNPC}
                   className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
-                  title="Create new NPC"
+                  title="Crear nuevo NPC"
                 >
                   <Plus size={12} />
                 </button>
               </div>
             </div>
           )}
-
-          <div className="flex justify-between gap-2">
-            <span className="font-medium text-neutral-500">Action:</span>
-            <span className="text-xs truncate max-w-[120px] text-neutral-900" title={actionLabel}>
-              {data.actionId}
-            </span>
-          </div>
 
           {showSpeech && (
             <div className="flex items-center justify-between gap-2 min-w-0">
@@ -312,32 +295,29 @@ function BaseDialogNode({
                   >
                     <Command>
                       <CommandInput
-                        placeholder="Search by ID or text..."
+                        placeholder="Buscar por ID o texto..."
                         className="h-9"
                         value={searchQuery}
                         onValueChange={setSearchQuery}
                         onKeyDown={(e) => {
-                          // Prevent ReactFlow from handling keyboard events
                           e.stopPropagation();
                         }}
                       />
                       <CommandList>
-                        <CommandEmpty>No speech found.</CommandEmpty>
+                        <CommandEmpty>No se encontró speech.</CommandEmpty>
 
-                        {/* Create new speech option when searching */}
                         {searchQuery && (
-                          <CommandGroup heading="Create New">
+                          <CommandGroup heading="Crear Nuevo">
                             <CommandItem
                               onSelect={() => handleCreateNewSpeech(searchQuery)}
                               className="text-blue-600"
                             >
                               <Plus className="mr-2 h-4 w-4" />
-                              Create "{searchQuery}"
+                              Crear "{searchQuery}"
                             </CommandItem>
                           </CommandGroup>
                         )}
 
-                        {/* None option */}
                         <CommandGroup heading="General">
                           <CommandItem
                             value="-1-none"
@@ -347,7 +327,7 @@ function BaseDialogNode({
                               setSearchQuery("");
                             }}
                           >
-                            -1 (None)
+                            -1 (Ninguno)
                             <Check
                               className={cn(
                                 "ml-auto h-4 w-4",
@@ -357,9 +337,7 @@ function BaseDialogNode({
                           </CommandItem>
                         </CommandGroup>
 
-                        {/* Speeches grouped by language - only show English */}
                         {Object.entries(speechesByLanguage).map(([langId, speeches]) => {
-                          // Only show English (languageId = 1)
                           if (parseInt(langId) !== 1 || speeches.length === 0) return null;
 
                           return (
@@ -394,8 +372,8 @@ function BaseDialogNode({
                   <div
                     className="flex-shrink-0 flex items-center"
                     title={displaySpeech.isTranslated
-                      ? "Translated in selected language"
-                      : "Using English version (translation not available)"}
+                      ? "Traducido en idioma seleccionado"
+                      : "Usando versión en inglés (traducción no disponible)"}
                   >
                     {displaySpeech.isTranslated ? (
                       <CheckCircle2 size={12} className="text-green-600" />
@@ -407,7 +385,7 @@ function BaseDialogNode({
                 <button
                   onClick={handleCreateSpeech}
                   className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
-                  title="Create new speech"
+                  title="Crear nuevo speech"
                 >
                   <Plus size={10} />
                 </button>
@@ -437,7 +415,7 @@ function BaseDialogNode({
   );
 }
 
-// Initialize Speech Node (Action ID 1) - Can only send connections
+
 export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -450,7 +428,7 @@ export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Change Variable Node (Action ID 4)
+
 export const ChangeVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -464,7 +442,7 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Change Variable by Variable Node (Action ID 5)
+
 export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -478,7 +456,7 @@ export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Condition Variable Node (Action ID 6)
+
 export const ConditionVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -492,7 +470,7 @@ export const ConditionVariableNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Condition Variable by Variable Node (Action ID 7)
+
 export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -506,7 +484,7 @@ export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Choice Node (Action ID 8)
+
 export const ChoiceNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -520,7 +498,7 @@ export const ChoiceNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Custom Action Node (Action ID 98)
+
 export const CustomActionNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -534,15 +512,14 @@ export const CustomActionNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Bot Speech Node (Action ID 2) - Value1: 1=Whisper, 2=Talk, 3=Shout
 export const BotSpeechNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
 
   const speechModes = {
-    "1": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
-    "2": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
-    "3": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
+    "1": { label: "Susurrar", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
+    "2": { label: "Hablar", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
+    "3": { label: "Gritar", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
   };
 
   const currentMode = speechModes[data.value1 as keyof typeof speechModes] || speechModes["2"];
@@ -552,7 +529,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
   };
 
   return (
-    <div>
+    <div className="relative">
       <BaseDialogNode
         {...props}
         showTargetHandle={true}
@@ -569,9 +546,9 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Whisper</SelectItem>
-            <SelectItem value="2">Talk</SelectItem>
-            <SelectItem value="3">Shout</SelectItem>
+            <SelectItem value="1">Susurrar</SelectItem>
+            <SelectItem value="2">Hablar</SelectItem>
+            <SelectItem value="3">Gritar</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -579,10 +556,6 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
   );
 });
 
-// Show Message Node (Action ID 3)
-// Value1: NotificationStyle (1+)
-// Value2: OnlyTo (1=Solo usuario, 2=Todos)
-// Value3: Target (1=User, 2=Bot)
 export const ShowMessageNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
@@ -595,7 +568,6 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
     updateNodeData(id, { value3: value });
   };
 
-  // Color based on Value2 (OnlyTo)
   const isPrivate = data.value2 === "1";
   const color = isPrivate ? "bg-violet-50" : "bg-fuchsia-50";
   const border = isPrivate ? "border-violet-300" : "border-fuchsia-300";
@@ -637,12 +609,12 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
   );
 });
 
-// Wait Node (Action ID 97) - Wait with configurable time
+
 export const WaitNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
 
-  // Generate wait time options from 0.5s to 10s in 0.5s increments
+
   const waitTimeOptions = [];
   for (let i = 0.5; i <= 10; i += 0.5) {
     waitTimeOptions.push(i.toFixed(1));
@@ -684,12 +656,12 @@ export const WaitNode = memo((props: CustomNodeProps) => {
   );
 });
 
-// Random Node (Action ID 9) - Random selection with N outputs
+
 export const RandomNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
 
-  // Generate options from 2 to 10
+
   const randomOutputOptions = Array.from({ length: 9 }, (_, i) => (i + 2).toString());
   const currentOutputs = data.value1 || "2";
 
@@ -727,7 +699,7 @@ export const RandomNode = memo((props: CustomNodeProps) => {
   );
 });
 
-// End Dialogue Node (Action ID 99) - Ends the dialogue, no nextNodeId
+
 export const EndDialogueNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
@@ -741,7 +713,7 @@ export const EndDialogueNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Default export for backward compatibility
+
 const DialogNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
