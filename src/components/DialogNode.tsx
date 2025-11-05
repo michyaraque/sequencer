@@ -98,15 +98,15 @@ function BaseDialogNode({
         </div>
 
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
-          <div className="flex flex-col gap-1">
-            <span className="font-medium text-neutral-500">Bot ID:</span>
-            <div className="flex gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
+            <div className="flex gap-1 min-w-0 flex-1">
               <Select
                 value={data.botId || "#(bot_id)"}
                 onValueChange={handleBotIdChange}
               >
                 <SelectTrigger
-                  className="flex-1 h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0"
+                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
                   onClick={(e) => e.stopPropagation()}
                   size="sm"
                 >
@@ -123,7 +123,7 @@ function BaseDialogNode({
               </Select>
               <button
                 onClick={handleCreateNPC}
-                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors"
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
                 title="Create new NPC"
               >
                 <Plus size={12} />
@@ -138,15 +138,15 @@ function BaseDialogNode({
             </span>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <span className="font-medium text-neutral-500">Speech:</span>
-            <div className="flex gap-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Speech:</span>
+            <div className="flex gap-1 min-w-0 flex-1">
               <Select
                 value={data.speechId || "-1"}
                 onValueChange={handleSpeechChange}
               >
                 <SelectTrigger
-                  className="flex-1 h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0"
+                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
                   onClick={(e) => e.stopPropagation()}
                   size="sm"
                 >
@@ -163,7 +163,7 @@ function BaseDialogNode({
               </Select>
               <button
                 onClick={handleCreateSpeech}
-                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors"
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
                 title="Create new speech"
               >
                 <Plus size={12} />

@@ -5,6 +5,7 @@ import { SpeechText, NPC, Variable, DialogNodeData } from "@/types/dialog";
 
 interface GameDialogStore {
   projectName: string;
+  selectedLanguage: number; // 1 = English, 2 = Spanish, 3 = Portuguese, 4 = French
   nodes: Node<DialogNodeData>[];
   edges: Edge[];
   speechTexts: SpeechText[];
@@ -12,6 +13,7 @@ interface GameDialogStore {
   variables: Variable[];
 
   setProjectName: (projectName: string) => void;
+  setSelectedLanguage: (language: number) => void;
   setNodes: (nodes: Node<DialogNodeData>[]) => void;
   setEdges: (edges: Edge[]) => void;
   updateNode: (nodeId: string, data: Partial<DialogNodeData>) => void;
@@ -39,6 +41,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
   persist(
     (set) => ({
       projectName: "Untitled Project",
+      selectedLanguage: 1, // Default to English
       nodes: [],
       edges: [],
       speechTexts: [],
@@ -46,6 +49,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
       variables: [],
 
       setProjectName: (projectName) => set({ projectName }),
+      setSelectedLanguage: (selectedLanguage) => set({ selectedLanguage }),
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
 

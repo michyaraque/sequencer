@@ -3,7 +3,14 @@
 import { useState, useCallback, useMemo } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import DialogNode, {
   InitializeSpeechNode,
@@ -98,6 +105,8 @@ function FlowEditor() {
   const npcs = useGameDialogStore((state) => state.npcs);
   const variables = useGameDialogStore((state) => state.variables);
   const projectName = useGameDialogStore((state) => state.projectName);
+  const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
+  const setSelectedLanguage = useGameDialogStore((state) => state.setSelectedLanguage);
 
   const { showAlert } = useAlert();
 
@@ -395,6 +404,26 @@ function FlowEditor() {
             >
               <Redo2 size={18} />
             </button>
+          </div>
+
+          <div className="w-px h-8 bg-neutral-300" />
+
+          <div className="flex items-center gap-2">
+            <Languages size={18} className="text-neutral-600" />
+            <Select
+              value={selectedLanguage.toString()}
+              onValueChange={(value) => setSelectedLanguage(parseInt(value))}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Select Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">English</SelectItem>
+                <SelectItem value="2">Español</SelectItem>
+                <SelectItem value="3">Português</SelectItem>
+                <SelectItem value="4">Français</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center gap-2">
