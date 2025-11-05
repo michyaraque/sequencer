@@ -103,13 +103,27 @@ export default function SpeechTextManager({
       st.text?.toLowerCase().includes(searchTerm?.toLowerCase())
   );
 
-  // Sort by language ID then by ID
-  const sortedTexts = [...filteredTexts].sort((a, b) => {
-    if (a.languageId !== b.languageId) {
-      return a.languageId - b.languageId;
+  // Group speeches by language
+  const groupedByLanguage = filteredTexts.reduce((acc, speechText) => {
+    const langId = speechText.languageId;
+    if (!acc[langId]) {
+      acc[langId] = [];
     }
-    return parseInt(a.id) - parseInt(b.id);
+    acc[langId].push(speechText);
+    return acc;
+  }, {} as Record<number, SpeechText[]>);
+
+  // Sort speeches within each language group
+  Object.keys(groupedByLanguage).forEach((langId) => {
+    groupedByLanguage[parseInt(langId)].sort((a, b) => parseInt(a.id) - parseInt(b.id));
   });
+
+  const languageNames: Record<number, string> = {
+    1: "English (100000)",
+    2: "Spanish (200000)",
+    3: "Portuguese (300000)",
+    4: "French (400000)",
+  };
 
   const existingIds = speechTexts.map((st) => st.id);
 
@@ -191,51 +205,69 @@ export default function SpeechTextManager({
 
         {/* List */}
         <div className="flex-1 overflow-y-auto p-4">
-          {sortedTexts.length === 0 ? (
+          {filteredTexts.length === 0 ? (
             <div className="text-center py-12 text-neutral-500">
               {searchTerm ? "No speech texts found" : "No speech texts yet. Create one to get started!"}
             </div>
           ) : (
-            <div className="space-y-2">
-              {sortedTexts.map((speechText) => (
-                <div
-                  key={speechText.id}
-                  className="border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-neutral-800 text-white px-2 py-0.5 rounded text-xs font-mono font-bold">
-                          {speechText.id}
+            <div className="space-y-6">
+              {Object.entries(groupedByLanguage)
+                .sort(([langIdA], [langIdB]) => parseInt(langIdA) - parseInt(langIdB))
+                .map(([langId, speeches]) => (
+                  <div key={langId}>
+                    {/* Language Header */}
+                    <div className="sticky top-0 bg-white border-b-2 border-neutral-300 pb-2 mb-3 z-10">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-neutral-800">
+                          {languageNames[parseInt(langId)] || `Language ${langId}`}
+                        </h3>
+                        <span className="text-sm text-neutral-600 font-medium">
+                          {speeches.length} speech{speeches.length !== 1 ? "es" : ""}
                         </span>
-                        <span className="font-medium text-neutral-800">
-                          {speechText.label}
-                        </span>
-                        <span className="text-xs text-neutral-500">
-                          (Lang {speechText.languageId})
-                        </span>
-                      </div>
-                      <div className="text-sm text-neutral-600 font-mono bg-neutral-50 p-2 rounded overflow-x-auto">
-                        {speechText.text}
                       </div>
                     </div>
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleEdit(speechText)}
-                        className="px-3 py-1 bg-neutral-600 text-white rounded hover:bg-neutral-700 transition-colors text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(speechText.id)}
-                        className="px-3 py-1 bg-neutral-400 text-white rounded hover:bg-neutral-500 transition-colors text-sm"
-                      >
-                        Delete
-                      </button>
+
+                    {/* Speeches in this language */}
+                    <div className="space-y-2">
+                      {speeches.map((speechText) => (
+                        <div
+                          key={speechText.id}
+                          className="border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="bg-neutral-800 text-white px-2 py-0.5 rounded text-xs font-mono font-bold">
+                                  {speechText.id}
+                                </span>
+                                <span className="font-medium text-neutral-800">
+                                  {speechText.label}
+                                </span>
+                              </div>
+                              <div className="text-sm text-neutral-600 font-mono bg-neutral-50 p-2 rounded overflow-x-auto">
+                                {speechText.text}
+                              </div>
+                            </div>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => handleEdit(speechText)}
+                                className="px-3 py-1 bg-neutral-600 text-white rounded hover:bg-neutral-700 transition-colors text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(speechText.id)}
+                                className="px-3 py-1 bg-neutral-400 text-white rounded hover:bg-neutral-500 transition-colors text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>

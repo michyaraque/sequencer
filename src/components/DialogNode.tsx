@@ -1,10 +1,10 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
-import { DialogNodeData, ACTION_TYPES } from "@/types/dialog";
+import { DialogNodeData, ACTION_TYPES, LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
 import { useGameDialogStore } from "@/store/gameDialogStore";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle2, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,47 @@ import {
 } from "@/components/ui/select";
 
 export type DialogRFNode = Node<DialogNodeData>;
+
+// Helper function to get speech in selected language with fallback to English
+function getSpeechIdInLanguage(
+  baseSpeechId: string,
+  selectedLanguage: number,
+  speechTexts: SpeechText[]
+): { speechId: string; isTranslated: boolean; localId: number } {
+  if (baseSpeechId === "-1" || !baseSpeechId) {
+    return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
+  }
+
+  const numericId = parseInt(baseSpeechId);
+  if (isNaN(numericId)) {
+    return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
+  }
+
+  // Calculate local ID (remove language prefix)
+  const localId = numericId % 100000;
+
+  // Calculate target speech ID in selected language
+  const targetPrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
+  const targetSpeechId = (targetPrefix + localId).toString();
+
+  // Check if speech exists in selected language
+  const speechExists = speechTexts.some(st => st.id === targetSpeechId);
+
+  if (speechExists) {
+    return { speechId: targetSpeechId, isTranslated: true, localId };
+  }
+
+  // Fallback to English (language 1)
+  const englishId = (100000 + localId).toString();
+  const englishExists = speechTexts.some(st => st.id === englishId);
+
+  if (englishExists && selectedLanguage !== 1) {
+    return { speechId: englishId, isTranslated: false, localId };
+  }
+
+  // If nothing exists, return original
+  return { speechId: baseSpeechId, isTranslated: selectedLanguage === 1, localId };
+}
 
 // Extended node props with custom callbacks
 export interface CustomNodeProps extends NodeProps<DialogRFNode> {
@@ -44,7 +85,18 @@ function BaseDialogNode({
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
+  const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const { updateNodeData } = useReactFlow();
+
+  // Calculate display speech in selected language with fallback to English
+  const displaySpeech = useMemo(() => {
+    return getSpeechIdInLanguage(data.speechId || "-1", selectedLanguage, speechTexts);
+  }, [data.speechId, selectedLanguage, speechTexts]);
+
+  // Get the speech text object for display
+  const speechTextObj = useMemo(() => {
+    return speechTexts.find(st => st.id === displaySpeech.speechId);
+  }, [speechTexts, displaySpeech.speechId]);
 
   const handleSpeechChange = useCallback((value: string) => {
     updateNodeData(id, { speechId: value });
@@ -140,7 +192,7 @@ function BaseDialogNode({
 
           <div className="flex items-center justify-between gap-2">
             <span className="font-medium text-neutral-500 whitespace-nowrap">Speech:</span>
-            <div className="flex gap-1 min-w-0 flex-1">
+            <div className="flex gap-1 min-w-0 flex-1 items-center">
               <Select
                 value={data.speechId || "-1"}
                 onValueChange={handleSpeechChange}
@@ -150,7 +202,14 @@ function BaseDialogNode({
                   onClick={(e) => e.stopPropagation()}
                   size="sm"
                 >
-                  <SelectValue placeholder="Select Speech" />
+                  <SelectValue placeholder="Select Speech">
+                    {displaySpeech.speechId === "-1"
+                      ? "-1 (None)"
+                      : speechTextObj
+                        ? `${displaySpeech.speechId} - ${speechTextObj.label}`
+                        : data.speechId
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
                   <SelectItem value="-1">-1 (None)</SelectItem>
@@ -161,6 +220,20 @@ function BaseDialogNode({
                   ))}
                 </SelectContent>
               </Select>
+              {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
+                <div
+                  className="flex-shrink-0"
+                  title={displaySpeech.isTranslated
+                    ? "Translated in selected language"
+                    : "Using English version (translation not available)"}
+                >
+                  {displaySpeech.isTranslated ? (
+                    <CheckCircle2 size={14} className="text-green-600" />
+                  ) : (
+                    <AlertCircle size={14} className="text-amber-500" />
+                  )}
+                </div>
+              )}
               <button
                 onClick={handleCreateSpeech}
                 className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
