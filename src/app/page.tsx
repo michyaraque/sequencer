@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -48,6 +48,7 @@ import RoomTabs from "@/components/RoomTabs";
 import SaveSequenceDialog from "@/components/SaveSequenceDialog";
 import CanvasContextMenu from "@/components/CanvasContextMenu";
 import SequenceManager from "@/components/SequenceManager";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
@@ -104,6 +105,8 @@ function FlowEditor() {
   const [showSequenceManager, setShowSequenceManager] = useState(false);
   const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showMobileNodeEditor, setShowMobileNodeEditor] = useState(false);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -713,50 +716,109 @@ function FlowEditor() {
     [screenToFlowPosition, nodes, edges, setNodes, saveToHistory]
   );
 
+  // Auto-show mobile node editor when node is selected on mobile
+  useEffect(() => {
+    if (selectedNode && window.innerWidth < 1024) {
+      setShowMobileNodeEditor(true);
+    }
+  }, [selectedNode]);
+
   return (
-    <div className="flex h-screen w-full">
-      <Sidebar
-        onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
-        onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
-        onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
-        onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
-        onExportProject={handleExportProject}
-        onImportProject={handleImportProject}
-        onExitProject={handleExitProject}
-      />
-      <div className="flex-1 flex flex-col">
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Desktop Sidebar - hidden on mobile */}
+      <div className="hidden lg:block">
+        <Sidebar
+          onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
+          onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
+          onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
+          onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
+          onExportProject={handleExportProject}
+          onImportProject={handleImportProject}
+          onExitProject={handleExitProject}
+        />
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
+        <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
+          <Sidebar
+            onOpenNPCManager={() => {
+              setShowNPCManager(!showNPCManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenSpeechTextManager={() => {
+              setShowSpeechTextManager(!showSpeechTextManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenVariableManager={() => {
+              setShowVariableManager(!showVariableManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenSequenceManager={() => {
+              setShowSequenceManager(!showSequenceManager);
+              setShowMobileSidebar(false);
+            }}
+            onExportProject={() => {
+              handleExportProject();
+              setShowMobileSidebar(false);
+            }}
+            onImportProject={() => {
+              handleImportProject();
+              setShowMobileSidebar(false);
+            }}
+            onExitProject={() => {
+              handleExitProject();
+              setShowMobileSidebar(false);
+            }}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex-1 flex flex-col min-w-0">
         {hasRooms && <RoomTabs />}
-        <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center gap-3">
-          <div className="flex items-center gap-2">
+
+        {/* Toolbar - Responsive */}
+        <div className="bg-white border-b border-neutral-200 px-2 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 overflow-x-auto">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setShowMobileSidebar(true)}
+            className="lg:hidden p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors"
+            title="Menu"
+          >
+            <Menu size={18} />
+          </button>
+
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleUndo}
               disabled={currentHistoryIndex === 0}
               className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo (Ctrl+Z)"
+              title="Undo"
             >
-              <Undo2 size={18} />
+              <Undo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
-
             <button
               onClick={handleRedo}
               disabled={currentHistoryIndex === history.length - 1}
               className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo (Ctrl+Y)"
+              title="Redo"
             >
-              <Redo2 size={18} />
+              <Redo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
           </div>
 
-          <div className="w-px h-8 bg-neutral-300" />
+          <div className="hidden sm:block w-px h-8 bg-neutral-300" />
 
-          <div className="flex items-center gap-2">
+          {/* Language Selector - Hidden on small mobile */}
+          <div className="hidden md:flex items-center gap-2">
             <Languages size={18} className="text-neutral-600" />
             <Select
               value={selectedLanguage.toString()}
               onValueChange={(value) => setSelectedLanguage(parseInt(value))}
             >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Select Language" />
+              <SelectTrigger className="w-32 lg:w-40">
+                <SelectValue placeholder="Language" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">English</SelectItem>
@@ -767,50 +829,52 @@ function FlowEditor() {
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Delete & Save Sequence */}
+          <div className="flex items-center gap-1 sm:gap-2">
             {selectedNode && (
               <button
                 onClick={deleteSelectedNode}
-                className="px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2"
+                className="p-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors"
+                title="Delete"
               >
-                <Trash2 size={18} />
+                <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
               </button>
             )}
 
             {nodes.filter(n => n.selected).length > 0 && (
               <button
                 onClick={() => setShowSaveSequenceDialog(true)}
-                className="px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2"
-                title="Save selected nodes as sequence"
+                className="p-2 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                title="Save Sequence"
               >
-                <Save size={18} />
-                Save Sequence
+                <Save size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">Save Seq</span>
               </button>
             )}
           </div>
 
-          <div className="w-px h-8 bg-neutral-300" />
+          <div className="hidden sm:block w-px h-8 bg-neutral-300 flex-shrink-0" />
 
-          <div className="flex items-center gap-2">
+          {/* Export/Import Actions */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleExport}
-              className="px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2"
+              className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors"
+              title="Export"
             >
-              <Download size={18} />
-              Export
+              <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             <button
               onClick={handleCopyToClipboard}
-              className="px-3 py-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors font-medium flex items-center gap-2"
+              className="hidden sm:flex p-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors"
+              title="Copy"
             >
               <Copy size={18} />
-              Copy
             </button>
 
-            <label className="px-3 py-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors font-medium cursor-pointer inline-flex items-center gap-2">
-              <Upload size={18} />
-              Import
+            <label className="p-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors cursor-pointer inline-flex items-center">
+              <Upload size={16} className="sm:w-[18px] sm:h-[18px]" />
               <input
                 type="file"
                 accept=".txt"
@@ -819,6 +883,17 @@ function FlowEditor() {
               />
             </label>
           </div>
+
+          {/* Mobile Node Editor Toggle - Only when node selected */}
+          {selectedNode && (
+            <button
+              onClick={() => setShowMobileNodeEditor(true)}
+              className="lg:hidden ml-auto p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              title="Edit Node"
+            >
+              <Variable size={16} />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 relative">
@@ -866,13 +941,38 @@ function FlowEditor() {
         </div>
       </div>
 
-      <NodeEditor
-        selectedNode={selectedNode}
-        onUpdate={updateNodeData}
-        speechTexts={speechTexts}
-        npcs={npcs}
-        variables={variables}
-      />
+      {/* Desktop NodeEditor - hidden on mobile */}
+      <div className="hidden lg:block">
+        <NodeEditor
+          selectedNode={selectedNode}
+          onUpdate={updateNodeData}
+          speechTexts={speechTexts}
+          npcs={npcs}
+          variables={variables}
+        />
+      </div>
+
+      {/* Mobile NodeEditor - Bottom Sheet */}
+      <Sheet open={showMobileNodeEditor} onOpenChange={setShowMobileNodeEditor}>
+        <SheetContent side="bottom" className="h-[85vh] p-0 overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b border-neutral-200 p-4 flex items-center justify-between z-10">
+            <h3 className="font-bold text-lg">Edit Node</h3>
+            <button
+              onClick={() => setShowMobileNodeEditor(false)}
+              className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <NodeEditor
+            selectedNode={selectedNode}
+            onUpdate={updateNodeData}
+            speechTexts={speechTexts}
+            npcs={npcs}
+            variables={variables}
+          />
+        </SheetContent>
+      </Sheet>
 
       {showSpeechTextManager && (
         <SpeechTextManager

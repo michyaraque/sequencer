@@ -101,11 +101,11 @@ export default function RoomTabs() {
 
   return (
     <>
-      <div className="flex items-center gap-1 bg-neutral-50 border-b border-neutral-200 px-4 py-2 overflow-x-auto">
+      <div className="flex items-center gap-1 bg-neutral-50 border-b border-neutral-200 px-2 sm:px-4 py-2 overflow-x-auto scrollbar-thin">
         {rooms.map((room) => (
           <div
             key={room.id}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-t-md transition-colors group ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-t-md transition-colors group flex-shrink-0 ${
               currentRoomId === room.id
                 ? "bg-white border border-b-0 border-neutral-300 font-medium text-neutral-900"
                 : "bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-neutral-900"
@@ -119,13 +119,13 @@ export default function RoomTabs() {
                 onChange={(e) => setEditingName(e.target.value)}
                 onBlur={() => handleRenameSubmit(room.id)}
                 onKeyDown={(e) => handleRenameKeyDown(e, room.id)}
-                className="h-6 px-2 py-0 text-sm min-w-[100px]"
+                className="h-6 px-2 py-0 text-sm min-w-[80px] sm:min-w-[100px]"
                 autoFocus
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
               <span
-                className="text-sm whitespace-nowrap"
+                className="text-xs sm:text-sm whitespace-nowrap"
                 onDoubleClick={(e) => handleDoubleClick(e, room.id, room.name)}
                 title="Double-click to rename"
               >
@@ -136,22 +136,23 @@ export default function RoomTabs() {
               <button
                 onClick={(e) => handleDeleteClick(e, room.id)}
                 className={`p-0.5 rounded hover:bg-neutral-300 transition-colors ${
-                  currentRoomId === room.id ? "opacity-60 hover:opacity-100" : "opacity-0 group-hover:opacity-60 group-hover:hover:opacity-100"
+                  currentRoomId === room.id ? "opacity-60 hover:opacity-100" : "opacity-0 sm:group-hover:opacity-60 sm:group-hover:hover:opacity-100"
                 }`}
                 title="Delete room"
               >
-                <X size={14} />
+                <X size={12} className="sm:w-[14px] sm:h-[14px]" />
               </button>
             )}
           </div>
         ))}
         <button
           onClick={handleAddRoom}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-neutral-700 text-white hover:bg-neutral-800 transition-colors text-sm font-medium ml-2"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-neutral-700 text-white hover:bg-neutral-800 transition-colors text-xs sm:text-sm font-medium ml-2 flex-shrink-0"
           title="Add new room"
         >
-          <Plus size={16} />
-          New Room
+          <Plus size={14} className="sm:w-[16px] sm:h-[16px]" />
+          <span className="hidden sm:inline">New Room</span>
+          <span className="sm:hidden">New</span>
         </button>
       </div>
 
