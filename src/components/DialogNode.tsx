@@ -168,7 +168,7 @@ function BaseDialogNode({
     }
   }, [onOpenNPCManager]);
 
-  const handleCreateNewSpeech = useCallback((label: string) => {
+  const handleCreateNewSpeech = useCallback((textContent: string) => {
     // Calculate next available local ID
     const maxLocalId = speechTexts.reduce((max, st) => {
       const numericId = parseInt(st.id);
@@ -180,12 +180,18 @@ function BaseDialogNode({
     const languagePrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
     const newId = (languagePrefix + nextLocalId).toString();
 
+    // Create label as truncated version of text
+    const maxLabelLength = 50;
+    const label = textContent.length > maxLabelLength
+      ? textContent.substring(0, maxLabelLength) + "..."
+      : textContent;
+
     // Create the new speech
     const newSpeech = {
       id: newId,
       languageId: selectedLanguage,
       label: label || "New Speech",
-      text: "",
+      text: textContent || "",
     };
 
     addSpeechText(newSpeech);
