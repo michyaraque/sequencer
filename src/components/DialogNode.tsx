@@ -6,7 +6,12 @@ import { DialogNodeData, ACTION_TYPES } from "@/types/dialog";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
-function DialogNode({ data, selected, id }: NodeProps<DialogRFNode>) {
+interface BaseDialogNodeProps extends NodeProps<DialogRFNode> {
+  showTargetHandle?: boolean;
+  showSourceHandle?: boolean;
+}
+
+function BaseDialogNode({ data, selected, id, showTargetHandle = true, showSourceHandle = true }: BaseDialogNodeProps) {
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
 
   return (
@@ -17,11 +22,13 @@ function DialogNode({ data, selected, id }: NodeProps<DialogRFNode>) {
           : "border-neutral-300 shadow-md hover:shadow-lg hover:border-neutral-400"
       }`}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-3! h-3! bg-neutral-700!"
-      />
+      {showTargetHandle && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="w-3! h-3! bg-neutral-700!"
+        />
+      )}
 
       <div className="space-y-2">
         {/* Node ID Badge */}
@@ -67,13 +74,65 @@ function DialogNode({ data, selected, id }: NodeProps<DialogRFNode>) {
         </div>
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-3! h-3! bg-neutral-700!"
-      />
+      {showSourceHandle && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="w-3! h-3! bg-neutral-700!"
+        />
+      )}
     </div>
   );
 }
 
-export default memo(DialogNode);
+// Initialize Speech Node (Action ID 1) - Can only send connections
+export const InitializeSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={false} showSourceHandle={true} />
+));
+
+// Next Speech Node (Action ID 2)
+export const NextSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Change Variable Node (Action ID 3)
+export const ChangeVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Condition Variable Node (Action ID 4)
+export const ConditionVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Change Variable Variable Node (Action ID 5)
+export const ChangeVariableVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Condition Variable Variable Node (Action ID 6)
+export const ConditionVariableVariableNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Choice Node (Action ID 7)
+export const ChoiceNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// Custom Action Node (Action ID 98)
+export const CustomActionNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+// End Speech Node (Action ID 99)
+export const EndSpeechNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={false} />
+));
+
+// Default export for backward compatibility
+const DialogNode = memo((props: NodeProps<DialogRFNode>) => (
+  <BaseDialogNode {...props} showTargetHandle={true} showSourceHandle={true} />
+));
+
+export default DialogNode;

@@ -53,15 +53,127 @@ export default function Sidebar({ onOpenSpeechTextManager, onOpenNPCManager, onO
         <div className="space-y-2">
           <div
             draggable
-            onDragStart={(e) => onDragStart(e, "dialogNode")}
+            onDragStart={(e) => onDragStart(e, "initializeSpeech")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <MessageSquareDashed size={18} className="text-neutral-700" />
-              <span className="font-semibold text-neutral-800">Dialog Node</span>
+              <MessageSquareDashed size={18} className="text-green-600" />
+              <span className="font-semibold text-neutral-800">Initialize Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Standard dialog node with speech text, NPCs, and actions
+              Start node - can only send connections (Action ID 1)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "nextSpeech")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquareDashed size={18} className="text-blue-600" />
+              <span className="font-semibold text-neutral-800">Next Speech</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Continue dialog flow (Action ID 2)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "changeVariable")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <VariableIcon size={18} className="text-purple-600" />
+              <span className="font-semibold text-neutral-800">Change Variable</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Modify a variable value (Action ID 3)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "conditionVariable")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <VariableIcon size={18} className="text-orange-600" />
+              <span className="font-semibold text-neutral-800">Condition Variable</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Check variable condition (Action ID 4)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "changeVariableVariable")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <VariableIcon size={18} className="text-purple-700" />
+              <span className="font-semibold text-neutral-800">Change Var. Variable</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Change variable with variable (Action ID 5)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "conditionVariableVariable")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <VariableIcon size={18} className="text-orange-700" />
+              <span className="font-semibold text-neutral-800">Cond. Var. Variable</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Check condition with variables (Action ID 6)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "choice")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare size={18} className="text-cyan-600" />
+              <span className="font-semibold text-neutral-800">Choice</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Player choice node (Action ID 7)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "customAction")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquareDashed size={18} className="text-yellow-600" />
+              <span className="font-semibold text-neutral-800">Custom Action</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Custom action node (Action ID 98)
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "endSpeech")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquareDashed size={18} className="text-red-600" />
+              <span className="font-semibold text-neutral-800">End Speech</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              End dialog - cannot receive connections (Action ID 99)
             </p>
           </div>
         </div>

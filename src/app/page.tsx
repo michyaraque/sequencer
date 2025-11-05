@@ -5,7 +5,17 @@ import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, Node
 import "@xyflow/react/dist/style.css";
 import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload } from "lucide-react";
 
-import DialogNode from "@/components/DialogNode";
+import DialogNode, {
+  InitializeSpeechNode,
+  NextSpeechNode,
+  ChangeVariableNode,
+  ConditionVariableNode,
+  ChangeVariableVariableNode,
+  ConditionVariableVariableNode,
+  ChoiceNode,
+  CustomActionNode,
+  EndSpeechNode
+} from "@/components/DialogNode";
 import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
 import NPCManager from "@/components/NPCManager";
@@ -21,12 +31,58 @@ import { useReactFlow } from "@xyflow/react";
 
 const nodeTypes: NodeTypes = {
   dialogNode: DialogNode,
+  initializeSpeech: InitializeSpeechNode,
+  nextSpeech: NextSpeechNode,
+  changeVariable: ChangeVariableNode,
+  conditionVariable: ConditionVariableNode,
+  changeVariableVariable: ChangeVariableVariableNode,
+  conditionVariableVariable: ConditionVariableVariableNode,
+  choice: ChoiceNode,
+  customAction: CustomActionNode,
+  endSpeech: EndSpeechNode,
 };
+
+// Helper function to get default node data based on node type
+function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
+  const baseData = {
+    botId: "#(bot_id)",
+    userId: "#(user_id)",
+    nextNodeId: "-1",
+    speechId: "SpeechId",
+    speechSpeed: "1/2/3",
+    value1: "-1",
+    value2: "-1",
+    value3: "-1",
+  };
+
+  switch (nodeType) {
+    case "initializeSpeech":
+      return { ...baseData, actionId: "1", label: "Initialize Speech" };
+    case "nextSpeech":
+      return { ...baseData, actionId: "2", label: "Next Speech" };
+    case "changeVariable":
+      return { ...baseData, actionId: "3", label: "Change Variable" };
+    case "conditionVariable":
+      return { ...baseData, actionId: "4", label: "Condition Variable" };
+    case "changeVariableVariable":
+      return { ...baseData, actionId: "5", label: "Change Variable Variable" };
+    case "conditionVariableVariable":
+      return { ...baseData, actionId: "6", label: "Condition Variable Variable" };
+    case "choice":
+      return { ...baseData, actionId: "7", label: "Choice" };
+    case "customAction":
+      return { ...baseData, actionId: "98", label: "Custom Action" };
+    case "endSpeech":
+      return { ...baseData, actionId: "99", label: "End Speech" };
+    default:
+      return { ...baseData, actionId: "1001", label: `New Node ${nodeId}` };
+  }
+}
 
 const initialNodes: Node<DialogNodeData>[] = [
   {
     id: "1",
-    type: "dialogNode",
+    type: "initializeSpeech",
     position: { x: 250, y: 100 },
     data: {
       botId: "#(bot_id)",
@@ -34,7 +90,7 @@ const initialNodes: Node<DialogNodeData>[] = [
       nextNodeId: "0",
       speechId: "SpeechId",
       speechSpeed: "1/2/3",
-      actionId: "1001",
+      actionId: "1",
       value1: "-1",
       value2: "-1",
       value3: "-1",
@@ -226,18 +282,7 @@ function FlowEditor() {
         id: newNodeId,
         type,
         position,
-        data: {
-          botId: "#(bot_id)",
-          userId: "#(user_id)",
-          nextNodeId: "-1",
-          speechId: "SpeechId",
-          speechSpeed: "1/2/3",
-          actionId: "1001",
-          value1: "-1",
-          value2: "-1",
-          value3: "-1",
-          label: `New Node ${newNodeId}`,
-        },
+        data: getDefaultNodeData(type, newNodeId),
       };
 
       setNodes((nds) => {
