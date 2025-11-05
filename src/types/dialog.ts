@@ -19,6 +19,7 @@ export const ACTION_TYPES = {
   5: "Private Message",
   6: "Public Message",
   7: "Choice",
+  97: "Wait",
   98: "Custom Action",
   99: "End Speech",
 } as const;

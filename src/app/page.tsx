@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
 import {
@@ -22,9 +22,11 @@ import DialogNode, {
   CustomActionNode,
   BotDialogNode,
   ShowMessageNode,
+  WaitNode,
   CustomNodeProps
 } from "@/components/DialogNode";
 import AnnotationNode from "@/components/AnnotationNode";
+import CustomEdge from "@/components/CustomEdge";
 import EmptyState from "@/components/EmptyState";
 import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
@@ -68,6 +70,8 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
       return { ...baseData, actionId: "6", label: "Condition Variable Variable" };
     case "choice":
       return { ...baseData, actionId: "7", label: "Choice" };
+    case "wait":
+      return { ...baseData, actionId: "97", label: "Wait", value1: "1.0" };
     case "customAction":
       return { ...baseData, actionId: "98", label: "Custom Action" };
     case "botDialog":
@@ -116,10 +120,18 @@ function FlowEditor() {
       changeVariableVariable: createNodeWithProps(ChangeVariableVariableNode),
       conditionVariableVariable: createNodeWithProps(ConditionVariableVariableNode),
       choice: createNodeWithProps(ChoiceNode),
+      wait: createNodeWithProps(WaitNode),
       customAction: createNodeWithProps(CustomActionNode),
       botDialog: createNodeWithProps(BotDialogNode),
       showMessage: createNodeWithProps(ShowMessageNode),
       annotation: AnnotationNode,
+    };
+  }, []);
+
+  // Create edge types
+  const edgeTypes: EdgeTypes = useMemo(() => {
+    return {
+      default: CustomEdge,
     };
   }, []);
 
@@ -570,6 +582,7 @@ function FlowEditor() {
               onDrop={onDrop}
               onDragOver={onDragOver}
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               minZoom={0.25}
               maxZoom={1.5}
               defaultViewport={{ x: 90, y: 200, zoom: 1 }}

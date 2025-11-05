@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -268,6 +268,20 @@ export default function Sidebar({
             </div>
             <p className="text-xs text-neutral-600">
               Player choice node
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "wait")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Clock size={18} className="text-emerald-600" />
+              <span className="font-semibold text-neutral-800">Wait</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Wait for specified time (0.5s - 10s)
             </p>
           </div>
 
