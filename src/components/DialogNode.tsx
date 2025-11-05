@@ -1,10 +1,10 @@
 "use client";
 
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { DialogNodeData, ACTION_TYPES, LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
 import { useGameDialogStore } from "@/store/gameDialogStore";
-import { Plus, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, CheckCircle2, AlertCircle, ChevronsUpDown, Check } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
@@ -87,6 +102,7 @@ function BaseDialogNode({
   const npcs = useGameDialogStore((state) => state.npcs);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const { updateNodeData } = useReactFlow();
+  const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
 
   // Calculate display speech in selected language with fallback to English
   const displaySpeech = useMemo(() => {
@@ -97,6 +113,36 @@ function BaseDialogNode({
   const speechTextObj = useMemo(() => {
     return speechTexts.find(st => st.id === displaySpeech.speechId);
   }, [speechTexts, displaySpeech.speechId]);
+
+  // Group speeches by language
+  const speechesByLanguage = useMemo(() => {
+    const grouped: Record<number, SpeechText[]> = {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    };
+
+    speechTexts.forEach((st) => {
+      if (grouped[st.languageId]) {
+        grouped[st.languageId].push(st);
+      }
+    });
+
+    // Sort speeches within each language
+    Object.keys(grouped).forEach((langId) => {
+      grouped[parseInt(langId)].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    });
+
+    return grouped;
+  }, [speechTexts]);
+
+  const languageNames: Record<number, string> = {
+    1: "English (100000)",
+    2: "Spanish (200000)",
+    3: "Portuguese (300000)",
+    4: "French (400000)",
+  };
 
   const handleSpeechChange = useCallback((value: string) => {
     updateNodeData(id, { speechId: value });
@@ -193,33 +239,86 @@ function BaseDialogNode({
           <div className="flex items-center justify-between gap-2">
             <span className="font-medium text-neutral-500 whitespace-nowrap">Speech:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center">
-              <Select
-                value={data.speechId || "-1"}
-                onValueChange={handleSpeechChange}
-              >
-                <SelectTrigger
-                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
+              <Popover open={speechComboboxOpen} onOpenChange={setSpeechComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={speechComboboxOpen}
+                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full justify-between"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="truncate">
+                      {displaySpeech.speechId === "-1"
+                        ? "-1 (None)"
+                        : speechTextObj
+                          ? `${displaySpeech.speechId} - ${speechTextObj.label}`
+                          : data.speechId
+                      }
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  align="start"
                   onClick={(e) => e.stopPropagation()}
-                  size="sm"
                 >
-                  <SelectValue placeholder="Select Speech">
-                    {displaySpeech.speechId === "-1"
-                      ? "-1 (None)"
-                      : speechTextObj
-                        ? `${displaySpeech.speechId} - ${speechTextObj.label}`
-                        : data.speechId
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="-1">-1 (None)</SelectItem>
-                  {speechTexts.map((st) => (
-                    <SelectItem key={st.id} value={st.id}>
-                      {st.id} - {st.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <Command>
+                    <CommandInput placeholder="Search by ID or label..." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No speech found.</CommandEmpty>
+
+                      {/* None option */}
+                      <CommandGroup heading="General">
+                        <CommandItem
+                          value="-1-none"
+                          onSelect={() => {
+                            handleSpeechChange("-1");
+                            setSpeechComboboxOpen(false);
+                          }}
+                        >
+                          -1 (None)
+                          <Check
+                            className={cn(
+                              "ml-auto h-4 w-4",
+                              data.speechId === "-1" ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      </CommandGroup>
+
+                      {/* Speeches grouped by language */}
+                      {Object.entries(speechesByLanguage).map(([langId, speeches]) => {
+                        if (speeches.length === 0) return null;
+
+                        return (
+                          <CommandGroup key={langId} heading={languageNames[parseInt(langId)]}>
+                            {speeches.map((st) => (
+                              <CommandItem
+                                key={st.id}
+                                value={`${st.id}-${st.label}`.toLowerCase()}
+                                onSelect={() => {
+                                  handleSpeechChange(st.id);
+                                  setSpeechComboboxOpen(false);
+                                }}
+                              >
+                                {st.id} - {st.label}
+                                <Check
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    data.speechId === st.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        );
+                      })}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                 <div
                   className="flex-shrink-0"
