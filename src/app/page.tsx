@@ -112,6 +112,7 @@ function FlowEditor() {
   const currentRoomId = useRoomsStore((state) => state.currentRoomId);
   const updateRoomData = useRoomsStore((state) => state.updateRoomData);
   const rooms = useRoomsStore((state) => state.rooms);
+  const addRoom = useRoomsStore((state) => state.addRoom);
   const hasRooms = rooms.length > 0;
 
   const isLoadingRoom = useRef(false);
@@ -365,6 +366,11 @@ function FlowEditor() {
           const project = importProject(content);
 
           if (project) {
+            // Create first room if none exist
+            if (rooms.length === 0) {
+              addRoom("Room 1");
+            }
+
             // Update all state
             setNodes(project.nodes);
             setEdges(project.edges);
@@ -393,9 +399,14 @@ function FlowEditor() {
       }
     };
     input.click();
-  }, [setNodes, setEdges, saveToHistory]);
+  }, [setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
   const handleCreateProject = useCallback((projectName: string) => {
+    // Create first room if none exist
+    if (rooms.length === 0) {
+      addRoom("Room 1");
+    }
+
     // Set project name
     setProjectName(projectName);
 
@@ -423,7 +434,7 @@ function FlowEditor() {
     saveToHistory([initialNode], []);
 
     toast.success(`Project "${projectName}" created successfully!`);
-  }, [setProjectName, setNodes, setEdges, saveToHistory]);
+  }, [setProjectName, setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
   const handleLoadRecentProject = useCallback(() => {
     // Reload nodes and edges from store
@@ -431,6 +442,11 @@ function FlowEditor() {
     const currentStoredEdges = useGameDialogStore.getState().edges;
 
     if (currentStoredNodes.length > 0) {
+      // Create first room if none exist
+      if (rooms.length === 0) {
+        addRoom("Room 1");
+      }
+
       setNodes(currentStoredNodes);
       setEdges(currentStoredEdges);
       saveToHistory(currentStoredNodes, currentStoredEdges);
@@ -438,7 +454,7 @@ function FlowEditor() {
     } else {
       toast.error('No project data found in storage');
     }
-  }, [setNodes, setEdges, saveToHistory]);
+  }, [setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
   // Update recent projects when user works on the project
   useEffect(() => {
@@ -531,7 +547,7 @@ function FlowEditor() {
         onImportProject={handleImportProject}
       />
       <div className="flex-1 flex flex-col">
-        <RoomTabs />
+        {hasRooms && <RoomTabs />}
         <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center gap-3">
           <div className="flex items-center gap-2">
             <button
