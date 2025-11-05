@@ -42,8 +42,8 @@ const createDefaultRoom = (id: string, name: string): RoomData => ({
 export const useRoomsStore = create<RoomsStore>()(
   persist(
     (set, get) => ({
-      rooms: [createDefaultRoom("room-1", "Room 1")],
-      currentRoomId: "room-1",
+      rooms: [],
+      currentRoomId: "",
 
       getCurrentRoom: () => {
         const state = get();

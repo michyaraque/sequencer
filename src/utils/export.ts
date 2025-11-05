@@ -1,36 +1,31 @@
 import { Node, Edge } from "@xyflow/react";
 import { DialogNodeData, SpeechText, NPC, Variable } from "@/types/dialog";
+import { RoomData } from "@/store/useRoomsStore";
 
 // Full project export/import interfaces
 export interface ProjectExport {
   version: string;
   timestamp: string;
   projectName: string;
-  nodes: Node<DialogNodeData>[];
-  edges: Edge[];
-  speechTexts: SpeechText[];
-  npcs: NPC[];
-  variables: Variable[];
+  rooms: RoomData[];
+  // Legacy fields for backward compatibility
+  nodes?: Node<DialogNodeData>[];
+  edges?: Edge[];
+  speechTexts?: SpeechText[];
+  npcs?: NPC[];
+  variables?: Variable[];
 }
 
 // Export entire project to JSON
 export function exportProject(
-  nodes: Node<DialogNodeData>[],
-  edges: Edge[],
-  speechTexts: SpeechText[],
-  npcs: NPC[],
-  variables: Variable[],
+  rooms: RoomData[],
   projectName: string = "Untitled Project"
 ): string {
   const project: ProjectExport = {
-    version: "1.0.0",
+    version: "2.0.0", // Bumped to 2.0.0 for rooms support
     timestamp: new Date().toISOString(),
     projectName,
-    nodes,
-    edges,
-    speechTexts,
-    npcs,
-    variables,
+    rooms,
   };
 
   return JSON.stringify(project, null, 2);
@@ -41,8 +36,26 @@ export function importProject(content: string): ProjectExport | null {
   try {
     const project: ProjectExport = JSON.parse(content);
 
-    // Validate project structure
-    if (!project.nodes || !project.edges || !project.speechTexts || !project.npcs || !project.variables) {
+    // Handle legacy format (version 1.0.0) - convert to new format
+    if (project.nodes && project.edges && !project.rooms) {
+      // Convert legacy format to new room-based format
+      const legacyRoom: RoomData = {
+        id: `room-${Date.now()}`,
+        name: "Room 1",
+        projectName: project.projectName || "Untitled Project",
+        selectedLanguage: 1,
+        nodes: project.nodes,
+        edges: project.edges,
+        speechTexts: project.speechTexts || [],
+        npcs: project.npcs || [],
+        variables: project.variables || [],
+      };
+
+      project.rooms = [legacyRoom];
+    }
+
+    // Validate project structure (new format)
+    if (!project.rooms || !Array.isArray(project.rooms)) {
       throw new Error("Invalid project format");
     }
 
