@@ -37,7 +37,7 @@ import VariableManager from "@/components/VariableManager";
 import Sidebar from "@/components/Sidebar";
 import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
-import { useDialogNodes } from "@/hooks/useDialogNodes";
+import { useDialogNodes, getNextNodeId } from "@/hooks/useDialogNodes";
 import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
@@ -443,7 +443,7 @@ function FlowEditor() {
         y: event.clientY,
       });
 
-      const newNodeId = `${nodes.length + 1}`;
+      const newNodeId = getNextNodeId(nodes);
 
       // Handle annotation nodes separately as they have different data structure
       let newNode: Node<any>;

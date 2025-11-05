@@ -7,6 +7,16 @@ interface UseDialogNodesProps {
   saveToHistory: (nodes: Node<DialogNodeData>[], edges: Edge[]) => void;
 }
 
+// Helper function to generate unique node IDs based on highest existing ID
+export const getNextNodeId = (nodes: Node<DialogNodeData>[]): string => {
+  const numericIds = nodes
+    .map(node => parseInt(node.id, 10))
+    .filter(id => !isNaN(id));
+
+  const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
+  return `${maxId + 1}`;
+};
+
 export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesProps) {
   const [nodes, setNodes] = useState<Node<DialogNodeData>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -74,69 +84,10 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
 
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent) => {
-      if (!connectingNodeId.current) return;
-
-      const targetIsPane = (event.target as Element).classList.contains("react-flow__pane");
-
-      if (targetIsPane) {
-        const position = screenToFlowPosition({
-          x: (event as MouseEvent).clientX,
-          y: (event as MouseEvent).clientY,
-        });
-
-        let newNodes: Node<DialogNodeData>[] = [];
-        let newEdges: Edge[] = [];
-
-        setNodes((nds) => {
-          const newNodeId = `${nds.length + 1}`;
-          const newNode: Node<DialogNodeData> = {
-            id: newNodeId,
-            type: "dialogNode",
-            position,
-            data: {
-              botId: "#(bot_id)",
-              userId: "#(user_id)",
-              nextNodeId: "-1",
-              speechId: "SpeechId",
-              speechSpeed: "1/2/3",
-              actionId: "1001",
-              value1: "-1",
-              value2: "-1",
-              value3: "-1",
-              label: `New Node ${newNodeId}`,
-            },
-          };
-
-          setEdges((eds) => {
-            newEdges = [
-              ...eds,
-              {
-                id: `${connectingNodeId.current}-${newNodeId}`,
-                source: connectingNodeId.current!,
-                target: newNodeId,
-              },
-            ];
-            return newEdges;
-          });
-
-          newNodes = nds.map((node) => {
-            if (node.id === connectingNodeId.current) {
-              return {
-                ...node,
-                data: { ...node.data, nextNodeId: newNodeId },
-              };
-            }
-            return node;
-          }).concat(newNode);
-
-          setTimeout(() => saveToHistory(newNodes, newEdges), 0);
-          return newNodes;
-        });
-      }
-
+      // Disabled drag-to-create feature - simply reset the connecting node
       connectingNodeId.current = null;
     },
-    [screenToFlowPosition, saveToHistory]
+    []
   );
 
   const onConnect: OnConnect = useCallback(
@@ -193,7 +144,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
 
   const addNewNode = useCallback(() => {
     setNodes((nds) => {
-      const newNodeId = `${nds.length + 1}`;
+      const newNodeId = getNextNodeId(nds);
       const newNode: Node<DialogNodeData> = {
         id: newNodeId,
         type: "dialogNode",
