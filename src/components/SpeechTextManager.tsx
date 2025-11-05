@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SpeechText } from "@/types/dialog";
 import SpeechTextEditor from "./SpeechTextEditor";
 import { exportSpeechTexts, downloadSpeechTextsFile, importSpeechTexts } from "@/utils/export";
@@ -23,6 +23,22 @@ export default function SpeechTextManager({
   const [editingText, setEditingText] = useState<SpeechText | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isCreating || editingText) {
+          handleCancel();
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isCreating, editingText, onClose]);
 
   const handleSave = (speechText: SpeechText) => {
     if (editingText) {
@@ -89,8 +105,14 @@ export default function SpeechTextManager({
 
   if (isCreating || editingText) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+        onClick={handleCancel}
+      >
+        <div
+          className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           <SpeechTextEditor
             speechText={editingText}
             onSave={handleSave}
@@ -103,8 +125,14 @@ export default function SpeechTextManager({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 border-b border-neutral-200">
           <div className="flex items-center justify-between mb-4">

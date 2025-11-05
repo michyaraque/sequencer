@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Variable } from "@/types/dialog";
 import VariableEditor from "./VariableEditor";
 
@@ -22,6 +22,22 @@ export default function VariableManager({
   const [editingVariable, setEditingVariable] = useState<Variable | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isCreating || editingVariable) {
+          handleCancel();
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isCreating, editingVariable, onClose]);
 
   const handleSave = (variable: Variable) => {
     if (editingVariable) {
@@ -62,8 +78,14 @@ export default function VariableManager({
 
   if (isCreating || editingVariable) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+        onClick={handleCancel}
+      >
+        <div
+          className="bg-white rounded-lg shadow-xl max-w-md w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
           <VariableEditor
             variable={editingVariable}
             onSave={handleSave}
@@ -76,8 +98,14 @@ export default function VariableManager({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-4 border-b border-neutral-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-neutral-800">Variable Manager</h2>

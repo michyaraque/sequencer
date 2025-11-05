@@ -8,6 +8,7 @@ interface UseDialogKeyboardProps {
   undo: () => void;
   redo: () => void;
   onDeleteNodes: (nodeIds: string[]) => void;
+  isModalOpen?: boolean;
 }
 
 export function useDialogKeyboard({
@@ -16,9 +17,15 @@ export function useDialogKeyboard({
   undo,
   redo,
   onDeleteNodes,
+  isModalOpen = false,
 }: UseDialogKeyboardProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle keyboard shortcuts if a modal is open
+      if (isModalOpen) {
+        return;
+      }
+
       if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
         event.preventDefault();
         undo();
@@ -40,5 +47,5 @@ export function useDialogKeyboard({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, edges, undo, redo, onDeleteNodes]);
+  }, [nodes, edges, undo, redo, onDeleteNodes, isModalOpen]);
 }

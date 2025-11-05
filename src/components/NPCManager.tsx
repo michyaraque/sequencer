@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NPC } from "@/types/dialog";
 import NPCEditor from "./NPCEditor";
 
@@ -16,6 +16,22 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
   const [editingNPC, setEditingNPC] = useState<NPC | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isCreating || editingNPC) {
+          handleCancel();
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isCreating, editingNPC, onClose]);
 
   const handleSave = (npc: NPC) => {
     if (editingNPC) {
@@ -55,8 +71,14 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
 
   if (isCreating || editingNPC) {
     return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+        onClick={handleCancel}
+      >
+        <div
+          className="bg-white rounded-lg shadow-xl max-w-md w-full"
+          onClick={(e) => e.stopPropagation()}
+        >
           <NPCEditor
             npc={editingNPC}
             onSave={handleSave}
@@ -69,8 +91,14 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-4 border-b border-neutral-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-neutral-800">NPC Manager</h2>

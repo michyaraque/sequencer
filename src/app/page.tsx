@@ -263,6 +263,7 @@ function FlowEditor() {
     undo: handleUndo,
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
+    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager,
   });
 
   const { screenToFlowPosition } = useReactFlow();
