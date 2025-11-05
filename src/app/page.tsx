@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -43,7 +43,10 @@ import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useRoomsStore } from "@/store/useRoomsStore";
+import { useSequencesStore } from "@/store/useSequencesStore";
 import RoomTabs from "@/components/RoomTabs";
+import SaveSequenceDialog from "@/components/SaveSequenceDialog";
+import CanvasContextMenu from "@/components/CanvasContextMenu";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
@@ -97,6 +100,8 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
+  const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -114,6 +119,10 @@ function FlowEditor() {
   const rooms = useRoomsStore((state) => state.rooms);
   const addRoom = useRoomsStore((state) => state.addRoom);
   const hasRooms = rooms.length > 0;
+
+  const sequences = useSequencesStore((state) => state.sequences);
+  const addSequence = useSequencesStore((state) => state.addSequence);
+  const deleteSequence = useSequencesStore((state) => state.deleteSequence);
 
   const isLoadingRoom = useRef(false);
 
@@ -517,6 +526,131 @@ function FlowEditor() {
     toast.success("Project closed");
   }, []);
 
+  // Sequence handlers
+  const handleSaveSequence = useCallback((name: string, description: string) => {
+    const selectedNodes = nodes.filter(node => node.selected);
+
+    if (selectedNodes.length === 0) {
+      toast.error("No nodes selected");
+      return;
+    }
+
+    // Get edges that connect selected nodes
+    const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+    const selectedEdges = edges.filter(edge =>
+      selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
+    );
+
+    addSequence({
+      name,
+      description,
+      nodes: selectedNodes,
+      edges: selectedEdges,
+    });
+
+    setShowSaveSequenceDialog(false);
+    toast.success(`Sequence "${name}" saved with ${selectedNodes.length} nodes`);
+  }, [nodes, edges, addSequence]);
+
+  const handleCreateFromSequence = useCallback((sequence: any, clickPosition: { x: number; y: number }) => {
+    if (!sequence.nodes || sequence.nodes.length === 0) {
+      toast.error("Sequence has no nodes");
+      return;
+    }
+
+    // Calculate bounding box of original sequence
+    const originalNodes = sequence.nodes;
+    const minX = Math.min(...originalNodes.map((n: Node) => n.position.x));
+    const minY = Math.min(...originalNodes.map((n: Node) => n.position.y));
+
+    // Convert click position to flow coordinates
+    const flowPosition = screenToFlowPosition(clickPosition);
+
+    // Create ID mapping for nodes
+    const idMap = new Map<string, string>();
+    let currentMaxId = Math.max(...nodes.map(n => parseInt(n.id, 10)).filter(id => !isNaN(id)), 0);
+
+    originalNodes.forEach((node: Node) => {
+      currentMaxId++;
+      const newId = `${currentMaxId}`;
+      idMap.set(node.id, newId);
+    });
+
+    // Create new nodes with updated positions and IDs
+    const newNodes: Node<DialogNodeData>[] = originalNodes.map((node: Node<DialogNodeData>) => {
+      const newId = idMap.get(node.id)!;
+      const offsetX = node.position.x - minX;
+      const offsetY = node.position.y - minY;
+
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: flowPosition.x + offsetX,
+          y: flowPosition.y + offsetY,
+        },
+        selected: false,
+      };
+    });
+
+    // Create new edges with updated IDs
+    const newEdges: Edge[] = sequence.edges.map((edge: Edge) => {
+      const newSource = idMap.get(edge.source);
+      const newTarget = idMap.get(edge.target);
+
+      if (!newSource || !newTarget) return null;
+
+      return {
+        ...edge,
+        id: `${newSource}-${newTarget}`,
+        source: newSource,
+        target: newTarget,
+      };
+    }).filter(Boolean) as Edge[];
+
+    // Update nodes data to reference new IDs in nextNodeId
+    const finalNodes = newNodes.map(node => {
+      if (node.data.nextNodeId && idMap.has(node.data.nextNodeId)) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            nextNodeId: idMap.get(node.data.nextNodeId)!,
+          },
+        };
+      }
+      return node;
+    });
+
+    // Add to canvas
+    setNodes((nds) => {
+      const updatedNodes = [...nds, ...finalNodes];
+      setTimeout(() => saveToHistory(updatedNodes, [...edges, ...newEdges]), 0);
+      return updatedNodes;
+    });
+
+    setEdges((eds) => [...eds, ...newEdges]);
+
+    toast.success(`Created ${finalNodes.length} nodes from sequence "${sequence.name}"`);
+  }, [nodes, edges, setNodes, setEdges, saveToHistory, screenToFlowPosition]);
+
+  const handleContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({ x: event.clientX, y: event.clientY });
+  }, []);
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleDeleteSequence = useCallback((sequenceId: string) => {
+    const sequence = sequences.find(s => s.id === sequenceId);
+    if (sequence) {
+      deleteSequence(sequenceId);
+      toast.success(`Sequence "${sequence.name}" deleted`);
+    }
+  }, [sequences, deleteSequence]);
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -633,6 +767,17 @@ function FlowEditor() {
                 <Trash2 size={18} />
               </button>
             )}
+
+            {nodes.filter(n => n.selected).length > 0 && (
+              <button
+                onClick={() => setShowSaveSequenceDialog(true)}
+                className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+                title="Save selected nodes as sequence"
+              >
+                <Save size={18} />
+                Save Sequence
+              </button>
+            )}
           </div>
 
           <div className="w-px h-8 bg-neutral-300" />
@@ -687,6 +832,7 @@ function FlowEditor() {
               onPaneClick={onPaneClick}
               onDrop={onDrop}
               onDragOver={onDragOver}
+              onPaneContextMenu={handleContextMenu}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               minZoom={0.25}
@@ -746,6 +892,25 @@ function FlowEditor() {
           onEdit={handleEditVariable}
           onDelete={handleDeleteVariable}
           onClose={() => setShowVariableManager(false)}
+        />
+      )}
+
+      {showSaveSequenceDialog && (
+        <SaveSequenceDialog
+          selectedNodes={nodes.filter(n => n.selected)}
+          onSave={handleSaveSequence}
+          onClose={() => setShowSaveSequenceDialog(false)}
+        />
+      )}
+
+      {contextMenu && (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          sequences={sequences}
+          onClose={handleCloseContextMenu}
+          onCreateSequence={(sequence) => handleCreateFromSequence(sequence, contextMenu)}
+          onDeleteSequence={handleDeleteSequence}
         />
       )}
     </div>
