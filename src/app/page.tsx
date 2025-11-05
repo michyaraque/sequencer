@@ -85,7 +85,6 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
-  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -161,16 +160,6 @@ function FlowEditor() {
     deleteSelectedNode,
     deleteNodesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
-
-  // Load nodes and edges from localStorage on mount
-  useEffect(() => {
-    if (!hasLoadedInitialData && storedNodes.length > 0 && nodes.length === 0) {
-      setNodes(storedNodes);
-      setEdges(storedEdges);
-      saveToHistory(storedNodes, storedEdges);
-      setHasLoadedInitialData(true);
-    }
-  }, [hasLoadedInitialData, storedNodes, storedEdges, nodes.length, setNodes, setEdges, saveToHistory]);
 
   // Sync nodes and edges back to store when they change
   useEffect(() => {
@@ -555,7 +544,7 @@ function FlowEditor() {
         </div>
 
         <div className="flex-1 relative">
-          {nodes.length === 0 && storedNodes.length === 0 ? (
+          {nodes.length === 0 ? (
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}

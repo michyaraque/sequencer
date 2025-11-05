@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRecentProjectsStore, RecentProject } from "@/store/recentProjectsStore";
-import { useGameDialogStore } from "@/store/gameDialogStore";
 
 interface EmptyStateProps {
   onCreateProject: (projectName: string) => void;
@@ -36,7 +35,6 @@ export default function EmptyState({ onCreateProject, onImportProject, onLoadRec
 
   const recentProjects = useRecentProjectsStore((state) => state.recentProjects);
   const removeRecentProject = useRecentProjectsStore((state) => state.removeRecentProject);
-  const projectNameFromStore = useGameDialogStore((state) => state.projectName);
 
   const handleCreate = () => {
     if (projectName.trim()) {
@@ -53,10 +51,8 @@ export default function EmptyState({ onCreateProject, onImportProject, onLoadRec
   };
 
   const handleLoadRecent = (project: RecentProject) => {
-    // The current project in localStorage should match this name
-    if (projectNameFromStore === project.name) {
-      onLoadRecentProject();
-    }
+    // Load the project from localStorage
+    onLoadRecentProject();
   };
 
   const handleRemoveRecent = (e: React.MouseEvent, projectId: string) => {
