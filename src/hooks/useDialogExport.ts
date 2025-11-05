@@ -9,6 +9,7 @@ interface UseDialogExportProps {
   setEdges: (edges: Edge[]) => void;
   setSelectedNode: (node: Node<DialogNodeData> | null) => void;
   saveToHistory: (nodes: Node<DialogNodeData>[], edges: Edge[]) => void;
+  onShowAlert?: (message: string, variant?: 'default' | 'success' | 'error') => void;
 }
 
 export function useDialogExport({
@@ -17,6 +18,7 @@ export function useDialogExport({
   setEdges,
   setSelectedNode,
   saveToHistory,
+  onShowAlert,
 }: UseDialogExportProps) {
   const handleExport = useCallback(() => {
     const exportContent = exportToDialogFormat(nodes);
@@ -26,8 +28,10 @@ export function useDialogExport({
   const handleCopyToClipboard = useCallback(() => {
     const exportContent = exportToDialogFormat(nodes);
     navigator.clipboard.writeText(exportContent);
-    alert("Dialog data copied to clipboard!");
-  }, [nodes]);
+    if (onShowAlert) {
+      onShowAlert("Dialog data copied to clipboard!", "success");
+    }
+  }, [nodes, onShowAlert]);
 
   const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

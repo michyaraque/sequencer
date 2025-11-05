@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Variable } from "@/types/dialog";
+import { useAlert } from "@/components/AlertProvider";
 
 interface VariableEditorProps {
   variable: Variable | null;
@@ -20,9 +21,11 @@ export default function VariableEditor({
   const [name, setName] = useState(variable?.name || "");
   const [description, setDescription] = useState(variable?.description || "");
 
+  const { showAlert } = useAlert();
+
   const handleSave = () => {
     if (!id.trim() || !name.trim()) {
-      alert("ID and name are required!");
+      showAlert({ message: "ID and name are required!", variant: "error" });
       return;
     }
 
@@ -33,7 +36,7 @@ export default function VariableEditor({
     };
 
     if (existingIds.includes(newVariable.id) && variable?.id !== newVariable.id) {
-      alert(`Variable ID ${newVariable.id} already exists!`);
+      showAlert({ message: `Variable ID ${newVariable.id} already exists!`, variant: "error" });
       return;
     }
 

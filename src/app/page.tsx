@@ -30,6 +30,7 @@ import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
+import { useAlert } from "@/components/AlertProvider";
 
 // Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -97,6 +98,8 @@ function FlowEditor() {
   const npcs = useGameDialogStore((state) => state.npcs);
   const variables = useGameDialogStore((state) => state.variables);
   const projectName = useGameDialogStore((state) => state.projectName);
+
+  const { showAlert } = useAlert();
 
   // Create node types with callbacks
   const nodeTypes: NodeTypes = useMemo(() => {
@@ -254,6 +257,7 @@ function FlowEditor() {
     setEdges,
     setSelectedNode,
     saveToHistory,
+    onShowAlert: (message, variant) => showAlert({ message, variant }),
   });
 
   // Project-wide export/import handlers
@@ -296,9 +300,9 @@ function FlowEditor() {
             // Save to history
             saveToHistory(project.nodes, project.edges);
 
-            alert('Project imported successfully!');
+            showAlert({ message: 'Project imported successfully!', variant: 'success' });
           } else {
-            alert('Failed to import project. Invalid file format.');
+            showAlert({ message: 'Failed to import project. Invalid file format.', variant: 'error' });
           }
         };
         reader.readAsText(file);

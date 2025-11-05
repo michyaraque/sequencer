@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { SpeechText, FORMATTING_TAGS, LANGUAGE_PREFIXES } from "@/types/dialog";
+import { useAlert } from "@/components/AlertProvider";
 
 interface SpeechTextEditorProps {
   speechText: SpeechText | null;
@@ -23,6 +24,8 @@ export default function SpeechTextEditor({
     speechText ? parseInt(speechText.id) - LANGUAGE_PREFIXES[speechText.languageId as keyof typeof LANGUAGE_PREFIXES] : 1
   );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { showAlert } = useAlert();
 
   const applyFormatting = useCallback((tag: keyof typeof FORMATTING_TAGS) => {
     const textarea = textareaRef.current;
@@ -50,7 +53,7 @@ export default function SpeechTextEditor({
 
   const handleSave = () => {
     if (!label.trim() || !text.trim()) {
-      alert("Label and text are required!");
+      showAlert({ message: "Label and text are required!", variant: "error" });
       return;
     }
 
@@ -64,7 +67,7 @@ export default function SpeechTextEditor({
 
     // Check if ID already exists (and it's not the current one being edited)
     if (existingIds.includes(newSpeechText.id) && speechText?.id !== newSpeechText.id) {
-      alert(`Speech ID ${newSpeechText.id} already exists!`);
+      showAlert({ message: `Speech ID ${newSpeechText.id} already exists!`, variant: "error" });
       return;
     }
 
