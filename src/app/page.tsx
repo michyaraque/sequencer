@@ -85,6 +85,7 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -93,6 +94,8 @@ function FlowEditor() {
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const setSelectedLanguage = useGameDialogStore((state) => state.setSelectedLanguage);
   const setProjectName = useGameDialogStore((state) => state.setProjectName);
+  const storedNodes = useGameDialogStore((state) => state.nodes);
+  const storedEdges = useGameDialogStore((state) => state.edges);
 
   const { showAlert } = useAlert();
 
@@ -158,6 +161,27 @@ function FlowEditor() {
     deleteSelectedNode,
     deleteNodesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
+
+  // Load nodes and edges from localStorage on mount
+  useEffect(() => {
+    if (!hasLoadedInitialData && storedNodes.length > 0 && nodes.length === 0) {
+      setNodes(storedNodes);
+      setEdges(storedEdges);
+      saveToHistory(storedNodes, storedEdges);
+      setHasLoadedInitialData(true);
+    }
+  }, [hasLoadedInitialData, storedNodes, storedEdges, nodes.length, setNodes, setEdges, saveToHistory]);
+
+  // Sync nodes and edges back to store when they change
+  useEffect(() => {
+    const setStoredNodes = useGameDialogStore.getState().setNodes;
+    const setStoredEdges = useGameDialogStore.getState().setEdges;
+
+    if (nodes.length > 0 || edges.length > 0) {
+      setStoredNodes(nodes);
+      setStoredEdges(edges);
+    }
+  }, [nodes, edges]);
 
   const handleEditSpeechText = useCallback((oldId: string, speechText: any) => {
     editSpeechText(oldId, speechText);
@@ -342,10 +366,19 @@ function FlowEditor() {
   }, [setProjectName, setNodes, setEdges, saveToHistory, showAlert]);
 
   const handleLoadRecentProject = useCallback(() => {
-    // The project data is already loaded from localStorage via Zustand persist
-    // Just need to trigger the view to show the ReactFlow canvas
-    showAlert({ message: 'Project loaded successfully!', variant: 'success' });
-  }, [showAlert]);
+    // Reload nodes and edges from store
+    const currentStoredNodes = useGameDialogStore.getState().nodes;
+    const currentStoredEdges = useGameDialogStore.getState().edges;
+
+    if (currentStoredNodes.length > 0) {
+      setNodes(currentStoredNodes);
+      setEdges(currentStoredEdges);
+      saveToHistory(currentStoredNodes, currentStoredEdges);
+      showAlert({ message: 'Project loaded successfully!', variant: 'success' });
+    } else {
+      showAlert({ message: 'No project data found in storage', variant: 'error' });
+    }
+  }, [setNodes, setEdges, saveToHistory, showAlert]);
 
   // Update recent projects when user works on the project
   useEffect(() => {
