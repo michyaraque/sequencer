@@ -555,7 +555,7 @@ function FlowEditor() {
         </div>
 
         <div className="flex-1 relative">
-          {nodes.length === 0 ? (
+          {nodes.length === 0 && storedNodes.length === 0 ? (
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}
