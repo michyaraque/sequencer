@@ -76,6 +76,7 @@ interface BaseDialogNodeProps extends CustomNodeProps {
   accentColor?: string;
   borderColor?: string;
   badgeColor?: string;
+  className?: string;
 }
 
 function BaseDialogNode({
@@ -90,7 +91,8 @@ function BaseDialogNode({
   borderColor = "border-neutral-300",
   badgeColor = "bg-neutral-800",
   onOpenSpeechManager,
-  onOpenNPCManager
+  onOpenNPCManager,
+  className
 }: BaseDialogNodeProps) {
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
@@ -200,7 +202,7 @@ function BaseDialogNode({
         selected
           ? `border-neutral-900 shadow-xl ${accentColor}`
           : `${borderColor} shadow-md hover:shadow-lg hover:border-neutral-500 ${accentColor}`
-      }`}
+      } ${className}`}
     >
       {showTargetHandle && (
         <Handle
@@ -517,9 +519,9 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
   const { updateNodeData } = useReactFlow();
 
   const speechModes = {
-    "1": { label: "Susurrar", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
-    "2": { label: "Hablar", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
-    "3": { label: "Gritar", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
+    "1": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
+    "2": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
+    "3": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
   };
 
   const currentMode = speechModes[data.value1 as keyof typeof speechModes] || speechModes["2"];
@@ -546,9 +548,9 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Susurrar</SelectItem>
-            <SelectItem value="2">Hablar</SelectItem>
-            <SelectItem value="3">Gritar</SelectItem>
+            <SelectItem value="1">Whisper</SelectItem>
+            <SelectItem value="2">Talk</SelectItem>
+            <SelectItem value="3">Shout</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -584,19 +586,20 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
         accentColor={color}
         borderColor={border}
         badgeColor={badge}
+        className="min-w-[370px]"
       />
       <div className="absolute top-2 right-2 z-10 flex gap-1" onClick={(e) => e.stopPropagation()}>
         <Select value={data.value2 || "1"} onValueChange={handleValue2Change}>
-          <SelectTrigger className="w-20 h-6 text-xs bg-white">
+          <SelectTrigger className="w-26 h-6 text-xs bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">Solo</SelectItem>
-            <SelectItem value="2">Todos</SelectItem>
+            <SelectItem value="1">Only the user</SelectItem>
+            <SelectItem value="2">Everyone</SelectItem>
           </SelectContent>
         </Select>
         <Select value={data.value3 || "1"} onValueChange={handleValue3Change}>
-          <SelectTrigger className="w-16 h-6 text-xs bg-white">
+          <SelectTrigger className="w-20 h-6 text-xs bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
