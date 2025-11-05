@@ -29,6 +29,23 @@ export const SPEECH_SPEEDS = {
   "3": "Fast",
 } as const;
 
+export const CHANGE_TYPES = {
+  1: "Give Variable",
+  2: "Remove Variable",
+  3: "Add",
+  4: "Subtract",
+  5: "Set",
+} as const;
+
+export const CONDITION_TYPES = {
+  1: "Greater Than",
+  2: "Greater or Equal",
+  3: "Equal",
+  4: "Less or Equal",
+  5: "Less Than",
+  6: "Not Equal",
+} as const;
+
 export interface ExportFormat {
   index: number;
   botId: string;

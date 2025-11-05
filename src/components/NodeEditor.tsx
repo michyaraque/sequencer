@@ -1,6 +1,6 @@
 "use client";
 
-import { DialogNodeData, ACTION_TYPES, SPEECH_SPEEDS, SpeechText, NPC, Variable } from "@/types/dialog";
+import { DialogNodeData, ACTION_TYPES, SPEECH_SPEEDS, CHANGE_TYPES, SpeechText, NPC, Variable } from "@/types/dialog";
 import { Node } from "@xyflow/react";
 
 interface NodeEditorProps {
@@ -157,60 +157,121 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Value 1 (Variable)
-          </label>
-          <select
-            value={selectedNode.data.value1 || ""}
-            onChange={(e) => handleChange("value1", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
-          >
-            <option value="-1">-1 (None)</option>
-            {variables.map((variable) => (
-              <option key={variable.id} value={variable.id}>
-                {variable.id} - {variable.name}
-              </option>
-            ))}
-          </select>
-     
-        </div>
+        {/* Conditional rendering based on Action ID */}
+        {selectedNode.data.actionId !== "1" && (
+          <>
+            {/* Action ID 3: Change Variable - Special fields */}
+            {selectedNode.data.actionId === "3" ? (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Variable ID
+                  </label>
+                  <select
+                    value={selectedNode.data.value1 || ""}
+                    onChange={(e) => handleChange("value1", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                  >
+                    <option value="-1">-1 (None)</option>
+                    {variables.map((variable) => (
+                      <option key={variable.id} value={variable.id}>
+                        {variable.id} - {variable.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Value 2 (Variable)
-          </label>
-          <select
-            value={selectedNode.data.value2 || ""}
-            onChange={(e) => handleChange("value2", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
-          >
-            <option value="-1">-1 (None)</option>
-            {variables.map((variable) => (
-              <option key={variable.id} value={variable.id}>
-                {variable.id} - {variable.name}
-              </option>
-            ))}
-          </select>
-        </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Change Type ID
+                  </label>
+                  <select
+                    value={selectedNode.data.value2 || ""}
+                    onChange={(e) => handleChange("value2", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                  >
+                    <option value="-1">-1 (None)</option>
+                    {Object.entries(CHANGE_TYPES).map(([id, label]) => (
+                      <option key={id} value={id}>
+                        {id} - {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Value 3 (Variable)
-          </label>
-          <select
-            value={selectedNode.data.value3 || ""}
-            onChange={(e) => handleChange("value3", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
-          >
-            <option value="-1">-1 (None)</option>
-            {variables.map((variable) => (
-              <option key={variable.id} value={variable.id}>
-                {variable.id} - {variable.name}
-              </option>
-            ))}
-          </select>
-        </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Value
+                  </label>
+                  <input
+                    type="number"
+                    value={selectedNode.data.value3 || ""}
+                    onChange={(e) => handleChange("value3", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono"
+                    placeholder="0"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Default fields for other Action IDs */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Value 1 (Variable)
+                  </label>
+                  <select
+                    value={selectedNode.data.value1 || ""}
+                    onChange={(e) => handleChange("value1", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                  >
+                    <option value="-1">-1 (None)</option>
+                    {variables.map((variable) => (
+                      <option key={variable.id} value={variable.id}>
+                        {variable.id} - {variable.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Value 2 (Variable)
+                  </label>
+                  <select
+                    value={selectedNode.data.value2 || ""}
+                    onChange={(e) => handleChange("value2", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                  >
+                    <option value="-1">-1 (None)</option>
+                    {variables.map((variable) => (
+                      <option key={variable.id} value={variable.id}>
+                        {variable.id} - {variable.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Value 3 (Variable)
+                  </label>
+                  <select
+                    value={selectedNode.data.value3 || ""}
+                    onChange={(e) => handleChange("value3", e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                  >
+                    <option value="-1">-1 (None)</option>
+                    {variables.map((variable) => (
+                      <option key={variable.id} value={variable.id}>
+                        {variable.id} - {variable.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
