@@ -24,6 +24,7 @@ import DialogNode, {
   EndSpeechNode,
   CustomNodeProps
 } from "@/components/DialogNode";
+import AnnotationNode from "@/components/AnnotationNode";
 import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
 import NPCManager from "@/components/NPCManager";
@@ -133,6 +134,7 @@ function FlowEditor() {
       choice: createNodeWithProps(ChoiceNode),
       customAction: createNodeWithProps(CustomActionNode),
       endSpeech: createNodeWithProps(EndSpeechNode),
+      annotation: AnnotationNode,
     };
   }, []);
 
@@ -359,12 +361,28 @@ function FlowEditor() {
       });
 
       const newNodeId = `${nodes.length + 1}`;
-      const newNode: Node<DialogNodeData> = {
-        id: newNodeId,
-        type,
-        position,
-        data: getDefaultNodeData(type, newNodeId),
-      };
+
+      // Handle annotation nodes separately as they have different data structure
+      let newNode: Node<any>;
+
+      if (type === "annotation") {
+        newNode = {
+          id: newNodeId,
+          type,
+          position,
+          data: {
+            text: "Double-click to edit",
+            label: "Note",
+          },
+        };
+      } else {
+        newNode = {
+          id: newNodeId,
+          type,
+          position,
+          data: getDefaultNodeData(type, newNodeId),
+        };
+      }
 
       setNodes((nds) => {
         const newNodes = nds.concat(newNode);

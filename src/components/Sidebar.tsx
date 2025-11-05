@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2 } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -282,6 +282,20 @@ export default function Sidebar({
             </div>
             <p className="text-xs text-neutral-600">
               End dialog - cannot receive connections
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "annotation")}
+            className="bg-white p-3 rounded-lg border-2 border-yellow-300 cursor-grab active:cursor-grabbing hover:border-yellow-500 hover:shadow-md transition-all bg-yellow-50"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <StickyNote size={18} className="text-yellow-700" />
+              <span className="font-semibold text-neutral-800">Note / Annotation</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Add comments and notes to your flow
             </p>
           </div>
         </div>
