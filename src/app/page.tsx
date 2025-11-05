@@ -25,6 +25,7 @@ import DialogNode, {
   CustomNodeProps
 } from "@/components/DialogNode";
 import AnnotationNode from "@/components/AnnotationNode";
+import EmptyState from "@/components/EmptyState";
 import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
 import NPCManager from "@/components/NPCManager";
@@ -77,25 +78,7 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
   }
 }
 
-const initialNodes: Node<DialogNodeData>[] = [
-  {
-    id: "1",
-    type: "initializeSpeech",
-    position: { x: 250, y: 100 },
-    data: {
-      botId: "#(bot_id)",
-      userId: "#(user_id)",
-      nextNodeId: "0",
-      speechId: "-1",
-      speechSpeed: "2",
-      actionId: "1",
-      value1: "-1",
-      value2: "-1",
-      value3: "-1",
-      label: "Initialize Speech",
-    },
-  },
-];
+const initialNodes: Node<DialogNodeData>[] = [];
 
 function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
@@ -108,6 +91,7 @@ function FlowEditor() {
   const projectName = useGameDialogStore((state) => state.projectName);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const setSelectedLanguage = useGameDialogStore((state) => state.setSelectedLanguage);
+  const setProjectName = useGameDialogStore((state) => state.setProjectName);
 
   const { showAlert } = useAlert();
 
@@ -326,6 +310,36 @@ function FlowEditor() {
     input.click();
   }, [setNodes, setEdges, saveToHistory]);
 
+  const handleCreateProject = useCallback((projectName: string) => {
+    // Set project name
+    setProjectName(projectName);
+
+    // Create initial node
+    const initialNode: Node<DialogNodeData> = {
+      id: "1",
+      type: "initializeSpeech",
+      position: { x: 250, y: 100 },
+      data: {
+        botId: "#(bot_id)",
+        userId: "#(user_id)",
+        nextNodeId: "0",
+        speechId: "-1",
+        speechSpeed: "2",
+        actionId: "1",
+        value1: "-1",
+        value2: "-1",
+        value3: "-1",
+        label: "Initialize Speech",
+      },
+    };
+
+    setNodes([initialNode]);
+    setEdges([]);
+    saveToHistory([initialNode], []);
+
+    showAlert({ message: `Project "${projectName}" created successfully!`, variant: 'success' });
+  }, [setProjectName, setNodes, setEdges, saveToHistory, showAlert]);
+
   const handleUndo = () => undo(setNodes, setEdges, setSelectedNode);
   const handleRedo = () => redo(setNodes, setEdges, setSelectedNode);
 
@@ -489,37 +503,44 @@ function FlowEditor() {
         </div>
 
         <div className="flex-1 relative">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
-            onNodeClick={onNodeClick}
-            onPaneClick={onPaneClick}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            nodeTypes={nodeTypes}
-            minZoom={0.25}
-            maxZoom={1.5}
-            defaultViewport={{ x: 90, y: 200, zoom: 1 }}
-            fitViewOptions={{ padding: 0.5 }}
-            className="bg-neutral-100"
-            proOptions={{
-              hideAttribution: true
-            }}
-          >
-            <Background className="bg-neutral-100" />
-            <Controls />
-            <MiniMap
-              nodeColor={(node) => {
-                return node.selected ? "#171717" : "#d4d4d4";
-              }}
-              className="bg-white! border! border-neutral-300!"
+          {nodes.length === 0 ? (
+            <EmptyState
+              onCreateProject={handleCreateProject}
+              onImportProject={handleImportProject}
             />
-          </ReactFlow>
+          ) : (
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onConnectStart={onConnectStart}
+              onConnectEnd={onConnectEnd}
+              onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
+              nodeTypes={nodeTypes}
+              minZoom={0.25}
+              maxZoom={1.5}
+              defaultViewport={{ x: 90, y: 200, zoom: 1 }}
+              fitViewOptions={{ padding: 0.5 }}
+              className="bg-neutral-100"
+              proOptions={{
+                hideAttribution: true
+              }}
+            >
+              <Background className="bg-neutral-100" />
+              <Controls />
+              <MiniMap
+                nodeColor={(node) => {
+                  return node.selected ? "#171717" : "#d4d4d4";
+                }}
+                className="bg-white! border! border-neutral-300!"
+              />
+            </ReactFlow>
+          )}
         </div>
       </div>
 
