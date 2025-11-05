@@ -307,6 +307,52 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
     saveToHistory(newNodes, newEdges);
   }, [saveToHistory]);
 
+  const deleteEdgesByIds = useCallback((edgeIds: string[]) => {
+    let newNodes: Node<DialogNodeData>[] = [];
+    let newEdges: Edge[] = [];
+
+    setEdges((eds) => {
+      newEdges = eds.filter((edge) => !edgeIds.includes(edge.id));
+
+      // For each deleted edge, update the source node's nextNodeId
+      const deletedEdges = eds.filter((edge) => edgeIds.includes(edge.id));
+
+      setNodes((nds) => {
+        newNodes = nds.map((node) => {
+          const wasSource = deletedEdges.some((edge) => edge.source === node.id);
+          if (wasSource) {
+            return {
+              ...node,
+              data: { ...node.data, nextNodeId: "-1" },
+            };
+          }
+          return node;
+        });
+        return newNodes;
+      });
+
+      return newEdges;
+    });
+
+    setSelectedNode((prev) => {
+      if (prev) {
+        const wasSource = edgeIds.some((edgeId) => {
+          const edge = edges.find((e) => e.id === edgeId);
+          return edge && edge.source === prev.id;
+        });
+        if (wasSource) {
+          return {
+            ...prev,
+            data: { ...prev.data, nextNodeId: "-1" },
+          };
+        }
+      }
+      return prev;
+    });
+
+    setTimeout(() => saveToHistory(newNodes, newEdges), 0);
+  }, [edges, saveToHistory]);
+
   return {
     nodes,
     setNodes,
@@ -325,5 +371,6 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
     updateNodeData,
     deleteSelectedNode,
     deleteNodesByIds,
+    deleteEdgesByIds,
   };
 }

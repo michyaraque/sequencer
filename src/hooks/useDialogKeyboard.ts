@@ -8,6 +8,7 @@ interface UseDialogKeyboardProps {
   undo: () => void;
   redo: () => void;
   onDeleteNodes: (nodeIds: string[]) => void;
+  onDeleteEdges: (edgeIds: string[]) => void;
   isModalOpen?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function useDialogKeyboard({
   undo,
   redo,
   onDeleteNodes,
+  onDeleteEdges,
   isModalOpen = false,
 }: UseDialogKeyboardProps) {
   useEffect(() => {
@@ -37,15 +39,21 @@ export function useDialogKeyboard({
         redo();
       } else if (event.key === "Delete" || event.key === "Backspace") {
         const selectedNodes = nodes.filter((node) => node.selected);
+        const selectedEdges = edges.filter((edge) => edge.selected);
+
         if (selectedNodes.length > 0) {
           event.preventDefault();
           const selectedNodeIds = selectedNodes.map((node) => node.id);
           onDeleteNodes(selectedNodeIds);
+        } else if (selectedEdges.length > 0) {
+          event.preventDefault();
+          const selectedEdgeIds = selectedEdges.map((edge) => edge.id);
+          onDeleteEdges(selectedEdgeIds);
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, edges, undo, redo, onDeleteNodes, isModalOpen]);
+  }, [nodes, edges, undo, redo, onDeleteNodes, onDeleteEdges, isModalOpen]);
 }

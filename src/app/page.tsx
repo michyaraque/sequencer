@@ -51,7 +51,7 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
     userId: "#(user_id)",
     nextNodeId: "-1",
     speechId: "-1",
-    speechSpeed: "2",
+    speechSpeed: "0",
     value1: "-1",
     value2: "-1",
     value3: "-1",
@@ -169,6 +169,7 @@ function FlowEditor() {
     updateNodeData,
     deleteSelectedNode,
     deleteNodesByIds,
+    deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
 
   // Sync nodes and edges back to store when they change
@@ -408,6 +409,7 @@ function FlowEditor() {
     undo: handleUndo,
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
+    onDeleteEdges: deleteEdgesByIds,
     isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager,
   });
 

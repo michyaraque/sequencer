@@ -81,6 +81,7 @@ interface BaseDialogNodeProps extends CustomNodeProps {
   showTargetHandle?: boolean;
   showSourceHandle?: boolean;
   showSpeech?: boolean;
+  showBotId?: boolean;
   accentColor?: string;
   borderColor?: string;
   badgeColor?: string;
@@ -93,6 +94,7 @@ function BaseDialogNode({
   showTargetHandle = true,
   showSourceHandle = true,
   showSpeech = true,
+  showBotId = true,
   accentColor = "bg-neutral-50",
   borderColor = "border-neutral-300",
   badgeColor = "bg-neutral-800",
@@ -231,38 +233,40 @@ function BaseDialogNode({
         </div>
 
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
-            <div className="flex gap-1 min-w-0 flex-1">
-              <Select
-                value={data.botId || "#(bot_id)"}
-                onValueChange={handleBotIdChange}
-              >
-                <SelectTrigger
-                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
-                  onClick={(e) => e.stopPropagation()}
-                  size="sm"
+          {showBotId && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
+              <div className="flex gap-1 min-w-0 flex-1">
+                <Select
+                  value={data.botId || "#(bot_id)"}
+                  onValueChange={handleBotIdChange}
                 >
-                  <SelectValue placeholder="Select Bot ID" />
-                </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
-                  {npcs.map((npc) => (
-                    <SelectItem key={npc.id} value={npc.id}>
-                      {npc.id} - {npc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <button
-                onClick={handleCreateNPC}
-                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
-                title="Create new NPC"
-              >
-                <Plus size={12} />
-              </button>
+                  <SelectTrigger
+                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
+                    onClick={(e) => e.stopPropagation()}
+                    size="sm"
+                  >
+                    <SelectValue placeholder="Select Bot ID" />
+                  </SelectTrigger>
+                  <SelectContent onClick={(e) => e.stopPropagation()}>
+                    <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
+                    {npcs.map((npc) => (
+                      <SelectItem key={npc.id} value={npc.id}>
+                        {npc.id} - {npc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  onClick={handleCreateNPC}
+                  className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  title="Create new NPC"
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex justify-between gap-2">
             <span className="font-medium text-neutral-500">Action:</span>
@@ -634,6 +638,7 @@ export const WaitNode = memo((props: CustomNodeProps) => {
         showTargetHandle={true}
         showSourceHandle={true}
         showSpeech={false}
+        showBotId={false}
         accentColor="bg-emerald-50"
         borderColor="border-emerald-300"
         badgeColor="bg-emerald-700"
