@@ -116,7 +116,7 @@ export default function SpeechTextEditor({
               onValueChange={(value) => setLanguageId(parseInt(value))}
             >
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="Select Language" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">1 (100000) (English)</SelectItem>

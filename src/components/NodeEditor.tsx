@@ -58,11 +58,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             Bot ID (NPC)
           </label>
           <Select
-            value={selectedNode.data.botId || ""}
+            value={selectedNode.data.botId || "#(bot_id)"}
             onValueChange={(value) => handleChange("botId", value)}
           >
             <SelectTrigger className="w-full font-mono text-sm mb-2">
-              <SelectValue />
+              <SelectValue placeholder="Select Bot ID" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
@@ -80,11 +80,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             User ID (NPC)
           </label>
           <Select
-            value={selectedNode.data.userId || ""}
+            value={selectedNode.data.userId || "#(user_id)"}
             onValueChange={(value) => handleChange("userId", value)}
           >
             <SelectTrigger className="w-full font-mono text-sm mb-2">
-              <SelectValue />
+              <SelectValue placeholder="Select User ID" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="#(user_id)">#(user_id)</SelectItem>
@@ -115,11 +115,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             Speech ID
           </label>
           <Select
-            value={selectedNode.data.speechId || ""}
+            value={selectedNode.data.speechId || "-1"}
             onValueChange={(value) => handleChange("speechId", value)}
           >
             <SelectTrigger className="w-full font-mono text-sm mb-2">
-              <SelectValue />
+              <SelectValue placeholder="Select Speech" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="-1">-1 (None)</SelectItem>
@@ -149,11 +149,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             Speech Speed
           </label>
           <Select
-            value={selectedNode.data.speechSpeed || "1/2/3"}
+            value={selectedNode.data.speechSpeed || "2"}
             onValueChange={(value) => handleChange("speechSpeed", value)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="Select Speed" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="1">1 (Slow)</SelectItem>
@@ -168,11 +168,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             Action ID
           </label>
           <Select
-            value={selectedNode.data.actionId || "1001"}
+            value={selectedNode.data.actionId || "1"}
             onValueChange={(value) => handleChange("actionId", value)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="Select Action" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(ACTION_TYPES).map(([id, label]) => (
@@ -195,11 +195,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     Variable ID
                   </label>
                   <Select
-                    value={selectedNode.data.value1 || ""}
+                    value={selectedNode.data.value1 || "-1"}
                     onValueChange={(value) => handleChange("value1", value)}
                   >
                     <SelectTrigger className="w-full font-mono text-sm mb-2">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-1">-1 (None)</SelectItem>
@@ -217,11 +217,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     Change Type ID
                   </label>
                   <Select
-                    value={selectedNode.data.value2 || ""}
+                    value={selectedNode.data.value2 || "-1"}
                     onValueChange={(value) => handleChange("value2", value)}
                   >
                     <SelectTrigger className="w-full font-mono text-sm mb-2">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Change Type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-1">-1 (None)</SelectItem>
@@ -255,11 +255,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     Value 1 (Variable)
                   </label>
                   <Select
-                    value={selectedNode.data.value1 || ""}
+                    value={selectedNode.data.value1 || "-1"}
                     onValueChange={(value) => handleChange("value1", value)}
                   >
                     <SelectTrigger className="w-full font-mono text-sm mb-2">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-1">-1 (None)</SelectItem>
@@ -277,11 +277,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     Value 2 (Variable)
                   </label>
                   <Select
-                    value={selectedNode.data.value2 || ""}
+                    value={selectedNode.data.value2 || "-1"}
                     onValueChange={(value) => handleChange("value2", value)}
                   >
                     <SelectTrigger className="w-full font-mono text-sm mb-2">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-1">-1 (None)</SelectItem>
@@ -299,11 +299,11 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     Value 3 (Variable)
                   </label>
                   <Select
-                    value={selectedNode.data.value3 || ""}
+                    value={selectedNode.data.value3 || "-1"}
                     onValueChange={(value) => handleChange("value3", value)}
                   >
                     <SelectTrigger className="w-full font-mono text-sm mb-2">
-                      <SelectValue />
+                      <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-1">-1 (None)</SelectItem>

@@ -43,9 +43,8 @@ function BaseDialogNode({
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const { updateNodeData } = useReactFlow();
 
-  const handleSpeechChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    e.stopPropagation();
-    updateNodeData(id, { speechId: e.target.value });
+  const handleSpeechChange = useCallback((value: string) => {
+    updateNodeData(id, { speechId: value });
   }, [id, updateNodeData]);
 
   const handleCreateSpeech = useCallback((e: React.MouseEvent) => {
@@ -102,17 +101,14 @@ function BaseDialogNode({
             <div className="flex gap-1">
               <Select
                 value={data.speechId || "-1"}
-                onValueChange={(value) => {
-                  const event = { target: { value } } as React.ChangeEvent<HTMLSelectElement>;
-                  handleSpeechChange(event);
-                }}
+                onValueChange={handleSpeechChange}
               >
                 <SelectTrigger
                   className="flex-1 h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0"
                   onClick={(e) => e.stopPropagation()}
                   size="sm"
                 >
-                  <SelectValue />
+                  <SelectValue placeholder="Select Speech" />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
                   <SelectItem value="-1">-1 (None)</SelectItem>
