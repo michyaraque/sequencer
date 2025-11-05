@@ -5,6 +5,13 @@ import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { DialogNodeData, ACTION_TYPES } from "@/types/dialog";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { Plus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
@@ -93,19 +100,29 @@ function BaseDialogNode({
           <div className="flex flex-col gap-1">
             <span className="font-medium text-neutral-500">Speech:</span>
             <div className="flex gap-1">
-              <select
+              <Select
                 value={data.speechId || "-1"}
-                onChange={handleSpeechChange}
-                onClick={(e) => e.stopPropagation()}
-                className="flex-1 px-2 py-1 text-xs border border-neutral-300 rounded bg-white font-mono hover:border-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                onValueChange={(value) => {
+                  const event = { target: { value } } as React.ChangeEvent<HTMLSelectElement>;
+                  handleSpeechChange(event);
+                }}
               >
-                <option value="-1">-1 (None)</option>
-                {speechTexts.map((st) => (
-                  <option key={st.id} value={st.id}>
-                    {st.id} - {st.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  className="flex-1 h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0"
+                  onClick={(e) => e.stopPropagation()}
+                  size="sm"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
+                  <SelectItem value="-1">-1 (None)</SelectItem>
+                  {speechTexts.map((st) => (
+                    <SelectItem key={st.id} value={st.id}>
+                      {st.id} - {st.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <button
                 onClick={handleCreateSpeech}
                 className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors"

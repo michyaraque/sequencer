@@ -2,6 +2,13 @@
 
 import { DialogNodeData, ACTION_TYPES, SPEECH_SPEEDS, CHANGE_TYPES, SpeechText, NPC, Variable } from "@/types/dialog";
 import { Node } from "@xyflow/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NodeEditorProps {
   selectedNode: Node<DialogNodeData> | null;
@@ -50,36 +57,44 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Bot ID (NPC)
           </label>
-          <select
+          <Select
             value={selectedNode.data.botId || ""}
-            onChange={(e) => handleChange("botId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+            onValueChange={(value) => handleChange("botId", value)}
           >
-            <option value="#(bot_id)">#(bot_id)</option>
-            {npcs.map((npc) => (
-              <option key={npc.id} value={npc.id}>
-                {npc.id} - {npc.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full font-mono text-sm mb-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
+              {npcs.map((npc) => (
+                <SelectItem key={npc.id} value={npc.id}>
+                  {npc.id} - {npc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             User ID (NPC)
           </label>
-          <select
+          <Select
             value={selectedNode.data.userId || ""}
-            onChange={(e) => handleChange("userId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+            onValueChange={(value) => handleChange("userId", value)}
           >
-            <option value="#(user_id)">#(user_id)</option>
-            {npcs.map((npc) => (
-              <option key={npc.id} value={npc.id}>
-                {npc.id} - {npc.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full font-mono text-sm mb-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="#(user_id)">#(user_id)</SelectItem>
+              {npcs.map((npc) => (
+                <SelectItem key={npc.id} value={npc.id}>
+                  {npc.id} - {npc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -99,18 +114,22 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Speech ID
           </label>
-          <select
+          <Select
             value={selectedNode.data.speechId || ""}
-            onChange={(e) => handleChange("speechId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+            onValueChange={(value) => handleChange("speechId", value)}
           >
-            <option value="-1">-1 (None)</option>
-            {speechTexts.map((st) => (
-              <option key={st.id} value={st.id}>
-                {st.id} - {st.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full font-mono text-sm mb-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="-1">-1 (None)</SelectItem>
+              {speechTexts.map((st) => (
+                <SelectItem key={st.id} value={st.id}>
+                  {st.id} - {st.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {selectedNode.data.speechId && selectedNode.data.speechId !== "-1" && (
             <div>
               {speechTexts.find((st) => st.id === selectedNode.data.speechId) && (
@@ -129,32 +148,40 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Speech Speed
           </label>
-          <select
+          <Select
             value={selectedNode.data.speechSpeed || "1/2/3"}
-            onChange={(e) => handleChange("speechSpeed", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
+            onValueChange={(value) => handleChange("speechSpeed", value)}
           >
-            <option value="1">1 (Slow)</option>
-            <option value="2">2 (Normal)</option>
-            <option value="3">3 (Fast)</option>
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">1 (Slow)</SelectItem>
+              <SelectItem value="2">2 (Normal)</SelectItem>
+              <SelectItem value="3">3 (Fast)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             Action ID
           </label>
-          <select
+          <Select
             value={selectedNode.data.actionId || "1001"}
-            onChange={(e) => handleChange("actionId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
+            onValueChange={(value) => handleChange("actionId", value)}
           >
-            {Object.entries(ACTION_TYPES).map(([id, label]) => (
-              <option key={id} value={id}>
-                {id} - {label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(ACTION_TYPES).map(([id, label]) => (
+                <SelectItem key={id} value={id}>
+                  {id} - {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Conditional rendering based on Action ID */}
@@ -167,36 +194,44 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Variable ID
                   </label>
-                  <select
+                  <Select
                     value={selectedNode.data.value1 || ""}
-                    onChange={(e) => handleChange("value1", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                    onValueChange={(value) => handleChange("value1", value)}
                   >
-                    <option value="-1">-1 (None)</option>
-                    {variables.map((variable) => (
-                      <option key={variable.id} value={variable.id}>
-                        {variable.id} - {variable.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full font-mono text-sm mb-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      {variables.map((variable) => (
+                        <SelectItem key={variable.id} value={variable.id}>
+                          {variable.id} - {variable.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Change Type ID
                   </label>
-                  <select
+                  <Select
                     value={selectedNode.data.value2 || ""}
-                    onChange={(e) => handleChange("value2", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                    onValueChange={(value) => handleChange("value2", value)}
                   >
-                    <option value="-1">-1 (None)</option>
-                    {Object.entries(CHANGE_TYPES).map(([id, label]) => (
-                      <option key={id} value={id}>
-                        {id} - {label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full font-mono text-sm mb-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      {Object.entries(CHANGE_TYPES).map(([id, label]) => (
+                        <SelectItem key={id} value={id}>
+                          {id} - {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
@@ -219,54 +254,66 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Value 1 (Variable)
                   </label>
-                  <select
+                  <Select
                     value={selectedNode.data.value1 || ""}
-                    onChange={(e) => handleChange("value1", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                    onValueChange={(value) => handleChange("value1", value)}
                   >
-                    <option value="-1">-1 (None)</option>
-                    {variables.map((variable) => (
-                      <option key={variable.id} value={variable.id}>
-                        {variable.id} - {variable.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full font-mono text-sm mb-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      {variables.map((variable) => (
+                        <SelectItem key={variable.id} value={variable.id}>
+                          {variable.id} - {variable.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Value 2 (Variable)
                   </label>
-                  <select
+                  <Select
                     value={selectedNode.data.value2 || ""}
-                    onChange={(e) => handleChange("value2", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                    onValueChange={(value) => handleChange("value2", value)}
                   >
-                    <option value="-1">-1 (None)</option>
-                    {variables.map((variable) => (
-                      <option key={variable.id} value={variable.id}>
-                        {variable.id} - {variable.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full font-mono text-sm mb-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      {variables.map((variable) => (
+                        <SelectItem key={variable.id} value={variable.id}>
+                          {variable.id} - {variable.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Value 3 (Variable)
                   </label>
-                  <select
+                  <Select
                     value={selectedNode.data.value3 || ""}
-                    onChange={(e) => handleChange("value3", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono text-sm mb-2"
+                    onValueChange={(value) => handleChange("value3", value)}
                   >
-                    <option value="-1">-1 (None)</option>
-                    {variables.map((variable) => (
-                      <option key={variable.id} value={variable.id}>
-                        {variable.id} - {variable.name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full font-mono text-sm mb-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      {variables.map((variable) => (
+                        <SelectItem key={variable.id} value={variable.id}>
+                          {variable.id} - {variable.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </>
             )}

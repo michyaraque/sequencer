@@ -3,6 +3,13 @@
 import { useState, useRef, useCallback } from "react";
 import { SpeechText, FORMATTING_TAGS, LANGUAGE_PREFIXES } from "@/types/dialog";
 import { useAlert } from "@/components/AlertProvider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SpeechTextEditorProps {
   speechText: SpeechText | null;
@@ -104,16 +111,20 @@ export default function SpeechTextEditor({
             <label className="block text-sm font-medium text-neutral-700 mb-1">
               Language
             </label>
-            <select
-              value={languageId}
-              onChange={(e) => setLanguageId(parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
+            <Select
+              value={languageId.toString()}
+              onValueChange={(value) => setLanguageId(parseInt(value))}
             >
-              <option value={1}>1 (100000) (English)</option>
-              <option value={2}>2 (200000) (Spanish)</option>
-              <option value={3}>3 (300000) (Portuguesse)</option>
-              <option value={4}>4 (400000) (French)</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 (100000) (English)</SelectItem>
+                <SelectItem value="2">2 (200000) (Spanish)</SelectItem>
+                <SelectItem value="3">3 (300000) (Portuguesse)</SelectItem>
+                <SelectItem value="4">4 (400000) (French)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
