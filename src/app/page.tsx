@@ -29,6 +29,7 @@ import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useReactFlow } from "@xyflow/react";
+import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 
 // Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -254,6 +255,54 @@ function FlowEditor() {
     saveToHistory,
   });
 
+  // Project-wide export/import handlers
+  const handleExportProject = useCallback(() => {
+    const content = exportProject(nodes, edges, speechTexts, npcs, variables);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    downloadProjectFile(content, `dialog-project-${timestamp}.json`);
+  }, [nodes, edges, speechTexts, npcs, variables]);
+
+  const handleImportProject = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = event.target?.result as string;
+          const project = importProject(content);
+
+          if (project) {
+            // Update all state
+            setNodes(project.nodes);
+            setEdges(project.edges);
+
+            // Update store data
+            const addSpeechText = useGameDialogStore.getState().addSpeechText;
+            const addNPC = useGameDialogStore.getState().addNPC;
+            const addVariable = useGameDialogStore.getState().addVariable;
+
+            // Clear existing data and add imported data
+            project.speechTexts.forEach((st) => addSpeechText(st));
+            project.npcs.forEach((npc) => addNPC(npc));
+            project.variables.forEach((variable) => addVariable(variable));
+
+            // Save to history
+            saveToHistory(project.nodes, project.edges);
+
+            alert('Project imported successfully!');
+          } else {
+            alert('Failed to import project. Invalid file format.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+    input.click();
+  }, [setNodes, setEdges, saveToHistory]);
+
   const handleUndo = () => undo(setNodes, setEdges, setSelectedNode);
   const handleRedo = () => redo(setNodes, setEdges, setSelectedNode);
 
@@ -311,6 +360,8 @@ function FlowEditor() {
         onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
         onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
         onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
+        onExportProject={handleExportProject}
+        onImportProject={handleImportProject}
       />
       <div className="flex-1 flex flex-col">
         <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center gap-3">

@@ -1,5 +1,67 @@
-import { Node } from "@xyflow/react";
-import { DialogNodeData, SpeechText } from "@/types/dialog";
+import { Node, Edge } from "@xyflow/react";
+import { DialogNodeData, SpeechText, NPC, Variable } from "@/types/dialog";
+
+// Full project export/import interfaces
+export interface ProjectExport {
+  version: string;
+  timestamp: string;
+  nodes: Node<DialogNodeData>[];
+  edges: Edge[];
+  speechTexts: SpeechText[];
+  npcs: NPC[];
+  variables: Variable[];
+}
+
+// Export entire project to JSON
+export function exportProject(
+  nodes: Node<DialogNodeData>[],
+  edges: Edge[],
+  speechTexts: SpeechText[],
+  npcs: NPC[],
+  variables: Variable[]
+): string {
+  const project: ProjectExport = {
+    version: "1.0.0",
+    timestamp: new Date().toISOString(),
+    nodes,
+    edges,
+    speechTexts,
+    npcs,
+    variables,
+  };
+
+  return JSON.stringify(project, null, 2);
+}
+
+// Import entire project from JSON
+export function importProject(content: string): ProjectExport | null {
+  try {
+    const project: ProjectExport = JSON.parse(content);
+
+    // Validate project structure
+    if (!project.nodes || !project.edges || !project.speechTexts || !project.npcs || !project.variables) {
+      throw new Error("Invalid project format");
+    }
+
+    return project;
+  } catch (error) {
+    console.error("Failed to import project:", error);
+    return null;
+  }
+}
+
+// Download project file
+export function downloadProjectFile(content: string, filename: string = "dialog-project.json") {
+  const blob = new Blob([content], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 export function exportToDialogFormat(nodes: Node<DialogNodeData>[]): string {
   const lines = nodes.map((node, index) => {

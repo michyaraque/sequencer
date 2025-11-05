@@ -1,15 +1,24 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 interface SidebarProps {
   onOpenSpeechTextManager: () => void;
   onOpenNPCManager: () => void;
   onOpenVariableManager: () => void;
+  onExportProject: () => void;
+  onImportProject: () => void;
 }
 
-export default function Sidebar({ onOpenSpeechTextManager, onOpenNPCManager, onOpenVariableManager }: SidebarProps) {
+export default function Sidebar({
+  onOpenSpeechTextManager,
+  onOpenNPCManager,
+  onOpenVariableManager,
+  onExportProject,
+  onImportProject
+}: SidebarProps) {
+  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
 
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
@@ -18,6 +27,42 @@ export default function Sidebar({ onOpenSpeechTextManager, onOpenNPCManager, onO
 
   return (
     <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col">
+      {/* Project Management Section */}
+      <div className="p-4 border-b border-neutral-200 bg-white">
+        <button
+          onClick={() => setProjectMenuOpen(!projectMenuOpen)}
+          className="w-full flex items-center justify-between text-sm font-bold text-neutral-700 mb-2 hover:text-neutral-900 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <FolderOpen size={16} />
+            <span>Project</span>
+          </div>
+          <ChevronDown
+            size={16}
+            className={`transition-transform ${projectMenuOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {projectMenuOpen && (
+          <div className="space-y-2 mt-2">
+            <button
+              onClick={onExportProject}
+              className="w-full px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2 text-sm"
+            >
+              <Download size={16} />
+              Export Project
+            </button>
+            <button
+              onClick={onImportProject}
+              className="w-full px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2 text-sm"
+            >
+              <Upload size={16} />
+              Import Project
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="p-4 border-b border-neutral-200 bg-white">
         <h2 className="text-sm font-bold text-neutral-700 mb-3">Data Management</h2>
         <div className="space-y-2">
