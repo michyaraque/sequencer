@@ -24,6 +24,7 @@ export default function SpeechTextManager({
   const [editingText, setEditingText] = useState<SpeechText | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [prefilledData, setPrefilledData] = useState<Partial<SpeechText> | null>(null);
 
   const { showConfirm } = useConfirm();
 
@@ -51,16 +52,44 @@ export default function SpeechTextManager({
     }
     setEditingText(null);
     setIsCreating(false);
+    setPrefilledData(null);
   };
 
   const handleCancel = () => {
     setEditingText(null);
     setIsCreating(false);
+    setPrefilledData(null);
   };
 
   const handleEdit = (speechText: SpeechText) => {
     setEditingText(speechText);
     setIsCreating(false);
+    setPrefilledData(null);
+  };
+
+  // Create translation for a speech in a different language
+  const handleCreateTranslation = (baseSpeech: SpeechText, targetLanguageId: number) => {
+    const numericId = parseInt(baseSpeech.id);
+    const localId = numericId % 100000;
+
+    const languagePrefixes: Record<number, number> = {
+      1: 100000,
+      2: 200000,
+      3: 300000,
+      4: 400000,
+    };
+
+    const newId = (languagePrefixes[targetLanguageId] + localId).toString();
+
+    // Pre-fill the editor with translation template
+    setPrefilledData({
+      id: newId,
+      languageId: targetLanguageId,
+      label: `${baseSpeech.label} (Copy)`,
+      text: baseSpeech.text, // Copy original text so user can translate it
+    });
+    setIsCreating(true);
+    setEditingText(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -125,6 +154,25 @@ export default function SpeechTextManager({
     4: "French (400000)",
   };
 
+  const languageNamesShort: Record<number, string> = {
+    1: "EN",
+    2: "ES",
+    3: "PT",
+    4: "FR",
+  };
+
+  // Get all translations for a local ID
+  const getTranslationsForLocalId = (localId: number): number[] => {
+    const languageIds: number[] = [];
+    [100000, 200000, 300000, 400000].forEach((prefix, index) => {
+      const speechId = (prefix + localId).toString();
+      if (speechTexts.some(st => st.id === speechId)) {
+        languageIds.push(index + 1);
+      }
+    });
+    return languageIds;
+  };
+
   const existingIds = speechTexts.map((st) => st.id);
 
   if (isCreating || editingText) {
@@ -139,6 +187,7 @@ export default function SpeechTextManager({
         >
           <SpeechTextEditor
             speechText={editingText}
+            prefilledData={prefilledData}
             onSave={handleSave}
             onCancel={handleCancel}
             existingIds={existingIds}
@@ -229,42 +278,80 @@ export default function SpeechTextManager({
 
                     {/* Speeches in this language */}
                     <div className="space-y-2">
-                      {speeches.map((speechText) => (
-                        <div
-                          key={speechText.id}
-                          className="border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-neutral-800 text-white px-2 py-0.5 rounded text-xs font-mono font-bold">
-                                  {speechText.id}
-                                </span>
-                                <span className="font-medium text-neutral-800">
-                                  {speechText.label}
-                                </span>
+                      {speeches.map((speechText) => {
+                        const numericId = parseInt(speechText.id);
+                        const localId = numericId % 100000;
+                        const existingTranslations = getTranslationsForLocalId(localId);
+                        const missingLanguages = [1, 2, 3, 4].filter(langId => !existingTranslations.includes(langId));
+
+                        return (
+                          <div
+                            key={speechText.id}
+                            className="border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <span className="bg-neutral-800 text-white px-2 py-0.5 rounded text-xs font-mono font-bold">
+                                    {speechText.id}
+                                  </span>
+                                  <span className="font-medium text-neutral-800">
+                                    {speechText.label}
+                                  </span>
+
+                                  {/* Translation status badges */}
+                                  <div className="flex items-center gap-1">
+                                    {existingTranslations.map(langId => (
+                                      <span
+                                        key={langId}
+                                        className="bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-xs font-bold"
+                                        title={`Translated to ${languageNames[langId]}`}
+                                      >
+                                        {languageNamesShort[langId]}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="text-sm text-neutral-600 font-mono bg-neutral-50 p-2 rounded overflow-x-auto mb-2">
+                                  {speechText.text}
+                                </div>
+
+                                {/* Quick translation buttons */}
+                                {missingLanguages.length > 0 && (
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs text-neutral-500 font-medium">Create translation:</span>
+                                    {missingLanguages.map(langId => (
+                                      <button
+                                        key={langId}
+                                        onClick={() => handleCreateTranslation(speechText, langId)}
+                                        className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-xs font-bold"
+                                        title={`Create ${languageNames[langId]} translation`}
+                                      >
+                                        + {languageNamesShort[langId]}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                              <div className="text-sm text-neutral-600 font-mono bg-neutral-50 p-2 rounded overflow-x-auto">
-                                {speechText.text}
+                              <div className="flex gap-1 flex-shrink-0">
+                                <button
+                                  onClick={() => handleEdit(speechText)}
+                                  className="px-3 py-1 bg-neutral-600 text-white rounded hover:bg-neutral-700 transition-colors text-sm"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(speechText.id)}
+                                  className="px-3 py-1 bg-neutral-400 text-white rounded hover:bg-neutral-500 transition-colors text-sm"
+                                >
+                                  Delete
+                                </button>
                               </div>
-                            </div>
-                            <div className="flex gap-1 flex-shrink-0">
-                              <button
-                                onClick={() => handleEdit(speechText)}
-                                className="px-3 py-1 bg-neutral-600 text-white rounded hover:bg-neutral-700 transition-colors text-sm"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDelete(speechText.id)}
-                                className="px-3 py-1 bg-neutral-400 text-white rounded hover:bg-neutral-500 transition-colors text-sm"
-                              >
-                                Delete
-                              </button>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

@@ -13,6 +13,7 @@ import {
 
 interface SpeechTextEditorProps {
   speechText: SpeechText | null;
+  prefilledData?: Partial<SpeechText> | null;
   onSave: (speechText: SpeechText) => void;
   onCancel: () => void;
   existingIds: string[];
@@ -20,16 +21,25 @@ interface SpeechTextEditorProps {
 
 export default function SpeechTextEditor({
   speechText,
+  prefilledData,
   onSave,
   onCancel,
   existingIds,
 }: SpeechTextEditorProps) {
-  const [label, setLabel] = useState(speechText?.label || "");
-  const [text, setText] = useState(speechText?.text || "");
-  const [languageId, setLanguageId] = useState(speechText?.languageId || 1);
-  const [localId, setLocalId] = useState(
-    speechText ? parseInt(speechText.id) - LANGUAGE_PREFIXES[speechText.languageId as keyof typeof LANGUAGE_PREFIXES] : 1
-  );
+  // Use prefilledData if creating new, otherwise use speechText values
+  const initialLabel = speechText?.label || prefilledData?.label || "";
+  const initialText = speechText?.text || prefilledData?.text || "";
+  const initialLanguageId = speechText?.languageId || prefilledData?.languageId || 1;
+  const initialLocalId = speechText
+    ? parseInt(speechText.id) - LANGUAGE_PREFIXES[speechText.languageId as keyof typeof LANGUAGE_PREFIXES]
+    : prefilledData?.id
+      ? parseInt(prefilledData.id) % 100000
+      : 1;
+
+  const [label, setLabel] = useState(initialLabel);
+  const [text, setText] = useState(initialText);
+  const [languageId, setLanguageId] = useState(initialLanguageId);
+  const [localId, setLocalId] = useState(initialLocalId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { showAlert } = useAlert();
