@@ -347,11 +347,25 @@ function FlowEditor() {
 
   // Project-wide export/import handlers
   const handleExportProject = useCallback(() => {
-    const content = exportProject(nodes, edges, speechTexts, npcs, variables, projectName);
+    // Save current room data before exporting
+    if (currentRoomId && !isLoadingRoom.current) {
+      updateRoomData(currentRoomId, {
+        nodes: storedNodes,
+        edges: storedEdges,
+        speechTexts,
+        npcs,
+        variables,
+        projectName,
+        selectedLanguage,
+      });
+    }
+
+    // Export all rooms
+    const content = exportProject(rooms, projectName);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${timestamp}.json`;
     downloadProjectFile(content, filename);
-  }, [nodes, edges, speechTexts, npcs, variables, projectName]);
+  }, [rooms, projectName, currentRoomId, storedNodes, storedEdges, speechTexts, npcs, variables, selectedLanguage, updateRoomData]);
 
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
@@ -365,32 +379,33 @@ function FlowEditor() {
           const content = event.target?.result as string;
           const project = importProject(content);
 
-          if (project) {
-            // Create first room if none exist
-            if (rooms.length === 0) {
-              addRoom("Room 1");
+          if (project && project.rooms) {
+            // Clear existing rooms and import all rooms from project
+            useRoomsStore.setState({
+              rooms: project.rooms,
+              currentRoomId: project.rooms[0]?.id || "",
+            });
+
+            // Load first room's data into active state
+            const firstRoom = project.rooms[0];
+            if (firstRoom) {
+              isLoadingRoom.current = true;
+              useGameDialogStore.getState().setNodes(firstRoom.nodes);
+              useGameDialogStore.getState().setEdges(firstRoom.edges);
+              useGameDialogStore.getState().setSpeechTexts(firstRoom.speechTexts);
+              useGameDialogStore.getState().setNPCs(firstRoom.npcs);
+              useGameDialogStore.getState().setVariables(firstRoom.variables);
+              useGameDialogStore.getState().setProjectName(firstRoom.projectName);
+              useGameDialogStore.getState().setSelectedLanguage(firstRoom.selectedLanguage);
+
+              saveToHistory(firstRoom.nodes, firstRoom.edges);
+
+              setTimeout(() => {
+                isLoadingRoom.current = false;
+              }, 100);
             }
 
-            // Update all state
-            setNodes(project.nodes);
-            setEdges(project.edges);
-
-            // Update store data - replace all data at once
-            const setProjectName = useGameDialogStore.getState().setProjectName;
-            const setSpeechTexts = useGameDialogStore.getState().setSpeechTexts;
-            const setNPCs = useGameDialogStore.getState().setNPCs;
-            const setVariables = useGameDialogStore.getState().setVariables;
-
-            // Replace existing data with imported data
-            setProjectName(project.projectName || "Untitled Project");
-            setSpeechTexts(project.speechTexts);
-            setNPCs(project.npcs);
-            setVariables(project.variables);
-
-            // Save to history
-            saveToHistory(project.nodes, project.edges);
-
-            toast.success('Project imported successfully!');
+            toast.success(`Project imported with ${project.rooms.length} room(s)!`);
           } else {
             toast.error('Failed to import project. Invalid file format.');
           }
@@ -399,7 +414,7 @@ function FlowEditor() {
       }
     };
     input.click();
-  }, [setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
+  }, [saveToHistory]);
 
   const handleCreateProject = useCallback((projectName: string) => {
     // Create first room if none exist
