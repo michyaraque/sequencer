@@ -19,6 +19,12 @@ interface NodeEditorProps {
 }
 
 export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, variables }: NodeEditorProps) {
+  // Helper function to truncate text for display
+  const truncateText = (text: string, maxLength: number = 50) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   if (!selectedNode) {
     return (
       <div className="w-80 bg-neutral-50 border-l border-neutral-200 p-4">
@@ -125,7 +131,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
               <SelectItem value="-1">-1 (None)</SelectItem>
               {speechTexts.map((st) => (
                 <SelectItem key={st.id} value={st.id}>
-                  {st.id} - {st.label}
+                  {st.id} - {truncateText(st.text)}
                 </SelectItem>
               ))}
             </SelectContent>

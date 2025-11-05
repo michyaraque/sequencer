@@ -85,7 +85,6 @@ export default function SpeechTextManager({
     setPrefilledData({
       id: newId,
       languageId: targetLanguageId,
-      label: `${baseSpeech.label} (Copy)`,
       text: baseSpeech.text, // Copy original text so user can translate it
     });
     setIsCreating(true);
@@ -127,7 +126,6 @@ export default function SpeechTextManager({
 
   const filteredTexts = speechTexts.filter(
     (st) =>
-      st.label?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
       st.id.includes(searchTerm) ||
       st.text?.toLowerCase().includes(searchTerm?.toLowerCase())
   );
@@ -225,7 +223,7 @@ export default function SpeechTextManager({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by ID, label, or text..."
+              placeholder="Search by ID or text..."
               className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
             />
             <button
@@ -324,9 +322,6 @@ export default function SpeechTextManager({
                                   </span>
                                   <span className="text-xs font-mono text-neutral-600">
                                     {speechText.id}
-                                  </span>
-                                  <span className="font-medium text-neutral-800">
-                                    {speechText.label}
                                   </span>
                                 </div>
 

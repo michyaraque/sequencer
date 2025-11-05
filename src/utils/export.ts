@@ -114,7 +114,7 @@ export function importFromDialogFormat(content: string): DialogNodeData[] {
 
 export function exportSpeechTexts(speechTexts: SpeechText[]): string {
   const lines = speechTexts.map((st) => {
-    // Format: id|languageId|label|text   ${st.languageId}|${st.label}|
+    // Format: id=text
     return `${st.id}=${st.text}`;
   });
 
@@ -129,14 +129,19 @@ export function importSpeechTexts(content: string): SpeechText[] {
   return lines.map((line) => {
     const parts = line.split("=");
     const id = parts[0];
-    const languageId = parseInt(parts[1]);
-    const label = parts[2];
-    const text = parts.slice(3).join("|"); // Rejoin in case text contains |
+    const text = parts.slice(1).join("="); // Rejoin in case text contains =
+
+    // Calculate languageId from the ID
+    const numericId = parseInt(id);
+    let languageId = 1; // Default to English
+    if (numericId >= 400000) languageId = 4; // French
+    else if (numericId >= 300000) languageId = 3; // Portuguese
+    else if (numericId >= 200000) languageId = 2; // Spanish
+    else if (numericId >= 100000) languageId = 1; // English
 
     return {
       id,
       languageId,
-      label,
       text,
     };
   });

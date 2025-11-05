@@ -27,7 +27,6 @@ export default function SpeechTextEditor({
   existingIds,
 }: SpeechTextEditorProps) {
   // Use prefilledData if creating new, otherwise use speechText values
-  const initialLabel = speechText?.label || prefilledData?.label || "";
   const initialText = speechText?.text || prefilledData?.text || "";
   const initialLanguageId = speechText?.languageId || prefilledData?.languageId || 1;
   const initialLocalId = speechText
@@ -36,7 +35,6 @@ export default function SpeechTextEditor({
       ? parseInt(prefilledData.id) % 100000
       : 1;
 
-  const [label, setLabel] = useState(initialLabel);
   const [text, setText] = useState(initialText);
   const [languageId, setLanguageId] = useState(initialLanguageId);
   const [localId, setLocalId] = useState(initialLocalId);
@@ -69,8 +67,8 @@ export default function SpeechTextEditor({
   }, [text]);
 
   const handleSave = () => {
-    if (!label.trim() || !text.trim()) {
-      showAlert({ message: "Label and text are required!", variant: "error" });
+    if (!text.trim()) {
+      showAlert({ message: "Text content is required!", variant: "error" });
       return;
     }
 
@@ -79,7 +77,6 @@ export default function SpeechTextEditor({
       id: fullId.toString(),
       languageId,
       text: text.trim(),
-      label: label.trim(),
     };
 
     // Check if ID already exists (and it's not the current one being edited)
@@ -153,20 +150,6 @@ export default function SpeechTextEditor({
 
         <div className="bg-neutral-800 text-white px-3 py-2 rounded text-sm font-mono">
           Full Speech ID: {fullSpeechId}
-        </div>
-
-        {/* Label */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Label (Display Name)
-          </label>
-          <input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
-            placeholder="e.g., Greeting 1"
-          />
         </div>
 
         {/* Formatting Tools */}

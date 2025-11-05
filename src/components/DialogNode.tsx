@@ -106,6 +106,12 @@ function BaseDialogNode({
   const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Helper function to truncate text for display
+  const truncateText = (text: string, maxLength: number = 50) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   // Calculate display speech in selected language with fallback to English
   const displaySpeech = useMemo(() => {
     return getSpeechIdInLanguage(data.speechId || "-1", selectedLanguage, speechTexts);
@@ -180,18 +186,11 @@ function BaseDialogNode({
     const languagePrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
     const newId = (languagePrefix + nextLocalId).toString();
 
-    // Create label as truncated version of text
-    const maxLabelLength = 50;
-    const label = textContent.length > maxLabelLength
-      ? textContent.substring(0, maxLabelLength) + "..."
-      : textContent;
-
     // Create the new speech
     const newSpeech = {
       id: newId,
       languageId: selectedLanguage,
-      label: label || "New Speech",
-      text: textContent || "",
+      text: textContent || "New Speech",
     };
 
     addSpeechText(newSpeech);
@@ -292,7 +291,7 @@ function BaseDialogNode({
                       {displaySpeech.speechId === "-1"
                         ? "-1 (None)"
                         : speechTextObj
-                          ? speechTextObj.label
+                          ? truncateText(speechTextObj.text)
                           : data.speechId
                       }
                     </span>
@@ -306,7 +305,7 @@ function BaseDialogNode({
                 >
                   <Command>
                     <CommandInput
-                      placeholder="Search by ID or label..."
+                      placeholder="Search by ID or text..."
                       className="h-9"
                       value={searchQuery}
                       onValueChange={setSearchQuery}
@@ -356,14 +355,14 @@ function BaseDialogNode({
                             {speeches.map((st) => (
                               <CommandItem
                                 key={st.id}
-                                value={`${st.id}-${st.label}`.toLowerCase()}
+                                value={`${st.id}-${st.text}`.toLowerCase()}
                                 onSelect={() => {
                                   handleSpeechChange(st.id);
                                   setSpeechComboboxOpen(false);
                                   setSearchQuery("");
                                 }}
                               >
-                                {st.label}
+                                {truncateText(st.text)}
                                 <Check
                                   className={cn(
                                     "ml-auto h-4 w-4",

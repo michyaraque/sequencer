@@ -63,7 +63,6 @@ export interface SpeechText {
   id: string;
   languageId: number; // 1 = 100000, 2 = 200000, etc.
   text: string; // Text with formatting tags
-  label: string; // Display label
 }
 
 export const LANGUAGE_PREFIXES = {
