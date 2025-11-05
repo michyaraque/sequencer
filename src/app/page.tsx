@@ -498,6 +498,25 @@ function FlowEditor() {
 
   const { screenToFlowPosition } = useReactFlow();
 
+  const handleExitProject = useCallback(() => {
+    // Clear all rooms
+    useRoomsStore.setState({
+      rooms: [],
+      currentRoomId: "",
+    });
+
+    // Clear game dialog store
+    useGameDialogStore.getState().setNodes([]);
+    useGameDialogStore.getState().setEdges([]);
+    useGameDialogStore.getState().setSpeechTexts([]);
+    useGameDialogStore.getState().setNPCs([]);
+    useGameDialogStore.getState().setVariables([]);
+    useGameDialogStore.getState().setProjectName("Untitled Project");
+    useGameDialogStore.getState().setSelectedLanguage(1);
+
+    toast.success("Project closed");
+  }, []);
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -560,6 +579,7 @@ function FlowEditor() {
         onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
         onExportProject={handleExportProject}
         onImportProject={handleImportProject}
+        onExitProject={handleExitProject}
       />
       <div className="flex-1 flex flex-col">
         {hasRooms && <RoomTabs />}
