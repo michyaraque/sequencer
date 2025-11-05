@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -166,24 +166,24 @@ export default function Sidebar({
           >
             <div className="flex items-center gap-2 mb-1">
               <MessageSquareDashed size={18} className="text-green-600" />
-              <span className="font-semibold text-neutral-800">Initialize Speech</span>
+              <span className="font-semibold text-neutral-800">Initialize Dialogue</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Start node - can only send connections
+              Start dialogue - bot initiates conversation
             </p>
           </div>
 
           <div
             draggable
-            onDragStart={(e) => onDragStart(e, "botDialog")}
+            onDragStart={(e) => onDragStart(e, "botSpeech")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
               <MessageSquare size={18} className="text-indigo-600" />
-              <span className="font-semibold text-neutral-800">Bot Dialog</span>
+              <span className="font-semibold text-neutral-800">Bot Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Bot dialog - Whisper, Talk, or Shout
+              Bot speaks - Whisper, Talk, or Shout
             </p>
           </div>
 
@@ -197,7 +197,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Show Message</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Show message - Private or Public
+              Show notification message
             </p>
           </div>
 
@@ -273,6 +273,20 @@ export default function Sidebar({
 
           <div
             draggable
+            onDragStart={(e) => onDragStart(e, "random")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Shuffle size={18} className="text-teal-600" />
+              <span className="font-semibold text-neutral-800">Random</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              Random selection with multiple outputs
+            </p>
+          </div>
+
+          <div
+            draggable
             onDragStart={(e) => onDragStart(e, "wait")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
@@ -292,10 +306,24 @@ export default function Sidebar({
           >
             <div className="flex items-center gap-2 mb-1">
               <MessageSquareDashed size={18} className="text-yellow-600" />
-              <span className="font-semibold text-neutral-800">Custom Action</span>
+              <span className="font-semibold text-neutral-800">Custom Wired Action</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Custom action node
+              Execute custom wired action
+            </p>
+          </div>
+
+          <div
+            draggable
+            onDragStart={(e) => onDragStart(e, "endDialogue")}
+            className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <XCircle size={18} className="text-red-600" />
+              <span className="font-semibold text-neutral-800">End Dialogue</span>
+            </div>
+            <p className="text-xs text-neutral-600">
+              End the dialogue - no further connections
             </p>
           </div>
 

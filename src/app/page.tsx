@@ -14,15 +14,17 @@ import {
 
 import DialogNode, {
   InitializeSpeechNode,
+  BotSpeechNode,
+  ShowMessageNode,
   ChangeVariableNode,
-  ConditionVariableNode,
   ChangeVariableVariableNode,
+  ConditionVariableNode,
   ConditionVariableVariableNode,
   ChoiceNode,
-  CustomActionNode,
-  BotDialogNode,
-  ShowMessageNode,
+  RandomNode,
   WaitNode,
+  CustomActionNode,
+  EndDialogueNode,
   CustomNodeProps
 } from "@/components/DialogNode";
 import AnnotationNode from "@/components/AnnotationNode";
@@ -59,25 +61,29 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
 
   switch (nodeType) {
     case "initializeSpeech":
-      return { ...baseData, actionId: "1", label: "Initialize Speech" };
+      return { ...baseData, actionId: "1", label: "Initialize Dialogue" };
+    case "botSpeech":
+      return { ...baseData, actionId: "2", label: "Bot Speech", value1: "2" }; // Default to Talk
+    case "showMessage":
+      return { ...baseData, actionId: "3", label: "Show Message", value1: "1", value2: "1", value3: "1" };
     case "changeVariable":
-      return { ...baseData, actionId: "3", label: "Change Variable" };
-    case "conditionVariable":
-      return { ...baseData, actionId: "4", label: "Condition Variable" };
+      return { ...baseData, actionId: "4", label: "Change Variable" };
     case "changeVariableVariable":
-      return { ...baseData, actionId: "5", label: "Change Variable Variable" };
+      return { ...baseData, actionId: "5", label: "Change Variable by Variable" };
+    case "conditionVariable":
+      return { ...baseData, actionId: "6", label: "Condition Variable" };
     case "conditionVariableVariable":
-      return { ...baseData, actionId: "6", label: "Condition Variable Variable" };
+      return { ...baseData, actionId: "7", label: "Condition Variable by Variable" };
     case "choice":
-      return { ...baseData, actionId: "7", label: "Choice" };
+      return { ...baseData, actionId: "8", label: "Choice", value1: "2" }; // Default 2 options
+    case "random":
+      return { ...baseData, actionId: "9", label: "Random", value1: "2" }; // Default 2 outputs
     case "wait":
       return { ...baseData, actionId: "97", label: "Wait", value1: "1.0" };
     case "customAction":
-      return { ...baseData, actionId: "98", label: "Custom Action" };
-    case "botDialog":
-      return { ...baseData, actionId: "3", label: "Bot Dialog" }; // Default to Talk
-    case "showMessage":
-      return { ...baseData, actionId: "5", label: "Show Message" }; // Default to Private
+      return { ...baseData, actionId: "98", label: "Custom Wired Action" };
+    case "endDialogue":
+      return { ...baseData, actionId: "99", label: "End Dialogue", nextNodeId: "-1" };
     default:
       return { ...baseData, actionId: "1001", label: `New Node ${nodeId}` };
   }
@@ -115,15 +121,17 @@ function FlowEditor() {
     return {
       dialogNode: createNodeWithProps(DialogNode),
       initializeSpeech: createNodeWithProps(InitializeSpeechNode),
+      botSpeech: createNodeWithProps(BotSpeechNode),
+      showMessage: createNodeWithProps(ShowMessageNode),
       changeVariable: createNodeWithProps(ChangeVariableNode),
-      conditionVariable: createNodeWithProps(ConditionVariableNode),
       changeVariableVariable: createNodeWithProps(ChangeVariableVariableNode),
+      conditionVariable: createNodeWithProps(ConditionVariableNode),
       conditionVariableVariable: createNodeWithProps(ConditionVariableVariableNode),
       choice: createNodeWithProps(ChoiceNode),
+      random: createNodeWithProps(RandomNode),
       wait: createNodeWithProps(WaitNode),
       customAction: createNodeWithProps(CustomActionNode),
-      botDialog: createNodeWithProps(BotDialogNode),
-      showMessage: createNodeWithProps(ShowMessageNode),
+      endDialogue: createNodeWithProps(EndDialogueNode),
       annotation: AnnotationNode,
     };
   }, []);

@@ -12,16 +12,18 @@ export interface DialogNodeData extends Record<string, unknown> {
 }
 
 export const ACTION_TYPES = {
-  1: "Initialize Speech",
-  2: "Whisper",
-  3: "Talk",
-  4: "Shout",
-  5: "Private Message",
-  6: "Public Message",
-  7: "Choice",
+  1: "Initialize Dialogue",
+  2: "Bot Speech",
+  3: "Show Message",
+  4: "Change Variable",
+  5: "Change Variable by Variable",
+  6: "Condition Variable",
+  7: "Condition Variable by Variable",
+  8: "Choice",
+  9: "Random",
   97: "Wait",
-  98: "Custom Action",
-  99: "End Speech",
+  98: "Custom Wired Action",
+  99: "End Dialogue",
 } as const;
 
 export const SPEECH_SPEEDS = {

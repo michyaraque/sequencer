@@ -450,65 +450,70 @@ export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-// Change Variable Node (Action ID 3)
+// Change Variable Node (Action ID 4)
 export const ChangeVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
     showSpeech={false}
+    showBotId={false}
     accentColor="bg-purple-50"
     borderColor="border-purple-300"
     badgeColor="bg-purple-700"
   />
 ));
 
-// Condition Variable Node (Action ID 4)
-export const ConditionVariableNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    accentColor="bg-orange-50"
-    borderColor="border-orange-300"
-    badgeColor="bg-orange-700"
-  />
-));
-
-// Change Variable Variable Node (Action ID 5)
+// Change Variable by Variable Node (Action ID 5)
 export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
     showSpeech={false}
+    showBotId={false}
     accentColor="bg-purple-100"
     borderColor="border-purple-400"
     badgeColor="bg-purple-800"
   />
 ));
 
-// Condition Variable Variable Node (Action ID 6)
+// Condition Variable Node (Action ID 6)
+export const ConditionVariableNode = memo((props: CustomNodeProps) => (
+  <BaseDialogNode
+    {...props}
+    showTargetHandle={true}
+    showSourceHandle={true}
+    showSpeech={false}
+    showBotId={false}
+    accentColor="bg-orange-50"
+    borderColor="border-orange-300"
+    badgeColor="bg-orange-700"
+  />
+));
+
+// Condition Variable by Variable Node (Action ID 7)
 export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
     showSpeech={false}
+    showBotId={false}
     accentColor="bg-orange-100"
     borderColor="border-orange-400"
     badgeColor="bg-orange-800"
   />
 ));
 
-// Choice Node (Action ID 7)
+// Choice Node (Action ID 8)
 export const ChoiceNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
     showSourceHandle={true}
     showSpeech={false}
+    showBotId={false}
     accentColor="bg-cyan-50"
     borderColor="border-cyan-300"
     badgeColor="bg-cyan-700"
@@ -522,27 +527,28 @@ export const CustomActionNode = memo((props: CustomNodeProps) => (
     showTargetHandle={true}
     showSourceHandle={true}
     showSpeech={false}
+    showBotId={false}
     accentColor="bg-amber-50"
     borderColor="border-amber-300"
     badgeColor="bg-amber-700"
   />
 ));
 
-// Bot Dialog Node (Action ID 2, 3, 4 - Whisper, Talk, Shout)
-export const BotDialogNode = memo((props: CustomNodeProps) => {
+// Bot Speech Node (Action ID 2) - Value1: 1=Whisper, 2=Talk, 3=Shout
+export const BotSpeechNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
 
-  const botDialogTypes = {
-    "2": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
-    "3": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
-    "4": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
+  const speechModes = {
+    "1": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
+    "2": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
+    "3": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
   };
 
-  const currentType = botDialogTypes[data.actionId as keyof typeof botDialogTypes] || botDialogTypes["3"];
+  const currentMode = speechModes[data.value1 as keyof typeof speechModes] || speechModes["2"];
 
-  const handleTypeChange = (value: string) => {
-    updateNodeData(id, { actionId: value });
+  const handleModeChange = (value: string) => {
+    updateNodeData(id, { value1: value });
   };
 
   return (
@@ -552,19 +558,20 @@ export const BotDialogNode = memo((props: CustomNodeProps) => {
         showTargetHandle={true}
         showSourceHandle={true}
         showSpeech={true}
-        accentColor={currentType.color}
-        borderColor={currentType.border}
-        badgeColor={currentType.badge}
+        showBotId={true}
+        accentColor={currentMode.color}
+        borderColor={currentMode.border}
+        badgeColor={currentMode.badge}
       />
       <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={data.actionId} onValueChange={handleTypeChange}>
+        <Select value={data.value1 || "2"} onValueChange={handleModeChange}>
           <SelectTrigger className="w-24 h-6 text-xs bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="2">Whisper</SelectItem>
-            <SelectItem value="3">Talk</SelectItem>
-            <SelectItem value="4">Shout</SelectItem>
+            <SelectItem value="1">Whisper</SelectItem>
+            <SelectItem value="2">Talk</SelectItem>
+            <SelectItem value="3">Shout</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -572,41 +579,57 @@ export const BotDialogNode = memo((props: CustomNodeProps) => {
   );
 });
 
-// Show Message Node (Action ID 5, 6 - Private, Public)
+// Show Message Node (Action ID 3)
+// Value1: NotificationStyle (1+)
+// Value2: OnlyTo (1=Solo usuario, 2=Todos)
+// Value3: Target (1=User, 2=Bot)
 export const ShowMessageNode = memo((props: CustomNodeProps) => {
   const { data, id } = props;
   const { updateNodeData } = useReactFlow();
 
-  const messageTypes = {
-    "5": { label: "Private", color: "bg-violet-50", border: "border-violet-300", badge: "bg-violet-700" },
-    "6": { label: "Public", color: "bg-fuchsia-50", border: "border-fuchsia-300", badge: "bg-fuchsia-700" },
+  const handleValue2Change = (value: string) => {
+    updateNodeData(id, { value2: value });
   };
 
-  const currentType = messageTypes[data.actionId as keyof typeof messageTypes] || messageTypes["5"];
-
-  const handleTypeChange = (value: string) => {
-    updateNodeData(id, { actionId: value });
+  const handleValue3Change = (value: string) => {
+    updateNodeData(id, { value3: value });
   };
+
+  // Color based on Value2 (OnlyTo)
+  const isPrivate = data.value2 === "1";
+  const color = isPrivate ? "bg-violet-50" : "bg-fuchsia-50";
+  const border = isPrivate ? "border-violet-300" : "border-fuchsia-300";
+  const badge = isPrivate ? "bg-violet-700" : "bg-fuchsia-700";
 
   return (
-    <div>
+    <div className="relative">
       <BaseDialogNode
         {...props}
         showTargetHandle={true}
         showSourceHandle={true}
         showSpeech={true}
-        accentColor={currentType.color}
-        borderColor={currentType.border}
-        badgeColor={currentType.badge}
+        showBotId={false}
+        accentColor={color}
+        borderColor={border}
+        badgeColor={badge}
       />
-      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={data.actionId} onValueChange={handleTypeChange}>
-          <SelectTrigger className="w-24 h-6 text-xs bg-white">
+      <div className="absolute top-2 right-2 z-10 flex gap-1" onClick={(e) => e.stopPropagation()}>
+        <Select value={data.value2 || "1"} onValueChange={handleValue2Change}>
+          <SelectTrigger className="w-20 h-6 text-xs bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="5">Private</SelectItem>
-            <SelectItem value="6">Public</SelectItem>
+            <SelectItem value="1">Solo</SelectItem>
+            <SelectItem value="2">Todos</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={data.value3 || "1"} onValueChange={handleValue3Change}>
+          <SelectTrigger className="w-16 h-6 text-xs bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">User</SelectItem>
+            <SelectItem value="2">Bot</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -660,6 +683,63 @@ export const WaitNode = memo((props: CustomNodeProps) => {
     </div>
   );
 });
+
+// Random Node (Action ID 9) - Random selection with N outputs
+export const RandomNode = memo((props: CustomNodeProps) => {
+  const { data, id } = props;
+  const { updateNodeData } = useReactFlow();
+
+  // Generate options from 2 to 10
+  const randomOutputOptions = Array.from({ length: 9 }, (_, i) => (i + 2).toString());
+  const currentOutputs = data.value1 || "2";
+
+  const handleOutputsChange = (value: string) => {
+    updateNodeData(id, { value1: value });
+  };
+
+  return (
+    <div className="relative">
+      <BaseDialogNode
+        {...props}
+        showTargetHandle={true}
+        showSourceHandle={true}
+        showSpeech={false}
+        showBotId={false}
+        accentColor="bg-teal-50"
+        borderColor="border-teal-300"
+        badgeColor="bg-teal-700"
+      />
+      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+        <Select value={currentOutputs} onValueChange={handleOutputsChange}>
+          <SelectTrigger className="w-20 h-6 text-xs bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {randomOutputOptions.map((num) => (
+              <SelectItem key={num} value={num}>
+                {num} salidas
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+});
+
+// End Dialogue Node (Action ID 99) - Ends the dialogue, no nextNodeId
+export const EndDialogueNode = memo((props: CustomNodeProps) => (
+  <BaseDialogNode
+    {...props}
+    showTargetHandle={true}
+    showSourceHandle={false}
+    showSpeech={false}
+    showBotId={false}
+    accentColor="bg-red-50"
+    borderColor="border-red-300"
+    badgeColor="bg-red-700"
+  />
+));
 
 // Default export for backward compatibility
 const DialogNode = memo((props: CustomNodeProps) => (
