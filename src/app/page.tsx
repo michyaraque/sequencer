@@ -105,7 +105,11 @@ function FlowEditor() {
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
       return (props: CustomNodeProps) => (
-        <Component {...props} onOpenSpeechManager={() => setShowSpeechTextManager(true)} />
+        <Component
+          {...props}
+          onOpenSpeechManager={() => setShowSpeechTextManager(true)}
+          onOpenNPCManager={() => setShowNPCManager(true)}
+        />
       );
     };
 

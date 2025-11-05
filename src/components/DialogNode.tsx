@@ -18,6 +18,7 @@ export type DialogRFNode = Node<DialogNodeData>;
 // Extended node props with custom callbacks
 export interface CustomNodeProps extends NodeProps<DialogRFNode> {
   onOpenSpeechManager?: () => void;
+  onOpenNPCManager?: () => void;
 }
 
 interface BaseDialogNodeProps extends CustomNodeProps {
@@ -37,10 +38,12 @@ function BaseDialogNode({
   accentColor = "bg-neutral-50",
   borderColor = "border-neutral-300",
   badgeColor = "bg-neutral-800",
-  onOpenSpeechManager
+  onOpenSpeechManager,
+  onOpenNPCManager
 }: BaseDialogNodeProps) {
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
+  const npcs = useGameDialogStore((state) => state.npcs);
   const { updateNodeData } = useReactFlow();
 
   const handleSpeechChange = useCallback((value: string) => {
@@ -53,6 +56,17 @@ function BaseDialogNode({
       onOpenSpeechManager();
     }
   }, [onOpenSpeechManager]);
+
+  const handleBotIdChange = useCallback((value: string) => {
+    updateNodeData(id, { botId: value });
+  }, [id, updateNodeData]);
+
+  const handleCreateNPC = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onOpenNPCManager) {
+      onOpenNPCManager();
+    }
+  }, [onOpenNPCManager]);
 
   return (
     <div
@@ -84,9 +98,37 @@ function BaseDialogNode({
         </div>
 
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
-          <div className="flex justify-between gap-2">
+          <div className="flex flex-col gap-1">
             <span className="font-medium text-neutral-500">Bot ID:</span>
-            <span className="font-mono text-neutral-900">{data.botId || "-1"}</span>
+            <div className="flex gap-1">
+              <Select
+                value={data.botId || "#(bot_id)"}
+                onValueChange={handleBotIdChange}
+              >
+                <SelectTrigger
+                  className="flex-1 h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0"
+                  onClick={(e) => e.stopPropagation()}
+                  size="sm"
+                >
+                  <SelectValue placeholder="Select Bot ID" />
+                </SelectTrigger>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
+                  <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
+                  {npcs.map((npc) => (
+                    <SelectItem key={npc.id} value={npc.id}>
+                      {npc.id} - {npc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button
+                onClick={handleCreateNPC}
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors"
+                title="Create new NPC"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-between gap-2">
