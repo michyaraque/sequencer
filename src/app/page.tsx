@@ -373,6 +373,7 @@ function FlowEditor() {
           data: {
             text: "Double-click to edit",
             label: "Note",
+            color: "Yellow",
           },
         };
       } else {

@@ -180,6 +180,10 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
   );
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node<DialogNodeData>) => {
+    // Don't select annotation nodes (they have their own interaction)
+    if (node.type === "annotation") {
+      return;
+    }
     setSelectedNode(node);
   }, []);
 
