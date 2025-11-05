@@ -49,7 +49,7 @@ import { toast } from "sonner";
 // Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
   const baseData = {
-    botId: "#(bot_id)",
+    botId: "-1",
     userId: "#(user_id)",
     nextNodeId: "-1",
     speechId: "-1",
@@ -361,7 +361,7 @@ function FlowEditor() {
       type: "initializeSpeech",
       position: { x: 250, y: 100 },
       data: {
-        botId: "#(bot_id)",
+        botId: "-1",
         userId: "#(user_id)",
         nextNodeId: "0",
         speechId: "-1",
