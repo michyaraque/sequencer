@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
@@ -37,6 +37,7 @@ import { useDialogNodes } from "@/hooks/useDialogNodes";
 import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
+import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { useAlert } from "@/components/AlertProvider";
@@ -340,6 +341,24 @@ function FlowEditor() {
     showAlert({ message: `Project "${projectName}" created successfully!`, variant: 'success' });
   }, [setProjectName, setNodes, setEdges, saveToHistory, showAlert]);
 
+  const handleLoadRecentProject = useCallback(() => {
+    // The project data is already loaded from localStorage via Zustand persist
+    // Just need to trigger the view to show the ReactFlow canvas
+    showAlert({ message: 'Project loaded successfully!', variant: 'success' });
+  }, [showAlert]);
+
+  // Update recent projects when user works on the project
+  useEffect(() => {
+    if (nodes.length > 0 && projectName !== "Untitled Project") {
+      const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
+      addRecentProject({
+        name: projectName,
+        nodeCount: nodes.length,
+        speechCount: speechTexts.length,
+      });
+    }
+  }, [nodes.length, speechTexts.length, projectName]);
+
   const handleUndo = () => undo(setNodes, setEdges, setSelectedNode);
   const handleRedo = () => redo(setNodes, setEdges, setSelectedNode);
 
@@ -507,6 +526,7 @@ function FlowEditor() {
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}
+              onLoadRecentProject={handleLoadRecentProject}
             />
           ) : (
             <ReactFlow

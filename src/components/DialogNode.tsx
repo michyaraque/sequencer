@@ -101,8 +101,10 @@ function BaseDialogNode({
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
+  const addSpeechText = useGameDialogStore((state) => state.addSpeechText);
   const { updateNodeData } = useReactFlow();
   const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Calculate display speech in selected language with fallback to English
   const displaySpeech = useMemo(() => {
@@ -165,6 +167,32 @@ function BaseDialogNode({
       onOpenNPCManager();
     }
   }, [onOpenNPCManager]);
+
+  const handleCreateNewSpeech = useCallback((label: string) => {
+    // Calculate next available local ID
+    const maxLocalId = speechTexts.reduce((max, st) => {
+      const numericId = parseInt(st.id);
+      const localId = numericId % 100000;
+      return Math.max(max, localId);
+    }, 0);
+
+    const nextLocalId = maxLocalId + 1;
+    const languagePrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
+    const newId = (languagePrefix + nextLocalId).toString();
+
+    // Create the new speech
+    const newSpeech = {
+      id: newId,
+      languageId: selectedLanguage,
+      label: label || "New Speech",
+      text: "",
+    };
+
+    addSpeechText(newSpeech);
+    handleSpeechChange(newId);
+    setSpeechComboboxOpen(false);
+    setSearchQuery("");
+  }, [speechTexts, selectedLanguage, addSpeechText, handleSpeechChange]);
 
   return (
     <div
@@ -239,7 +267,13 @@ function BaseDialogNode({
           <div className="flex items-center justify-between gap-2 min-w-0">
             <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
-              <Popover open={speechComboboxOpen} onOpenChange={setSpeechComboboxOpen}>
+              <Popover
+                open={speechComboboxOpen}
+                onOpenChange={(open) => {
+                  setSpeechComboboxOpen(open);
+                  if (!open) setSearchQuery("");
+                }}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -252,7 +286,7 @@ function BaseDialogNode({
                       {displaySpeech.speechId === "-1"
                         ? "-1 (None)"
                         : speechTextObj
-                          ? `${displaySpeech.speechId} - ${speechTextObj.label}`
+                          ? speechTextObj.label
                           : data.speechId
                       }
                     </span>
@@ -265,9 +299,27 @@ function BaseDialogNode({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Command>
-                    <CommandInput placeholder="Search by ID or label..." className="h-9" />
+                    <CommandInput
+                      placeholder="Search by ID or label..."
+                      className="h-9"
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                    />
                     <CommandList>
                       <CommandEmpty>No speech found.</CommandEmpty>
+
+                      {/* Create new speech option when searching */}
+                      {searchQuery && (
+                        <CommandGroup heading="Create New">
+                          <CommandItem
+                            onSelect={() => handleCreateNewSpeech(searchQuery)}
+                            className="text-blue-600"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create "{searchQuery}"
+                          </CommandItem>
+                        </CommandGroup>
+                      )}
 
                       {/* None option */}
                       <CommandGroup heading="General">
@@ -276,6 +328,7 @@ function BaseDialogNode({
                           onSelect={() => {
                             handleSpeechChange("-1");
                             setSpeechComboboxOpen(false);
+                            setSearchQuery("");
                           }}
                         >
                           -1 (None)
@@ -301,9 +354,10 @@ function BaseDialogNode({
                                 onSelect={() => {
                                   handleSpeechChange(st.id);
                                   setSpeechComboboxOpen(false);
+                                  setSearchQuery("");
                                 }}
                               >
-                                {st.id} - {st.label}
+                                {st.label}
                                 <Check
                                   className={cn(
                                     "ml-auto h-4 w-4",
