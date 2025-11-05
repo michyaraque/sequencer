@@ -158,7 +158,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Initialize Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Start node - can only send connections (Action ID 1)
+              Start node - can only send connections
             </p>
           </div>
 
@@ -172,7 +172,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Next Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Continue dialog flow (Action ID 2)
+              Continue dialog flow
             </p>
           </div>
 
@@ -186,7 +186,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Change Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Modify a variable value (Action ID 3)
+              Modify a variable value
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Condition Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Check variable condition (Action ID 4)
+              Check variable condition
             </p>
           </div>
 
@@ -214,7 +214,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Change Var. Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Change variable with variable (Action ID 5)
+              Change variable with variable
             </p>
           </div>
 
@@ -228,7 +228,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Cond. Var. Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Check condition with variables (Action ID 6)
+              Check condition with variables
             </p>
           </div>
 
@@ -242,7 +242,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Choice</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Player choice node (Action ID 7)
+              Player choice node
             </p>
           </div>
 
@@ -256,7 +256,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">Custom Action</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Custom action node (Action ID 98)
+              Custom action node
             </p>
           </div>
 
@@ -270,7 +270,7 @@ export default function Sidebar({
               <span className="font-semibold text-neutral-800">End Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
-              End dialog - cannot receive connections (Action ID 99)
+              End dialog - cannot receive connections
             </p>
           </div>
         </div>
