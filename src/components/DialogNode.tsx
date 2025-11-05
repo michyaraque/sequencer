@@ -346,9 +346,10 @@ function BaseDialogNode({
                         </CommandItem>
                       </CommandGroup>
 
-                      {/* Speeches grouped by language */}
+                      {/* Speeches grouped by language - only show English */}
                       {Object.entries(speechesByLanguage).map(([langId, speeches]) => {
-                        if (speeches.length === 0) return null;
+                        // Only show English (languageId = 1)
+                        if (parseInt(langId) !== 1 || speeches.length === 0) return null;
 
                         return (
                           <CommandGroup key={langId} heading={languageNames[parseInt(langId)]}>
