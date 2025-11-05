@@ -1,8 +1,17 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, ChevronDown, Edit2 } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2 } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
   onOpenSpeechTextManager: () => void;
@@ -19,7 +28,6 @@ export default function Sidebar({
   onExportProject,
   onImportProject
 }: SidebarProps) {
-  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const projectName = useGameDialogStore((state) => state.projectName);
   const setProjectName = useGameDialogStore((state) => state.setProjectName);
@@ -43,20 +51,51 @@ export default function Sidebar({
   return (
     <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col">
       {/* Project Management Section */}
-      <div className="p-4 border-b border-neutral-200 bg-white relative">
-        <button
-          onClick={() => setProjectMenuOpen(!projectMenuOpen)}
-          className="w-full flex items-center justify-between text-sm font-bold text-neutral-700 mb-2 hover:text-neutral-900 transition-colors"
-        >
+      <div className="p-4 border-b border-neutral-200 bg-white">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <FolderOpen size={16} />
-            <span>Project</span>
+            <FolderOpen size={16} className="text-neutral-700" />
+            <span className="text-sm font-bold text-neutral-700">Project</span>
           </div>
-          <ChevronDown
-            size={16}
-            className={`transition-transform ${projectMenuOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 px-2">
+                <span className="sr-only">Open project menu</span>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3.625 7.5C3.625 8.12132 3.12132 8.625 2.5 8.625C1.87868 8.625 1.375 8.12132 1.375 7.5C1.375 6.87868 1.87868 6.375 2.5 6.375C3.12132 6.375 3.625 6.87868 3.625 7.5ZM8.625 7.5C8.625 8.12132 8.12132 8.625 7.5 8.625C6.87868 8.625 6.375 8.12132 6.375 7.5C6.375 6.87868 6.87868 6.375 7.5 6.375C8.12132 6.375 8.625 6.87868 8.625 7.5ZM12.5 8.625C13.1213 8.625 13.625 8.12132 13.625 7.5C13.625 6.87868 13.1213 6.375 12.5 6.375C11.8787 6.375 11.375 6.87868 11.375 7.5C11.375 8.12132 11.8787 8.625 12.5 8.625Z"
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+              <DropdownMenuLabel>Project Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onExportProject}>
+                <Download size={16} className="mr-2" />
+                Export Project
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onImportProject}>
+                <Upload size={16} className="mr-2" />
+                Import Project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled>
+                <span className="text-xs text-neutral-500">v1.0.0</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* Project Name Editor */}
         <div className="flex items-center gap-1 group">
@@ -85,34 +124,6 @@ export default function Sidebar({
             </>
           )}
         </div>
-
-        {/* Floating Dropdown */}
-        {projectMenuOpen && (
-          <div className="absolute left-0 right-0 top-full z-50 mt-0 bg-white border-b border-x border-neutral-200 shadow-lg">
-            <div className="p-4 space-y-2">
-              <button
-                onClick={() => {
-                  onExportProject();
-                  setProjectMenuOpen(false);
-                }}
-                className="w-full px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2 text-sm"
-              >
-                <Download size={16} />
-                Export Project
-              </button>
-              <button
-                onClick={() => {
-                  onImportProject();
-                  setProjectMenuOpen(false);
-                }}
-                className="w-full px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2 text-sm"
-              >
-                <Upload size={16} />
-                Import Project
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="p-4 border-b border-neutral-200 bg-white">
