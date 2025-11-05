@@ -47,6 +47,7 @@ import { useSequencesStore } from "@/store/useSequencesStore";
 import RoomTabs from "@/components/RoomTabs";
 import SaveSequenceDialog from "@/components/SaveSequenceDialog";
 import CanvasContextMenu from "@/components/CanvasContextMenu";
+import SequenceManager from "@/components/SequenceManager";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
@@ -100,6 +101,7 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
+  const [showSequenceManager, setShowSequenceManager] = useState(false);
   const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
@@ -123,6 +125,7 @@ function FlowEditor() {
   const sequences = useSequencesStore((state) => state.sequences);
   const addSequence = useSequencesStore((state) => state.addSequence);
   const deleteSequence = useSequencesStore((state) => state.deleteSequence);
+  const updateSequence = useSequencesStore((state) => state.updateSequence);
 
   const isLoadingRoom = useRef(false);
 
@@ -502,7 +505,7 @@ function FlowEditor() {
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
     onDeleteEdges: deleteEdgesByIds,
-    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager,
+    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager || showSequenceManager,
   });
 
   const { screenToFlowPosition } = useReactFlow();
@@ -651,6 +654,11 @@ function FlowEditor() {
     }
   }, [sequences, deleteSequence]);
 
+  const handleEditSequence = useCallback((id: string, data: { name: string; description?: string }) => {
+    updateSequence(id, data);
+    toast.success("Sequence updated");
+  }, [updateSequence]);
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -711,6 +719,7 @@ function FlowEditor() {
         onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
         onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
         onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
+        onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
         onExportProject={handleExportProject}
         onImportProject={handleImportProject}
         onExitProject={handleExitProject}
@@ -911,6 +920,15 @@ function FlowEditor() {
           onClose={handleCloseContextMenu}
           onCreateSequence={(sequence) => handleCreateFromSequence(sequence, contextMenu)}
           onDeleteSequence={handleDeleteSequence}
+        />
+      )}
+
+      {showSequenceManager && (
+        <SequenceManager
+          sequences={sequences}
+          onEdit={handleEditSequence}
+          onDelete={handleDeleteSequence}
+          onClose={() => setShowSequenceManager(false)}
         />
       )}
     </div>
