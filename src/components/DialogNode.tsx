@@ -168,7 +168,7 @@ function BaseDialogNode({
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 min-w-[220px] transition-all ${
+      className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${
         selected
           ? `border-neutral-900 shadow-xl ${accentColor}`
           : `${borderColor} shadow-md hover:shadow-lg hover:border-neutral-500 ${accentColor}`
@@ -236,19 +236,19 @@ function BaseDialogNode({
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Speech:</span>
-            <div className="flex gap-1 min-w-0 flex-1 items-center">
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+            <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
               <Popover open={speechComboboxOpen} onOpenChange={setSpeechComboboxOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={speechComboboxOpen}
-                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full justify-between"
+                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="truncate">
+                    <span className="truncate flex-1 text-left">
                       {displaySpeech.speechId === "-1"
                         ? "-1 (None)"
                         : speechTextObj
@@ -256,7 +256,7 @@ function BaseDialogNode({
                           : data.speechId
                       }
                     </span>
-                    <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -321,24 +321,24 @@ function BaseDialogNode({
               </Popover>
               {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                 <div
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 flex items-center"
                   title={displaySpeech.isTranslated
                     ? "Translated in selected language"
                     : "Using English version (translation not available)"}
                 >
                   {displaySpeech.isTranslated ? (
-                    <CheckCircle2 size={14} className="text-green-600" />
+                    <CheckCircle2 size={12} className="text-green-600" />
                   ) : (
-                    <AlertCircle size={14} className="text-amber-500" />
+                    <AlertCircle size={12} className="text-amber-500" />
                   )}
                 </div>
               )}
               <button
                 onClick={handleCreateSpeech}
-                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
                 title="Create new speech"
               >
-                <Plus size={12} />
+                <Plus size={10} />
               </button>
             </div>
           </div>

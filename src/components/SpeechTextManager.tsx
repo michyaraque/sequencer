@@ -132,19 +132,21 @@ export default function SpeechTextManager({
       st.text?.toLowerCase().includes(searchTerm?.toLowerCase())
   );
 
-  // Group speeches by language
-  const groupedByLanguage = filteredTexts.reduce((acc, speechText) => {
-    const langId = speechText.languageId;
-    if (!acc[langId]) {
-      acc[langId] = [];
+  // Group speeches by local ID
+  const groupedByLocalId = filteredTexts.reduce((acc, speechText) => {
+    const numericId = parseInt(speechText.id);
+    const localId = numericId % 100000;
+
+    if (!acc[localId]) {
+      acc[localId] = [];
     }
-    acc[langId].push(speechText);
+    acc[localId].push(speechText);
     return acc;
   }, {} as Record<number, SpeechText[]>);
 
-  // Sort speeches within each language group
-  Object.keys(groupedByLanguage).forEach((langId) => {
-    groupedByLanguage[parseInt(langId)].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+  // Sort speeches within each local ID group by language ID
+  Object.keys(groupedByLocalId).forEach((localId) => {
+    groupedByLocalId[parseInt(localId)].sort((a, b) => a.languageId - b.languageId);
   });
 
   const languageNames: Record<number, string> = {
@@ -259,80 +261,78 @@ export default function SpeechTextManager({
               {searchTerm ? "No speech texts found" : "No speech texts yet. Create one to get started!"}
             </div>
           ) : (
-            <div className="space-y-6">
-              {Object.entries(groupedByLanguage)
-                .sort(([langIdA], [langIdB]) => parseInt(langIdA) - parseInt(langIdB))
-                .map(([langId, speeches]) => (
-                  <div key={langId}>
-                    {/* Language Header */}
-                    <div className="sticky top-0 bg-white border-b-2 border-neutral-300 pb-2 mb-3 z-10">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-neutral-800">
-                          {languageNames[parseInt(langId)] || `Language ${langId}`}
-                        </h3>
-                        <span className="text-sm text-neutral-600 font-medium">
-                          {speeches.length} speech{speeches.length !== 1 ? "es" : ""}
+            <div className="space-y-4">
+              {Object.entries(groupedByLocalId)
+                .sort(([localIdA], [localIdB]) => parseInt(localIdA) - parseInt(localIdB))
+                .map(([localId, speeches]) => {
+                  const existingTranslations = getTranslationsForLocalId(parseInt(localId));
+                  const missingLanguages = [1, 2, 3, 4].filter(langId => !existingTranslations.includes(langId));
+                  // Use the first speech for getting base info (they all share same local ID)
+                  const primarySpeech = speeches[0];
+
+                  return (
+                    <div key={localId} className="border-2 border-neutral-300 rounded-lg p-4 bg-neutral-50">
+                      {/* Local ID Header */}
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-neutral-300">
+                        <span className="bg-neutral-800 text-white px-3 py-1 rounded text-sm font-mono font-bold">
+                          Local ID: {localId}
                         </span>
+
+                        {/* Translation status badges */}
+                        <div className="flex items-center gap-1">
+                          {existingTranslations.map(langId => (
+                            <span
+                              key={langId}
+                              className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-bold"
+                              title={`Translated to ${languageNames[langId]}`}
+                            >
+                              {languageNamesShort[langId]}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Quick translation buttons */}
+                        {missingLanguages.length > 0 && (
+                          <div className="flex items-center gap-1 ml-auto">
+                            <span className="text-xs text-neutral-600 font-medium">Add:</span>
+                            {missingLanguages.map(langId => (
+                              <button
+                                key={langId}
+                                onClick={() => handleCreateTranslation(primarySpeech, langId)}
+                                className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-xs font-bold"
+                                title={`Create ${languageNames[langId]} translation`}
+                              >
+                                + {languageNamesShort[langId]}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
 
-                    {/* Speeches in this language */}
-                    <div className="space-y-2">
-                      {speeches.map((speechText) => {
-                        const numericId = parseInt(speechText.id);
-                        const localId = numericId % 100000;
-                        const existingTranslations = getTranslationsForLocalId(localId);
-                        const missingLanguages = [1, 2, 3, 4].filter(langId => !existingTranslations.includes(langId));
-
-                        return (
+                      {/* All translations for this local ID */}
+                      <div className="space-y-2">
+                        {speeches.map((speechText) => (
                           <div
                             key={speechText.id}
-                            className="border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
+                            className="bg-white border border-neutral-200 rounded-lg p-3 hover:border-neutral-400 transition-colors"
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                  <span className="bg-neutral-800 text-white px-2 py-0.5 rounded text-xs font-mono font-bold">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-bold">
+                                    {languageNamesShort[speechText.languageId]}
+                                  </span>
+                                  <span className="text-xs font-mono text-neutral-600">
                                     {speechText.id}
                                   </span>
                                   <span className="font-medium text-neutral-800">
                                     {speechText.label}
                                   </span>
-
-                                  {/* Translation status badges */}
-                                  <div className="flex items-center gap-1">
-                                    {existingTranslations.map(langId => (
-                                      <span
-                                        key={langId}
-                                        className="bg-green-100 text-green-800 px-1.5 py-0.5 rounded text-xs font-bold"
-                                        title={`Translated to ${languageNames[langId]}`}
-                                      >
-                                        {languageNamesShort[langId]}
-                                      </span>
-                                    ))}
-                                  </div>
                                 </div>
 
-                                <div className="text-sm text-neutral-600 font-mono bg-neutral-50 p-2 rounded overflow-x-auto mb-2">
+                                <div className="text-sm text-neutral-700 font-mono bg-neutral-50 p-2 rounded overflow-x-auto">
                                   {speechText.text}
                                 </div>
-
-                                {/* Quick translation buttons */}
-                                {missingLanguages.length > 0 && (
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-xs text-neutral-500 font-medium">Create translation:</span>
-                                    {missingLanguages.map(langId => (
-                                      <button
-                                        key={langId}
-                                        onClick={() => handleCreateTranslation(speechText, langId)}
-                                        className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors text-xs font-bold"
-                                        title={`Create ${languageNames[langId]} translation`}
-                                      >
-                                        + {languageNamesShort[langId]}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
                               </div>
                               <div className="flex gap-1 flex-shrink-0">
                                 <button
@@ -350,11 +350,11 @@ export default function SpeechTextManager({
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           )}
         </div>
