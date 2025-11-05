@@ -4,12 +4,14 @@ import { Node, Edge } from "@xyflow/react";
 import { SpeechText, NPC, Variable, DialogNodeData } from "@/types/dialog";
 
 interface GameDialogStore {
+  projectName: string;
   nodes: Node<DialogNodeData>[];
   edges: Edge[];
   speechTexts: SpeechText[];
   npcs: NPC[];
   variables: Variable[];
 
+  setProjectName: (projectName: string) => void;
   setNodes: (nodes: Node<DialogNodeData>[]) => void;
   setEdges: (edges: Edge[]) => void;
   updateNode: (nodeId: string, data: Partial<DialogNodeData>) => void;
@@ -17,14 +19,17 @@ interface GameDialogStore {
   deleteNode: (nodeId: string) => void;
   deleteNodes: (nodeIds: string[]) => void;
 
+  setSpeechTexts: (speechTexts: SpeechText[]) => void;
   addSpeechText: (speechText: SpeechText) => void;
   editSpeechText: (oldId: string, speechText: SpeechText) => void;
   deleteSpeechText: (id: string) => void;
 
+  setNPCs: (npcs: NPC[]) => void;
   addNPC: (npc: NPC) => void;
   editNPC: (oldId: string, npc: NPC) => void;
   deleteNPC: (id: string) => void;
 
+  setVariables: (variables: Variable[]) => void;
   addVariable: (variable: Variable) => void;
   editVariable: (oldId: string, variable: Variable) => void;
   deleteVariable: (id: string) => void;
@@ -33,12 +38,14 @@ interface GameDialogStore {
 export const useGameDialogStore = create<GameDialogStore>()(
   persist(
     (set) => ({
+      projectName: "Untitled Project",
       nodes: [],
       edges: [],
       speechTexts: [],
       npcs: [],
       variables: [],
 
+      setProjectName: (projectName) => set({ projectName }),
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
 
@@ -66,6 +73,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
           ),
         })),
 
+      setSpeechTexts: (speechTexts) => set({ speechTexts }),
       addSpeechText: (speechText) =>
         set((state) => ({ speechTexts: [...state.speechTexts, speechText] })),
 
@@ -79,6 +87,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
           speechTexts: state.speechTexts.filter((st) => st.id !== id),
         })),
 
+      setNPCs: (npcs) => set({ npcs }),
       addNPC: (npc) =>
         set((state) => ({ npcs: [...state.npcs, npc] })),
 
@@ -92,6 +101,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
           npcs: state.npcs.filter((n) => n.id !== id),
         })),
 
+      setVariables: (variables) => set({ variables }),
       addVariable: (variable) =>
         set((state) => ({ variables: [...state.variables, variable] })),
 

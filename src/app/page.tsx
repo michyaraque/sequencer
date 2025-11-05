@@ -96,6 +96,7 @@ function FlowEditor() {
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
   const variables = useGameDialogStore((state) => state.variables);
+  const projectName = useGameDialogStore((state) => state.projectName);
 
   // Create node types with callbacks
   const nodeTypes: NodeTypes = useMemo(() => {
@@ -257,10 +258,11 @@ function FlowEditor() {
 
   // Project-wide export/import handlers
   const handleExportProject = useCallback(() => {
-    const content = exportProject(nodes, edges, speechTexts, npcs, variables);
+    const content = exportProject(nodes, edges, speechTexts, npcs, variables, projectName);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    downloadProjectFile(content, `dialog-project-${timestamp}.json`);
-  }, [nodes, edges, speechTexts, npcs, variables]);
+    const filename = `${projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${timestamp}.json`;
+    downloadProjectFile(content, filename);
+  }, [nodes, edges, speechTexts, npcs, variables, projectName]);
 
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
@@ -279,15 +281,17 @@ function FlowEditor() {
             setNodes(project.nodes);
             setEdges(project.edges);
 
-            // Update store data
-            const addSpeechText = useGameDialogStore.getState().addSpeechText;
-            const addNPC = useGameDialogStore.getState().addNPC;
-            const addVariable = useGameDialogStore.getState().addVariable;
+            // Update store data - replace all data at once
+            const setProjectName = useGameDialogStore.getState().setProjectName;
+            const setSpeechTexts = useGameDialogStore.getState().setSpeechTexts;
+            const setNPCs = useGameDialogStore.getState().setNPCs;
+            const setVariables = useGameDialogStore.getState().setVariables;
 
-            // Clear existing data and add imported data
-            project.speechTexts.forEach((st) => addSpeechText(st));
-            project.npcs.forEach((npc) => addNPC(npc));
-            project.variables.forEach((variable) => addVariable(variable));
+            // Replace existing data with imported data
+            setProjectName(project.projectName || "Untitled Project");
+            setSpeechTexts(project.speechTexts);
+            setNPCs(project.npcs);
+            setVariables(project.variables);
 
             // Save to history
             saveToHistory(project.nodes, project.edges);

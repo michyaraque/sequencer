@@ -5,6 +5,7 @@ import { DialogNodeData, SpeechText, NPC, Variable } from "@/types/dialog";
 export interface ProjectExport {
   version: string;
   timestamp: string;
+  projectName: string;
   nodes: Node<DialogNodeData>[];
   edges: Edge[];
   speechTexts: SpeechText[];
@@ -18,11 +19,13 @@ export function exportProject(
   edges: Edge[],
   speechTexts: SpeechText[],
   npcs: NPC[],
-  variables: Variable[]
+  variables: Variable[],
+  projectName: string = "Untitled Project"
 ): string {
   const project: ProjectExport = {
     version: "1.0.0",
     timestamp: new Date().toISOString(),
+    projectName,
     nodes,
     edges,
     speechTexts,
