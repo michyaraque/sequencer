@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import {
   Select,
@@ -20,10 +20,26 @@ export const WaitNode = memo((props: CustomNodeProps) => {
     waitTimeOptions.push(i.toFixed(1));
   }
 
-  const currentWaitTime = data.value1 || "1.0";
+  const rawValue = data.value1 || "1000";
+  let currentWaitTimeInMs = rawValue;
+  let needsMigration = false;
 
-  const handleWaitTimeChange = (value: string) => {
-    updateNodeData(id, { value1: value });
+  if (parseFloat(rawValue) <= 10) {
+    currentWaitTimeInMs = (parseFloat(rawValue) * 1000).toString();
+    needsMigration = true;
+  }
+
+  const currentWaitTimeInSeconds = (parseFloat(currentWaitTimeInMs) / 1000).toFixed(1);
+
+  useEffect(() => {
+    if (needsMigration) {
+      updateNodeData(id, { value1: currentWaitTimeInMs });
+    }
+  }, [needsMigration, id, currentWaitTimeInMs, updateNodeData]);
+
+  const handleWaitTimeChange = (valueInSeconds: string) => {
+    const milliseconds = (parseFloat(valueInSeconds) * 1000).toString();
+    updateNodeData(id, { value1: milliseconds });
   };
 
   return (
@@ -55,7 +71,7 @@ export const WaitNode = memo((props: CustomNodeProps) => {
             {/* Wait Time Selector */}
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-neutral-500 whitespace-nowrap">Wait Time:</span>
-              <Select value={currentWaitTime} onValueChange={handleWaitTimeChange}>
+              <Select value={currentWaitTimeInSeconds} onValueChange={handleWaitTimeChange}>
                 <SelectTrigger
                   className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono flex-1"
                   onClick={(e) => e.stopPropagation()}

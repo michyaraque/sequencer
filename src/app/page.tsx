@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus, MessageSquare } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -42,7 +42,7 @@ import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
 import { useDialogNodes, getNextNodeId } from "@/hooks/useDialogNodes";
 import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
-import { useDialogExport } from "@/hooks/useDialogExport";
+import { useDialogExport } from "@/hooks/useNodeExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useRoomsStore } from "@/store/useRoomsStore";
@@ -54,7 +54,7 @@ import SequenceManager from "@/components/SequenceManager";
 import MobileNodePalette from "@/components/MobileNodePalette";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
-import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
+import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile } from "@/utils/export";
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -93,7 +93,7 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
     case "random":
       return { ...baseData, actionId: "9", label: "Random", value1: "2" }; // Default 2 outputs
     case "wait":
-      return { ...baseData, actionId: "97", label: "Wait", value1: "1.0" };
+      return { ...baseData, actionId: "97", label: "Wait", value1: "1000" };
     case "customAction":
       return { ...baseData, actionId: "98", label: "Custom Wired Action" };
     case "endDialogue":
@@ -431,6 +431,12 @@ function FlowEditor() {
     const filename = `${projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${timestamp}.json`;
     downloadProjectFile(content, filename);
   }, [rooms, projectName, currentRoomId, storedNodes, storedEdges, speechTexts, npcs, variables, selectedLanguage, updateRoomData]);
+
+  const handleExportSpeeches = useCallback(() => {
+    const content = exportSpeechTexts(speechTexts);
+    downloadSpeechTextsFile(content, "speech_texts.txt");
+    toast.success("Speech texts exported successfully!");
+  }, [speechTexts]);
 
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
@@ -926,7 +932,7 @@ function FlowEditor() {
               </button>
             )}
 
-            {nodes.filter(n => n.selected).length > 0 && (
+            {nodes.filter(n => n.selected).length > 1 && (
               <button
                 onClick={() => setShowSaveSequenceDialog(true)}
                 className="md:px-2 md:py-1.5 px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2 h-full"
@@ -945,9 +951,17 @@ function FlowEditor() {
             <button
               onClick={handleExport}
               className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors"
-              title="Export"
+              title="Export Nodes"
             >
               <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
+            </button>
+
+            <button
+              onClick={handleExportSpeeches}
+              className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              title="Export Speeches"
+            >
+              <MessageSquare size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             <button

@@ -24,7 +24,7 @@ export function useDialogExport({
 }: UseDialogExportProps) {
   const handleExport = useCallback(() => {
     const exportContent = exportToDialogFormat(nodes, exportSettings);
-    downloadDialogFile(exportContent, "dialog_export.txt");
+    downloadDialogFile(exportContent, "node_export.txt");
   }, [nodes, exportSettings]);
 
   const handleCopyToClipboard = useCallback(() => {
