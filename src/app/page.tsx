@@ -242,6 +242,24 @@ function FlowEditor() {
     deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
 
+  // Initialize: Load first room when Zustand rehydrates rooms from localStorage
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (!hasInitialized.current && rooms.length > 0 && currentRoomId && nodes.length === 0) {
+      const firstRoom = currentRoom;
+      if (firstRoom && firstRoom.nodes.length > 0) {
+        isLoadingRoom.current = true;
+        setNodes(firstRoom.nodes);
+        setEdges(firstRoom.edges);
+        saveToHistory(firstRoom.nodes, firstRoom.edges);
+        hasInitialized.current = true;
+        setTimeout(() => {
+          isLoadingRoom.current = false;
+        }, 100);
+      }
+    }
+  }, [rooms, currentRoomId, currentRoom]); // Watch for rooms to be rehydrated
+
   // Sync nodes and edges back to store when they change
   useEffect(() => {
     const setStoredNodes = useGameDialogStore.getState().setNodes;
@@ -469,68 +487,27 @@ function FlowEditor() {
   }, [setProjectName, setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
   const handleLoadRecentProject = useCallback((projectName: string) => {
-    try {
-      // Load project from localStorage using project name as key
-      const savedProjectKey = `dialog-maker-project-${projectName}`;
-      const savedProject = localStorage.getItem(savedProjectKey);
+    // Rooms are already persisted in Zustand and loaded on mount
+    // Just switch to the first room to trigger loading
+    const roomsState = useRoomsStore.getState();
 
-      if (!savedProject) {
-        toast.error('Project data not found');
-        return;
-      }
+    if (roomsState.rooms.length > 0) {
+      // Find room with matching project name or use first room
+      const targetRoom = roomsState.rooms.find(r => r.projectName === projectName) || roomsState.rooms[0];
 
-      const projectData = JSON.parse(savedProject);
+      // Switch to that room - this will trigger the room loading effect
+      useRoomsStore.getState().switchRoom(targetRoom.id);
 
-      // Load the project's rooms
-      if (projectData.rooms && projectData.rooms.length > 0) {
-        useRoomsStore.setState({
-          rooms: projectData.rooms,
-          currentRoomId: projectData.rooms[0].id,
-        });
-
-        const firstRoom = projectData.rooms[0];
-
-        // Load first room's data into active state
-        useGameDialogStore.getState().setNodes(firstRoom.nodes);
-        useGameDialogStore.getState().setEdges(firstRoom.edges);
-        useGameDialogStore.getState().setSpeechTexts(firstRoom.speechTexts);
-        useGameDialogStore.getState().setNPCs(firstRoom.npcs);
-        useGameDialogStore.getState().setVariables(firstRoom.variables);
-        useGameDialogStore.getState().setProjectName(firstRoom.projectName);
-        useGameDialogStore.getState().setSelectedLanguage(firstRoom.selectedLanguage);
-
-        setNodes(firstRoom.nodes);
-        setEdges(firstRoom.edges);
-        saveToHistory(firstRoom.nodes, firstRoom.edges);
-
-        toast.success(`Project "${projectName}" loaded successfully!`);
-      } else {
-        toast.error('Invalid project format');
-      }
-    } catch (error) {
-      console.error('Error loading project:', error);
-      toast.error('Failed to load project');
+      toast.success(`Loaded "${targetRoom.projectName}"`);
+    } else {
+      toast.error('No saved projects found');
     }
-  }, [setNodes, setEdges, saveToHistory]);
+  }, []);
 
-  // Auto-save project and update recent projects when user works on the project
+  // Update recent projects list when user works on the project
+  // (Rooms are auto-saved by Zustand persist middleware)
   useEffect(() => {
     if (nodes.length > 0 && projectName !== "Untitled Project" && hasRooms) {
-      // Save complete project to localStorage
-      const projectKey = `dialog-maker-project-${projectName}`;
-      const projectData = {
-        rooms: rooms,
-        version: "2.0.0",
-        savedAt: new Date().toISOString(),
-      };
-
-      try {
-        localStorage.setItem(projectKey, JSON.stringify(projectData));
-      } catch (error) {
-        console.error('Error saving project:', error);
-      }
-
-      // Update recent projects list
       const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
       addRecentProject({
         name: projectName,
@@ -538,7 +515,7 @@ function FlowEditor() {
         speechCount: speechTexts.length,
       });
     }
-  }, [nodes.length, speechTexts.length, projectName, rooms, hasRooms]);
+  }, [nodes.length, speechTexts.length, projectName, hasRooms]);
 
   const handleUndo = () => undo(setNodes, setEdges, setSelectedNode);
   const handleRedo = () => redo(setNodes, setEdges, setSelectedNode);
