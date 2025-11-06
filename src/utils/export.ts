@@ -5,11 +5,11 @@ import { RoomData } from "@/store/useRoomsStore";
 export function getDefaultExportFields(): ExportField[] {
   return [
     { id: "botId", name: "Bot ID", value: "-1", order: 0 },
-    { id: "userId", name: "User ID", value: "#(user_id)", order: 1 },
+    { id: "userId", name: "User ID", value: "$(user_id)", order: 1 },
     { id: "nextNodeId", name: "Next Node ID", value: "-1", order: 2 },
     { id: "speechId", name: "Speech ID", value: "-1", order: 3 },
     { id: "speechSpeed", name: "Speech Speed", value: "-1", order: 4 },
-    { id: "actionId", name: "Action ID", value: "1001", order: 5 },
+    { id: "actionId", name: "Action ID", value: "1", order: 5 },
     { id: "value1", name: "Value 1", value: "-1", order: 6 },
     { id: "value2", name: "Value 2", value: "-1", order: 7 },
     { id: "value3", name: "Value 3", value: "-1", order: 8 },
@@ -115,7 +115,7 @@ export function exportToDialogFormat(
   const fields = exportSettings?.fields || getDefaultExportFields();
   const sortedFields = [...fields].sort((a, b) => a.order - b.order);
 
-  const lines = nodes.map((node, index) => {
+  const lines = nodes.map((node) => {
     const data = node.data;
 
     const fieldValues = sortedFields.map((field) => {
@@ -154,7 +154,7 @@ export function exportToDialogFormat(
       return field.value;
     });
 
-    return `${index}=${fieldValues.join("¦")}`;
+    return `${node.id}=${fieldValues.join("¦")}`;
   });
 
   return lines.join("\n");
@@ -176,7 +176,7 @@ export function importFromDialogFormat(content: string): DialogNodeData[] {
   const lines = content.trim().split("\n");
 
   return lines.map((line) => {
-    // Parse format: index=#(bot_id)|#(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
+    // Parse format: index=#(bot_id)|$(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
     const [, values] = line.split("=");
     const [botId, userId, nextNodeId, speechId, speechSpeed, actionId, value1, value2, value3] = values.split("|");
 

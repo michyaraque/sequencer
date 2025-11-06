@@ -47,7 +47,7 @@ export function useNPCs() {
           updates.botId = "#(bot_id)";
         }
         if (node.data.userId === id) {
-          updates.userId = "#(user_id)";
+          updates.userId = "$(user_id)";
         }
 
         if (Object.keys(updates).length > 0) {

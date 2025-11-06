@@ -182,7 +182,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
         },
         data: {
           botId: "#(bot_id)",
-          userId: "#(user_id)",
+          userId: "$(user_id)",
           nextNodeId: "-1",
           speechId: "SpeechId",
           speechSpeed: "-1",

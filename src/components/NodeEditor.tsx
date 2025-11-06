@@ -86,14 +86,14 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             User ID (NPC)
           </label>
           <Select
-            value={selectedNode.data.userId || "#(user_id)"}
+            value={selectedNode.data.userId || "$(user_id)"}
             onValueChange={(value) => handleChange("userId", value)}
           >
             <SelectTrigger className="w-full font-mono text-sm mb-2">
               <SelectValue placeholder="Select User ID" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="#(user_id)">#(user_id)</SelectItem>
+              <SelectItem value="$(user_id)">$(user_id)</SelectItem>
               {npcs.map((npc) => (
                 <SelectItem key={npc.id} value={npc.id}>
                   {npc.id} - {npc.name}

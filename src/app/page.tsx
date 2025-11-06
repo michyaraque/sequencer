@@ -64,7 +64,7 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
 
   const baseData = {
     botId: "-1",
-    userId: "#(user_id)",
+    userId: "$(user_id)",
     nextNodeId: "-1",
     speechId: "-1",
     speechSpeed: defaultSpeechSpeed,
@@ -344,7 +344,7 @@ function FlowEditor() {
       nds.map((node) => {
         const updates: any = {};
         if (node.data.botId === id) updates.botId = "#(bot_id)";
-        if (node.data.userId === id) updates.userId = "#(user_id)";
+        if (node.data.userId === id) updates.userId = "$(user_id)";
         if (Object.keys(updates).length > 0) {
           return { ...node, data: { ...node.data, ...updates } };
         }
@@ -493,7 +493,7 @@ function FlowEditor() {
       position: { x: 250, y: 100 },
       data: {
         botId: "-1",
-        userId: "#(user_id)",
+        userId: "$(user_id)",
         nextNodeId: "0",
         speechId: "-1",
         speechSpeed: "-1",
