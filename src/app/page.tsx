@@ -891,10 +891,10 @@ function FlowEditor() {
             {nodes.filter(n => n.selected).length > 0 && (
               <button
                 onClick={() => setShowSaveSequenceDialog(true)}
-                className="p-2 sm:px-3 sm:py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2"
+                className="md:px-2 md:py-1.5 px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2 h-full"
                 title="Save Sequence"
               >
-                <Save size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <Save size={16} className="w-[18px] h-[16px]" />
                 <span className="hidden sm:inline">Save Sequence</span>
               </button>
             )}
