@@ -27,9 +27,9 @@ export const ACTION_TYPES = {
 } as const;
 
 export const SPEECH_SPEEDS = {
-  "1": "Slow",
+  "1": "Fast",
   "2": "Normal",
-  "3": "Fast",
+  "3": "Slow",
 } as const;
 
 export const CHANGE_TYPES = {

@@ -165,9 +165,9 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="0">0 (Default)</SelectItem>
-                <SelectItem value="1">1 (Slow)</SelectItem>
+                <SelectItem value="1">1 (Fast)</SelectItem>
                 <SelectItem value="2">2 (Normal)</SelectItem>
-                <SelectItem value="3">3 (Fast)</SelectItem>
+                <SelectItem value="3">3 (Slow)</SelectItem>
               </SelectContent>
             </Select>
           </div>
