@@ -150,28 +150,48 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           )}
         </div>
 
-        {/* Only show Speech Speed for specific node types */}
-        {(selectedNode.type === "botSpeech" || selectedNode.type === "showMessage" || selectedNode.type === "choice") && (
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Speech Speed
-            </label>
-            <Select
-              value={selectedNode.data.speechSpeed || "2"}
-              onValueChange={(value) => handleChange("speechSpeed", value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Speed" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">0 (Default)</SelectItem>
-                <SelectItem value="1">1 (Fast)</SelectItem>
-                <SelectItem value="2">2 (Normal)</SelectItem>
-                <SelectItem value="3">3 (Slow)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        {/* Only show Node Speed for specific node types */}
+        {(selectedNode.type === "botSpeech" || selectedNode.type === "showMessage" || selectedNode.type === "choice") && (() => {
+          const nodeSpeedOptions = [];
+          for (let i = 0.5; i <= 10; i += 0.5) {
+            nodeSpeedOptions.push(i.toFixed(1));
+          }
+
+          const rawValue = selectedNode.data.speechSpeed || "1000";
+          let currentSpeedInMs = rawValue;
+
+          // If value is 10 or less, it's in seconds (old format), convert to ms
+          if (parseFloat(rawValue) <= 10) {
+            currentSpeedInMs = (parseFloat(rawValue) * 1000).toString();
+          }
+
+          const currentSpeedInSeconds = (parseFloat(currentSpeedInMs) / 1000).toFixed(1);
+
+          const handleNodeSpeedChange = (valueInSeconds: string) => {
+            const milliseconds = (parseFloat(valueInSeconds) * 1000).toString();
+            handleChange("speechSpeed", milliseconds);
+          };
+
+          return (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Node Speed
+              </label>
+              <Select value={currentSpeedInSeconds} onValueChange={handleNodeSpeedChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px]">
+                  {nodeSpeedOptions.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}s
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        })()}
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">

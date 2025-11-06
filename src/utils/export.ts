@@ -8,7 +8,7 @@ export function getDefaultExportFields(): ExportField[] {
     { id: "userId", name: "User ID", value: "$(user_id)", order: 1 },
     { id: "nextNodeId", name: "Next Node ID", value: "-1", order: 2 },
     { id: "speechId", name: "Speech ID", value: "-1", order: 3 },
-    { id: "speechSpeed", name: "Speech Speed", value: "-1", order: 4 },
+    { id: "speechSpeed", name: "Node Speed", value: "-1", order: 4 },
     { id: "actionId", name: "Action ID", value: "1", order: 5 },
     { id: "value1", name: "Value 1", value: "-1", order: 6 },
     { id: "value2", name: "Value 2", value: "-1", order: 7 },

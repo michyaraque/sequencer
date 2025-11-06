@@ -11,20 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Convert speech speed value to display string
-function getSpeechSpeedLabel(speedValue: string): string {
-  switch (speedValue) {
-    case "0":
-      return "0.5s";
-    case "1":
-      return "1s";
-    case "2":
-      return "2s";
-    case "3":
-      return "3s";
-    default:
-      return speedValue;
-  }
+function getNodeSpeedLabel(speedValueInMs: string): string {
+  const ms = parseFloat(speedValueInMs);
+  if (isNaN(ms)) return speedValueInMs;
+
+  const seconds = (ms / 1000).toFixed(1);
+  return `${seconds}s`;
 }
 
 function CustomEdge({
@@ -43,14 +35,17 @@ function CustomEdge({
   const { updateNodeData } = useReactFlow();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Get the source node to access its speechSpeed
   const sourceNode = nodes.find((node) => node.id === source);
-  const speechSpeed = sourceNode?.data?.speechSpeed;
+  const nodeSpeed = sourceNode?.data?.speechSpeed;
   const sourceNodeType = sourceNode?.type;
 
-  // Only show speech speed for specific node types
-  const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
-  const shouldShowSpeechSpeed = sourceNodeType && nodeTypesWithSpeechSpeed.includes(sourceNodeType);
+  const nodeTypesWithNodeSpeed = ["botSpeech", "showMessage", "choice"];
+  const shouldShowNodeSpeed = sourceNodeType && nodeTypesWithNodeSpeed.includes(sourceNodeType);
+
+  const nodeSpeedOptions = [];
+  for (let i = 0.5; i <= 10; i += 0.5) {
+    nodeSpeedOptions.push(i.toFixed(1));
+  }
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -61,9 +56,19 @@ function CustomEdge({
     targetPosition,
   });
 
-  const handleSpeedChange = (value: string) => {
+  const rawValue = nodeSpeed || "1000";
+  let currentSpeedInMs = rawValue;
+
+  if (parseFloat(rawValue) <= 10) {
+    currentSpeedInMs = (parseFloat(rawValue) * 1000).toString();
+  }
+
+  const currentSpeedInSeconds = (parseFloat(currentSpeedInMs) / 1000).toFixed(1);
+
+  const handleSpeedChange = (valueInSeconds: string) => {
     if (sourceNode) {
-      updateNodeData(sourceNode.id, { speechSpeed: value });
+      const milliseconds = (parseFloat(valueInSeconds) * 1000).toString();
+      updateNodeData(sourceNode.id, { speechSpeed: milliseconds });
       setIsEditing(false);
     }
   };
@@ -71,7 +76,7 @@ function CustomEdge({
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
-      {shouldShowSpeechSpeed && speechSpeed && speechSpeed !== "-1" && (
+      {shouldShowNodeSpeed && nodeSpeed && nodeSpeed !== "-1" && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -81,30 +86,19 @@ function CustomEdge({
             }}
             className="nodrag nopan"
           >
-            {isEditing ? (
-              <Select value={speechSpeed} onValueChange={handleSpeedChange}>
-                <SelectTrigger className="w-20 h-6 text-xs bg-white">
+              <Select value={currentSpeedInSeconds} onValueChange={handleSpeedChange}>
+                <SelectTrigger className="w-18 h-auto text-xs bg-neutral-200 hover:bg-neutral-100">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">0.5s</SelectItem>
-                  <SelectItem value="1">1s</SelectItem>
-                  <SelectItem value="2">2s</SelectItem>
-                  <SelectItem value="3">3s</SelectItem>
+                <SelectContent className="max-h-[200px]">
+                  {nodeSpeedOptions.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}s
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            ) : (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-                className="bg-white px-2 py-0.5 rounded border border-neutral-300 shadow-sm font-mono text-neutral-700 font-semibold cursor-pointer hover:bg-neutral-50 hover:border-neutral-400 transition-colors"
-                style={{ fontSize: 10 }}
-              >
-                {getSpeechSpeedLabel(speechSpeed)}
-              </div>
-            )}
+         
           </div>
         </EdgeLabelRenderer>
       )}
