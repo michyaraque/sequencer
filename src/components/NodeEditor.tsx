@@ -27,7 +27,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
 
   if (!selectedNode) {
     return (
-      <div className="w-80 bg-neutral-50 border-l border-neutral-200 p-4">
+      <div className="w-80 h-screen bg-neutral-50 border-l border-neutral-200 p-4">
         <h2 className="text-lg font-bold text-neutral-800 mb-4">Node Properties</h2>
         <p className="text-neutral-500 text-sm">Select a node to edit its properties</p>
       </div>
@@ -39,7 +39,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
   };
 
   return (
-    <div className="w-80 bg-neutral-50 border-l border-neutral-200 p-4 overflow-y-auto">
+    <div className="w-80 h-screen bg-neutral-50 border-l border-neutral-200 p-4 overflow-y-auto">
       <h2 className="text-lg font-bold text-neutral-800 mb-4">Node Properties</h2>
       <div className="bg-neutral-800 text-white px-2 py-1 rounded text-xs font-bold font-mono mb-4 inline-block">
         Node ID: {selectedNode.id}
@@ -54,7 +54,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             type="text"
             value={selectedNode.data.label || ""}
             onChange={(e) => handleChange("label", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white"
+            className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-neutral-900/5 hover:bg-neutral-900/10"
             placeholder="Node label"
           />
         </div>
@@ -111,7 +111,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
             type="text"
             value={selectedNode.data.nextNodeId || ""}
             onChange={(e) => handleChange("nextNodeId", e.target.value)}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 font-mono bg-white"
+            className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 font-mono bg-neutral-900/5 hover:bg-neutral-900/10"
             placeholder="-1"
           />
         </div>
@@ -150,25 +150,28 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Speech Speed
-          </label>
-          <Select
-            value={selectedNode.data.speechSpeed || "2"}
-            onValueChange={(value) => handleChange("speechSpeed", value)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Speed" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">0 (Default)</SelectItem>
-              <SelectItem value="1">1 (Slow)</SelectItem>
-              <SelectItem value="2">2 (Normal)</SelectItem>
-              <SelectItem value="3">3 (Fast)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Only show Speech Speed for specific node types */}
+        {(selectedNode.type === "botSpeech" || selectedNode.type === "showMessage" || selectedNode.type === "choice") && (
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Speech Speed
+            </label>
+            <Select
+              value={selectedNode.data.speechSpeed || "2"}
+              onValueChange={(value) => handleChange("speechSpeed", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Speed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">0 (Default)</SelectItem>
+                <SelectItem value="1">1 (Slow)</SelectItem>
+                <SelectItem value="2">2 (Normal)</SelectItem>
+                <SelectItem value="3">3 (Fast)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -249,7 +252,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                     type="number"
                     value={selectedNode.data.value3 || ""}
                     onChange={(e) => handleChange("value3", e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500 bg-white font-mono"
+                    className="w-full px-3 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-500  bg-neutral-900/5 hover:bg-neutral-900/10 font-mono"
                     placeholder="0"
                   />
                 </div>

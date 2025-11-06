@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -12,23 +12,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SidebarProps {
   onOpenSpeechTextManager: () => void;
   onOpenNPCManager: () => void;
   onOpenVariableManager: () => void;
+  onOpenSequenceManager: () => void;
   onExportProject: () => void;
   onImportProject: () => void;
+  onExitProject: () => void;
 }
 
 export default function Sidebar({
   onOpenSpeechTextManager,
   onOpenNPCManager,
   onOpenVariableManager,
+  onOpenSequenceManager,
   onExportProject,
-  onImportProject
+  onImportProject,
+  onExitProject
 }: SidebarProps) {
   const [isEditingName, setIsEditingName] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const projectName = useGameDialogStore((state) => state.projectName);
   const setProjectName = useGameDialogStore((state) => state.setProjectName);
 
@@ -43,13 +58,26 @@ export default function Sidebar({
     }
   };
 
+  const handleExitClick = () => {
+    setShowExitDialog(true);
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitDialog(false);
+    onExitProject();
+  };
+
+  const handleCancelExit = () => {
+    setShowExitDialog(false);
+  };
+
   const onDragStart = (event: React.DragEvent<HTMLDivElement>, nodeType: string) => {
     event.dataTransfer.setData("application/reactflow", nodeType);
     event.dataTransfer.effectAllowed = "move";
   };
 
   return (
-    <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col">
+    <div className="w-64 h-full bg-neutral-50 border-r border-neutral-200 flex flex-col">
       {/* Project Management Section */}
       <div className="p-4 border-b border-neutral-200 bg-white">
         <div className="flex items-center justify-between mb-2">
@@ -88,6 +116,11 @@ export default function Sidebar({
               <DropdownMenuItem onClick={onImportProject}>
                 <Upload size={16} className="mr-2" />
                 Import Project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleExitClick} className="text-red-600 focus:text-red-600">
+                <LogOut size={16} className="mr-2" />
+                Close Project
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>
@@ -151,6 +184,14 @@ export default function Sidebar({
           >
             <VariableIcon size={18} />
             Variables
+          </button>
+
+          <button
+            onClick={onOpenSequenceManager}
+            className="w-full px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2"
+          >
+            <Layers size={18} />
+            Sequences
           </button>
         </div>
       </div>
@@ -349,6 +390,28 @@ export default function Sidebar({
           </p>
         </div>
       </div>
+
+      {/* Exit Project Confirmation Dialog */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Close Project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to close this project? Make sure you have exported your work before closing.
+              This will return you to the start screen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelExit}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmExit}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Close Project
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

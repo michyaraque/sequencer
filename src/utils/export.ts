@@ -1,36 +1,31 @@
 import { Node, Edge } from "@xyflow/react";
 import { DialogNodeData, SpeechText, NPC, Variable } from "@/types/dialog";
+import { RoomData } from "@/store/useRoomsStore";
 
 // Full project export/import interfaces
 export interface ProjectExport {
   version: string;
   timestamp: string;
   projectName: string;
-  nodes: Node<DialogNodeData>[];
-  edges: Edge[];
-  speechTexts: SpeechText[];
-  npcs: NPC[];
-  variables: Variable[];
+  rooms: RoomData[];
+  // Legacy fields for backward compatibility
+  nodes?: Node<DialogNodeData>[];
+  edges?: Edge[];
+  speechTexts?: SpeechText[];
+  npcs?: NPC[];
+  variables?: Variable[];
 }
 
 // Export entire project to JSON
 export function exportProject(
-  nodes: Node<DialogNodeData>[],
-  edges: Edge[],
-  speechTexts: SpeechText[],
-  npcs: NPC[],
-  variables: Variable[],
+  rooms: RoomData[],
   projectName: string = "Untitled Project"
 ): string {
   const project: ProjectExport = {
-    version: "1.0.0",
+    version: "2.0.0", // Bumped to 2.0.0 for rooms support
     timestamp: new Date().toISOString(),
     projectName,
-    nodes,
-    edges,
-    speechTexts,
-    npcs,
-    variables,
+    rooms,
   };
 
   return JSON.stringify(project, null, 2);
@@ -41,8 +36,26 @@ export function importProject(content: string): ProjectExport | null {
   try {
     const project: ProjectExport = JSON.parse(content);
 
-    // Validate project structure
-    if (!project.nodes || !project.edges || !project.speechTexts || !project.npcs || !project.variables) {
+    // Handle legacy format (version 1.0.0) - convert to new format
+    if (project.nodes && project.edges && !project.rooms) {
+      // Convert legacy format to new room-based format
+      const legacyRoom: RoomData = {
+        id: `room-${Date.now()}`,
+        name: "Room 1",
+        projectName: project.projectName || "Untitled Project",
+        selectedLanguage: 1,
+        nodes: project.nodes,
+        edges: project.edges,
+        speechTexts: project.speechTexts || [],
+        npcs: project.npcs || [],
+        variables: project.variables || [],
+      };
+
+      project.rooms = [legacyRoom];
+    }
+
+    // Validate project structure (new format)
+    if (!project.rooms || !Array.isArray(project.rooms)) {
       throw new Error("Invalid project format");
     }
 
@@ -70,8 +83,15 @@ export function exportToDialogFormat(nodes: Node<DialogNodeData>[]): string {
   const lines = nodes.map((node, index) => {
     const data = node.data;
 
+    const botId = data.botId === "#(bot_id)" ? "-1" : (data.botId || "-1");
+    const userId = data.userId || "#(user_id)";
+
+    const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
+    const shouldExportSpeechSpeed = node.type && nodeTypesWithSpeechSpeed.includes(node.type);
+    const speechSpeed = shouldExportSpeechSpeed ? (data.speechSpeed || "-1") : "-1";
+
     // Format: index=#(bot_id)|#(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
-    return `${index}=${data.botId || "-1"}|${data.userId || "-1"}|${data.nextNodeId || "-1"}|${data.speechId || "-1"}|${data.speechSpeed || "1/2/3"}|${data.actionId || "1001"}|${data.value1 || "-1"}|${data.value2 || "-1"}|${data.value3 || "-1"}`;
+    return `${index}=${botId}|${userId}|${data.nextNodeId || "-1"}|${data.speechId || "-1"}|${speechSpeed}|${data.actionId || "1001"}|${data.value1 || "-1"}|${data.value2 || "-1"}|${data.value3 || "-1"}`;
   });
 
   return lines.join("\n");

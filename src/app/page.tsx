@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes } from "@xyflow/react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import DialogNode, {
+import {
   InitializeSpeechNode,
   BotSpeechNode,
   ShowMessageNode,
@@ -25,9 +25,10 @@ import DialogNode, {
   WaitNode,
   CustomActionNode,
   EndDialogueNode,
-  CustomNodeProps
-} from "@/components/DialogNode";
-import AnnotationNode from "@/components/AnnotationNode";
+  CustomNodeProps,
+  DialogNode
+} from "@/components/nodes";
+import AnnotationNode from "@/components/nodes/AnnotationNode";
 import CustomEdge from "@/components/CustomEdge";
 import EmptyState from "@/components/EmptyState";
 import NodeEditor from "@/components/NodeEditor";
@@ -37,23 +38,34 @@ import VariableManager from "@/components/VariableManager";
 import Sidebar from "@/components/Sidebar";
 import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
-import { useDialogNodes } from "@/hooks/useDialogNodes";
+import { useDialogNodes, getNextNodeId } from "@/hooks/useDialogNodes";
 import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useDialogExport";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
+import { useRoomsStore } from "@/store/useRoomsStore";
+import { useSequencesStore } from "@/store/useSequencesStore";
+import RoomTabs from "@/components/RoomTabs";
+import SaveSequenceDialog from "@/components/SaveSequenceDialog";
+import CanvasContextMenu from "@/components/CanvasContextMenu";
+import SequenceManager from "@/components/SequenceManager";
+import MobileNodePalette from "@/components/MobileNodePalette";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
 
-// Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
+  // Only nodes of type botSpeech, showMessage, and choice should have speechSpeed
+  const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
+  const defaultSpeechSpeed = nodeTypesWithSpeechSpeed.includes(nodeType) ? "2" : "-1";
+
   const baseData = {
-    botId: "#(bot_id)",
+    botId: "-1",
     userId: "#(user_id)",
     nextNodeId: "-1",
     speechId: "-1",
-    speechSpeed: "0",
+    speechSpeed: defaultSpeechSpeed,
     value1: "-1",
     value2: "-1",
     value3: "-1",
@@ -95,6 +107,12 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
+  const [showSequenceManager, setShowSequenceManager] = useState(false);
+  const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [showMobileNodeEditor, setShowMobileNodeEditor] = useState(false);
+  const [showMobileNodePalette, setShowMobileNodePalette] = useState(false);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -106,7 +124,55 @@ function FlowEditor() {
   const storedNodes = useGameDialogStore((state) => state.nodes);
   const storedEdges = useGameDialogStore((state) => state.edges);
 
-  // Create node types with callbacks
+  const currentRoom = useRoomsStore((state) => state.getCurrentRoom());
+  const currentRoomId = useRoomsStore((state) => state.currentRoomId);
+  const updateRoomData = useRoomsStore((state) => state.updateRoomData);
+  const rooms = useRoomsStore((state) => state.rooms);
+  const addRoom = useRoomsStore((state) => state.addRoom);
+  const hasRooms = rooms.length > 0;
+
+  const sequences = useSequencesStore((state) => state.sequences);
+  const addSequence = useSequencesStore((state) => state.addSequence);
+  const deleteSequence = useSequencesStore((state) => state.deleteSequence);
+  const updateSequence = useSequencesStore((state) => state.updateSequence);
+
+  const isLoadingRoom = useRef(false);
+
+  useEffect(() => {
+    if (currentRoom) {
+      isLoadingRoom.current = true;
+      useGameDialogStore.getState().setNodes(currentRoom.nodes);
+      useGameDialogStore.getState().setEdges(currentRoom.edges);
+      useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
+      useGameDialogStore.getState().setNPCs(currentRoom.npcs);
+      useGameDialogStore.getState().setVariables(currentRoom.variables);
+      useGameDialogStore.getState().setProjectName(currentRoom.projectName);
+      useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
+
+      setTimeout(() => {
+        isLoadingRoom.current = false;
+      }, 100);
+    }
+  }, [currentRoomId, currentRoom]);
+
+  useEffect(() => {
+    if (currentRoomId && !isLoadingRoom.current) {
+      const timeoutId = setTimeout(() => {
+        updateRoomData(currentRoomId, {
+          nodes: storedNodes,
+          edges: storedEdges,
+          speechTexts,
+          npcs,
+          variables,
+          projectName,
+          selectedLanguage,
+        });
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [storedNodes, storedEdges, speechTexts, npcs, variables, projectName, selectedLanguage, currentRoomId, updateRoomData]);
+
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
       return (props: CustomNodeProps) => (
@@ -136,7 +202,6 @@ function FlowEditor() {
     };
   }, []);
 
-  // Create edge types
   const edgeTypes: EdgeTypes = useMemo(() => {
     return {
       default: CustomEdge,
@@ -180,15 +245,35 @@ function FlowEditor() {
     deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
 
-  // Sync nodes and edges back to store when they change
+  const hasInitialized = useRef(false);
+  useEffect(() => {
+    if (!hasInitialized.current && rooms.length > 0 && currentRoomId && nodes.length === 0) {
+      const firstRoom = currentRoom;
+      if (firstRoom && firstRoom.nodes.length > 0) {
+        isLoadingRoom.current = true;
+        setNodes(firstRoom.nodes);
+        setEdges(firstRoom.edges);
+        saveToHistory(firstRoom.nodes, firstRoom.edges);
+        hasInitialized.current = true;
+        setTimeout(() => {
+          isLoadingRoom.current = false;
+        }, 100);
+      }
+    }
+  }, [rooms, currentRoomId, currentRoom]);
+
   useEffect(() => {
     const setStoredNodes = useGameDialogStore.getState().setNodes;
     const setStoredEdges = useGameDialogStore.getState().setEdges;
 
-    if (nodes.length > 0 || edges.length > 0) {
-      setStoredNodes(nodes);
-      setStoredEdges(edges);
-    }
+    const timeoutId = setTimeout(() => {
+      if (nodes.length > 0 || edges.length > 0) {
+        setStoredNodes(nodes);
+        setStoredEdges(edges);
+      }
+    }, 150);
+
+    return () => clearTimeout(timeoutId);
   }, [nodes, edges]);
 
   const handleEditSpeechText = useCallback((oldId: string, speechText: any) => {
@@ -300,13 +385,24 @@ function FlowEditor() {
     },
   });
 
-  // Project-wide export/import handlers
   const handleExportProject = useCallback(() => {
-    const content = exportProject(nodes, edges, speechTexts, npcs, variables, projectName);
+    if (currentRoomId && !isLoadingRoom.current) {
+      updateRoomData(currentRoomId, {
+        nodes: storedNodes,
+        edges: storedEdges,
+        speechTexts,
+        npcs,
+        variables,
+        projectName,
+        selectedLanguage,
+      });
+    }
+
+    const content = exportProject(rooms, projectName);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${timestamp}.json`;
     downloadProjectFile(content, filename);
-  }, [nodes, edges, speechTexts, npcs, variables, projectName]);
+  }, [rooms, projectName, currentRoomId, storedNodes, storedEdges, speechTexts, npcs, variables, selectedLanguage, updateRoomData]);
 
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
@@ -320,27 +416,31 @@ function FlowEditor() {
           const content = event.target?.result as string;
           const project = importProject(content);
 
-          if (project) {
-            // Update all state
-            setNodes(project.nodes);
-            setEdges(project.edges);
+          if (project && project.rooms) {
+            useRoomsStore.setState({
+              rooms: project.rooms,
+              currentRoomId: project.rooms[0]?.id || "",
+            });
 
-            // Update store data - replace all data at once
-            const setProjectName = useGameDialogStore.getState().setProjectName;
-            const setSpeechTexts = useGameDialogStore.getState().setSpeechTexts;
-            const setNPCs = useGameDialogStore.getState().setNPCs;
-            const setVariables = useGameDialogStore.getState().setVariables;
+            const firstRoom = project.rooms[0];
+            if (firstRoom) {
+              isLoadingRoom.current = true;
+              useGameDialogStore.getState().setNodes(firstRoom.nodes);
+              useGameDialogStore.getState().setEdges(firstRoom.edges);
+              useGameDialogStore.getState().setSpeechTexts(firstRoom.speechTexts);
+              useGameDialogStore.getState().setNPCs(firstRoom.npcs);
+              useGameDialogStore.getState().setVariables(firstRoom.variables);
+              useGameDialogStore.getState().setProjectName(firstRoom.projectName);
+              useGameDialogStore.getState().setSelectedLanguage(firstRoom.selectedLanguage);
 
-            // Replace existing data with imported data
-            setProjectName(project.projectName || "Untitled Project");
-            setSpeechTexts(project.speechTexts);
-            setNPCs(project.npcs);
-            setVariables(project.variables);
+              saveToHistory(firstRoom.nodes, firstRoom.edges);
 
-            // Save to history
-            saveToHistory(project.nodes, project.edges);
+              setTimeout(() => {
+                isLoadingRoom.current = false;
+              }, 100);
+            }
 
-            toast.success('Project imported successfully!');
+            toast.success(`Project imported with ${project.rooms.length} room(s)!`);
           } else {
             toast.error('Failed to import project. Invalid file format.');
           }
@@ -349,23 +449,26 @@ function FlowEditor() {
       }
     };
     input.click();
-  }, [setNodes, setEdges, saveToHistory]);
+  }, [saveToHistory]);
 
   const handleCreateProject = useCallback((projectName: string) => {
+    if (rooms.length === 0) {
+      addRoom("Room 1");
+    }
+
     // Set project name
     setProjectName(projectName);
 
-    // Create initial node
     const initialNode: Node<DialogNodeData> = {
       id: "1",
       type: "initializeSpeech",
       position: { x: 250, y: 100 },
       data: {
-        botId: "#(bot_id)",
+        botId: "-1",
         userId: "#(user_id)",
         nextNodeId: "0",
         speechId: "-1",
-        speechSpeed: "2",
+        speechSpeed: "-1",
         actionId: "1",
         value1: "-1",
         value2: "-1",
@@ -379,34 +482,36 @@ function FlowEditor() {
     saveToHistory([initialNode], []);
 
     toast.success(`Project "${projectName}" created successfully!`);
-  }, [setProjectName, setNodes, setEdges, saveToHistory]);
+  }, [setProjectName, setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
-  const handleLoadRecentProject = useCallback(() => {
-    // Reload nodes and edges from store
-    const currentStoredNodes = useGameDialogStore.getState().nodes;
-    const currentStoredEdges = useGameDialogStore.getState().edges;
+  const handleLoadRecentProject = useCallback((projectName: string) => {
+    const roomsState = useRoomsStore.getState();
 
-    if (currentStoredNodes.length > 0) {
-      setNodes(currentStoredNodes);
-      setEdges(currentStoredEdges);
-      saveToHistory(currentStoredNodes, currentStoredEdges);
-      toast.success('Project loaded successfully!');
+    if (roomsState.rooms.length > 0) {
+      const targetRoom = roomsState.rooms.find(r => r.projectName === projectName) || roomsState.rooms[0];
+
+      useRoomsStore.getState().switchRoom(targetRoom.id);
+
+      toast.success(`Loaded "${targetRoom.projectName}"`);
     } else {
-      toast.error('No project data found in storage');
+      toast.error('No saved projects found');
     }
-  }, [setNodes, setEdges, saveToHistory]);
+  }, []);
 
-  // Update recent projects when user works on the project
   useEffect(() => {
-    if (nodes.length > 0 && projectName !== "Untitled Project") {
-      const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
-      addRecentProject({
-        name: projectName,
-        nodeCount: nodes.length,
-        speechCount: speechTexts.length,
-      });
+    if (nodes.length > 0 && projectName !== "Untitled Project" && hasRooms) {
+      const timeoutId = setTimeout(() => {
+        const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
+        addRecentProject({
+          name: projectName,
+          nodeCount: nodes.length,
+          speechCount: speechTexts.length,
+        });
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [nodes.length, speechTexts.length, projectName]);
+  }, [nodes.length, speechTexts.length, projectName, hasRooms]);
 
   const handleUndo = () => undo(setNodes, setEdges, setSelectedNode);
   const handleRedo = () => redo(setNodes, setEdges, setSelectedNode);
@@ -418,10 +523,193 @@ function FlowEditor() {
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
     onDeleteEdges: deleteEdgesByIds,
-    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager,
+    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager || showSequenceManager,
   });
 
   const { screenToFlowPosition } = useReactFlow();
+
+  const handleExitProject = useCallback(() => {
+    useRoomsStore.setState({
+      currentRoomId: "",
+    });
+
+    useGameDialogStore.getState().setNodes([]);
+    useGameDialogStore.getState().setEdges([]);
+    useGameDialogStore.getState().setSpeechTexts([]);
+    useGameDialogStore.getState().setNPCs([]);
+    useGameDialogStore.getState().setVariables([]);
+    useGameDialogStore.getState().setProjectName("Untitled Project");
+    useGameDialogStore.getState().setSelectedLanguage(1);
+
+    toast.success("Project closed");
+  }, []);
+
+  const handleSaveSequence = useCallback((name: string, description: string) => {
+    const selectedNodes = nodes.filter(node => node.selected);
+
+    if (selectedNodes.length === 0) {
+      toast.error("No nodes selected");
+      return;
+    }
+
+    const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+    const selectedEdges = edges.filter(edge =>
+      selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
+    );
+
+    addSequence({
+      name,
+      description,
+      nodes: selectedNodes,
+      edges: selectedEdges,
+    });
+
+    setShowSaveSequenceDialog(false);
+    toast.success(`Sequence "${name}" saved with ${selectedNodes.length} nodes`);
+  }, [nodes, edges, addSequence]);
+
+  const handleCreateFromSequence = useCallback((sequence: any, clickPosition: { x: number; y: number }) => {
+    if (!sequence.nodes || sequence.nodes.length === 0) {
+      toast.error("Sequence has no nodes");
+      return;
+    }
+
+    const originalNodes = sequence.nodes;
+    const minX = Math.min(...originalNodes.map((n: Node) => n.position.x));
+    const minY = Math.min(...originalNodes.map((n: Node) => n.position.y));
+
+    const flowPosition = screenToFlowPosition(clickPosition);
+
+    const idMap = new Map<string, string>();
+    let currentMaxId = Math.max(...nodes.map(n => parseInt(n.id, 10)).filter(id => !isNaN(id)), 0);
+
+    originalNodes.forEach((node: Node) => {
+      currentMaxId++;
+      const newId = `${currentMaxId}`;
+      idMap.set(node.id, newId);
+    });
+
+    const newNodes: Node<DialogNodeData>[] = originalNodes.map((node: Node<DialogNodeData>) => {
+      const newId = idMap.get(node.id)!;
+      const offsetX = node.position.x - minX;
+      const offsetY = node.position.y - minY;
+
+      return {
+        ...node,
+        id: newId,
+        position: {
+          x: flowPosition.x + offsetX,
+          y: flowPosition.y + offsetY,
+        },
+        selected: false,
+      };
+    });
+
+    const newEdges: Edge[] = sequence.edges.map((edge: Edge) => {
+      const newSource = idMap.get(edge.source);
+      const newTarget = idMap.get(edge.target);
+
+      if (!newSource || !newTarget) return null;
+
+      return {
+        ...edge,
+        id: `${newSource}-${newTarget}`,
+        source: newSource,
+        target: newTarget,
+      };
+    }).filter(Boolean) as Edge[];
+
+    const finalNodes = newNodes.map(node => {
+      if (node.data.nextNodeId && idMap.has(node.data.nextNodeId)) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            nextNodeId: idMap.get(node.data.nextNodeId)!,
+          },
+        };
+      }
+      return node;
+    });
+
+    setNodes((nds) => {
+      const updatedNodes = [...nds, ...finalNodes];
+      setTimeout(() => saveToHistory(updatedNodes, [...edges, ...newEdges]), 0);
+      return updatedNodes;
+    });
+
+    setEdges((eds) => [...eds, ...newEdges]);
+
+    toast.success(`Created ${finalNodes.length} nodes from sequence "${sequence.name}"`);
+  }, [nodes, edges, setNodes, setEdges, saveToHistory, screenToFlowPosition]);
+
+  const handleContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({ x: event.clientX, y: event.clientY });
+  }, []);
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  const handleDeleteSequence = useCallback((sequenceId: string) => {
+    const sequence = sequences.find(s => s.id === sequenceId);
+    if (sequence) {
+      deleteSequence(sequenceId);
+      toast.success(`Sequence "${sequence.name}" deleted`);
+    }
+  }, [sequences, deleteSequence]);
+
+  const handleEditSequence = useCallback((id: string, data: { name: string; description?: string }) => {
+    updateSequence(id, data);
+    toast.success("Sequence updated");
+  }, [updateSequence]);
+
+  const handleMobileAddNode = useCallback((nodeType: string) => {
+    const viewport = document.querySelector('.react-flow__viewport');
+    if (!viewport) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const position = screenToFlowPosition({
+      x: centerX,
+      y: centerY,
+    });
+
+    const newNodeId = getNextNodeId(nodes);
+
+    let newNode: Node<any>;
+
+    if (nodeType === "annotation") {
+      newNode = {
+        id: newNodeId,
+        type: nodeType,
+        position,
+        data: {
+          text: "Double-click to edit",
+          label: "Note",
+          color: "Yellow",
+        },
+      };
+    } else {
+      newNode = {
+        id: newNodeId,
+        type: nodeType,
+        position,
+        data: getDefaultNodeData(nodeType, newNodeId),
+      };
+    }
+
+    setNodes((nds) => {
+      const newNodes = nds.concat(newNode);
+      setTimeout(() => saveToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    toast.success("Node added to canvas");
+  }, [screenToFlowPosition, nodes, edges, setNodes, saveToHistory]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -443,9 +731,8 @@ function FlowEditor() {
         y: event.clientY,
       });
 
-      const newNodeId = `${nodes.length + 1}`;
+      const newNodeId = getNextNodeId(nodes);
 
-      // Handle annotation nodes separately as they have different data structure
       let newNode: Node<any>;
 
       if (type === "annotation") {
@@ -477,47 +764,108 @@ function FlowEditor() {
     [screenToFlowPosition, nodes, edges, setNodes, saveToHistory]
   );
 
+  useEffect(() => {
+    if (selectedNode && window.innerWidth < 1024) {
+      setShowMobileNodeEditor(true);
+    }
+  }, [selectedNode]);
+
   return (
-    <div className="flex h-screen w-full">
-      <Sidebar
-        onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
-        onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
-        onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
-        onExportProject={handleExportProject}
-        onImportProject={handleImportProject}
-      />
-      <div className="flex-1 flex flex-col">
-        <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center gap-3">
-          <div className="flex items-center gap-2">
+    <div className="flex h-screen w-full overflow-hidden">
+      {/* Desktop Sidebar - hidden on mobile */}
+      <div className="hidden lg:block h-full">
+        <Sidebar
+          onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
+          onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
+          onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
+          onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
+          onExportProject={handleExportProject}
+          onImportProject={handleImportProject}
+          onExitProject={handleExitProject}
+        />
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
+        <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
+          <Sidebar
+            onOpenNPCManager={() => {
+              setShowNPCManager(!showNPCManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenSpeechTextManager={() => {
+              setShowSpeechTextManager(!showSpeechTextManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenVariableManager={() => {
+              setShowVariableManager(!showVariableManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenSequenceManager={() => {
+              setShowSequenceManager(!showSequenceManager);
+              setShowMobileSidebar(false);
+            }}
+            onExportProject={() => {
+              handleExportProject();
+              setShowMobileSidebar(false);
+            }}
+            onImportProject={() => {
+              handleImportProject();
+              setShowMobileSidebar(false);
+            }}
+            onExitProject={() => {
+              handleExitProject();
+              setShowMobileSidebar(false);
+            }}
+          />
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {currentRoomId && <RoomTabs />}
+
+        {/* Toolbar - Responsive */}
+        <div className="bg-white border-b border-neutral-200 px-2 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 overflow-x-auto">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setShowMobileSidebar(true)}
+            className="lg:hidden p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors"
+            title="Menu"
+          >
+            <Menu size={18} />
+          </button>
+
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleUndo}
               disabled={currentHistoryIndex === 0}
               className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo (Ctrl+Z)"
+              title="Undo"
             >
-              <Undo2 size={18} />
+              <Undo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
-
             <button
               onClick={handleRedo}
               disabled={currentHistoryIndex === history.length - 1}
               className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo (Ctrl+Y)"
+              title="Redo"
             >
-              <Redo2 size={18} />
+              <Redo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
           </div>
 
-          <div className="w-px h-8 bg-neutral-300" />
+          <div className="hidden sm:block w-px h-8 bg-neutral-300" />
 
-          <div className="flex items-center gap-2">
+          {/* Language Selector - Hidden on small mobile */}
+          <div className="hidden md:flex items-center gap-2">
             <Languages size={18} className="text-neutral-600" />
             <Select
               value={selectedLanguage.toString()}
               onValueChange={(value) => setSelectedLanguage(parseInt(value))}
             >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Select Language" />
+              <SelectTrigger className="w-32 lg:w-40">
+                <SelectValue placeholder="Language" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">English</SelectItem>
@@ -528,39 +876,52 @@ function FlowEditor() {
             </Select>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Delete & Save Sequence */}
+          <div className="flex items-center gap-1 sm:gap-2">
             {selectedNode && (
               <button
                 onClick={deleteSelectedNode}
-                className="px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors font-medium flex items-center gap-2"
+                className="p-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors"
+                title="Delete"
               >
-                <Trash2 size={18} />
+                <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+              </button>
+            )}
+
+            {nodes.filter(n => n.selected).length > 0 && (
+              <button
+                onClick={() => setShowSaveSequenceDialog(true)}
+                className="p-2 sm:px-3 sm:py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2"
+                title="Save Sequence"
+              >
+                <Save size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">Save Sequence</span>
               </button>
             )}
           </div>
 
-          <div className="w-px h-8 bg-neutral-300" />
+          <div className="hidden sm:block w-px h-8 bg-neutral-300 shrink-0" />
 
-          <div className="flex items-center gap-2">
+          {/* Export/Import Actions */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleExport}
-              className="px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2"
+              className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors"
+              title="Export"
             >
-              <Download size={18} />
-              Export
+              <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             <button
               onClick={handleCopyToClipboard}
-              className="px-3 py-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors font-medium flex items-center gap-2"
+              className="hidden sm:flex p-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors"
+              title="Copy"
             >
               <Copy size={18} />
-              Copy
             </button>
 
-            <label className="px-3 py-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors font-medium cursor-pointer inline-flex items-center gap-2">
-              <Upload size={18} />
-              Import
+            <label className="p-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors cursor-pointer inline-flex items-center">
+              <Upload size={16} className="sm:w-[18px] sm:h-[18px]" />
               <input
                 type="file"
                 accept=".txt"
@@ -569,10 +930,21 @@ function FlowEditor() {
               />
             </label>
           </div>
+
+          {/* Mobile Node Editor Toggle - Only when node selected */}
+          {selectedNode && (
+            <button
+              onClick={() => setShowMobileNodeEditor(true)}
+              className="lg:hidden ml-auto p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+              title="Edit Node"
+            >
+              <Variable size={16} />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 relative">
-          {nodes.length === 0 ? (
+          {!currentRoomId ? (
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}
@@ -591,6 +963,7 @@ function FlowEditor() {
               onPaneClick={onPaneClick}
               onDrop={onDrop}
               onDragOver={onDragOver}
+              onPaneContextMenu={handleContextMenu}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               minZoom={0.25}
@@ -598,6 +971,7 @@ function FlowEditor() {
               defaultViewport={{ x: 90, y: 200, zoom: 1 }}
               fitViewOptions={{ padding: 0.5 }}
               className="bg-neutral-100"
+              connectionRadius={30}
               proOptions={{
                 hideAttribution: true
               }}
@@ -605,6 +979,8 @@ function FlowEditor() {
               <Background className="bg-neutral-100" />
               <Controls />
               <MiniMap
+                zoomable
+                pannable
                 nodeColor={(node) => {
                   return node.selected ? "#171717" : "#d4d4d4";
                 }}
@@ -612,16 +988,52 @@ function FlowEditor() {
               />
             </ReactFlow>
           )}
+
+          {/* Floating Add Button - Mobile Only */}
+          {currentRoomId && (
+            <button
+              onClick={() => setShowMobileNodePalette(true)}
+              className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center z-40"
+              title="Add Node"
+            >
+              <Plus size={28} />
+            </button>
+          )}
         </div>
       </div>
 
-      <NodeEditor
-        selectedNode={selectedNode}
-        onUpdate={updateNodeData}
-        speechTexts={speechTexts}
-        npcs={npcs}
-        variables={variables}
-      />
+      {/* Desktop NodeEditor - hidden on mobile */}
+      <div className="hidden lg:block">
+        <NodeEditor
+          selectedNode={selectedNode}
+          onUpdate={updateNodeData}
+          speechTexts={speechTexts}
+          npcs={npcs}
+          variables={variables}
+        />
+      </div>
+
+      {/* Mobile NodeEditor - Bottom Sheet */}
+      <Sheet open={showMobileNodeEditor} onOpenChange={setShowMobileNodeEditor}>
+        <SheetContent side="bottom" className="h-[85vh] p-0 overflow-y-auto">
+          <div className="sticky top-0 bg-white border-b border-neutral-200 p-4 flex items-center justify-between z-10">
+            <h3 className="font-bold text-lg">Edit Node</h3>
+            <button
+              onClick={() => setShowMobileNodeEditor(false)}
+              className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <NodeEditor
+            selectedNode={selectedNode}
+            onUpdate={updateNodeData}
+            speechTexts={speechTexts}
+            npcs={npcs}
+            variables={variables}
+          />
+        </SheetContent>
+      </Sheet>
 
       {showSpeechTextManager && (
         <SpeechTextManager
@@ -652,6 +1064,41 @@ function FlowEditor() {
           onClose={() => setShowVariableManager(false)}
         />
       )}
+
+      {showSaveSequenceDialog && (
+        <SaveSequenceDialog
+          selectedNodes={nodes.filter(n => n.selected)}
+          onSave={handleSaveSequence}
+          onClose={() => setShowSaveSequenceDialog(false)}
+        />
+      )}
+
+      {contextMenu && (
+        <CanvasContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          sequences={sequences}
+          onClose={handleCloseContextMenu}
+          onCreateSequence={(sequence) => handleCreateFromSequence(sequence, contextMenu)}
+          onDeleteSequence={handleDeleteSequence}
+        />
+      )}
+
+      {showSequenceManager && (
+        <SequenceManager
+          sequences={sequences}
+          onEdit={handleEditSequence}
+          onDelete={handleDeleteSequence}
+          onClose={() => setShowSequenceManager(false)}
+        />
+      )}
+
+      {/* Mobile Node Palette */}
+      <MobileNodePalette
+        open={showMobileNodePalette}
+        onClose={() => setShowMobileNodePalette(false)}
+        onSelectNode={handleMobileAddNode}
+      />
     </div>
   );
 }

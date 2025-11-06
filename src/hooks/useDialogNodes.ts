@@ -1,11 +1,22 @@
 import { useState, useCallback, useRef } from "react";
 import { Node, Edge, applyNodeChanges, applyEdgeChanges, addEdge, OnNodesChange, OnEdgesChange, OnConnect, useReactFlow } from "@xyflow/react";
 import { DialogNodeData } from "@/types/dialog";
+import { toast } from "sonner";
 
 interface UseDialogNodesProps {
   initialNodes: Node<DialogNodeData>[];
   saveToHistory: (nodes: Node<DialogNodeData>[], edges: Edge[]) => void;
 }
+
+// Helper function to generate unique node IDs based on highest existing ID
+export const getNextNodeId = (nodes: Node<DialogNodeData>[]): string => {
+  const numericIds = nodes
+    .map(node => parseInt(node.id, 10))
+    .filter(id => !isNaN(id));
+
+  const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
+  return `${maxId + 1}`;
+};
 
 export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesProps) {
   const [nodes, setNodes] = useState<Node<DialogNodeData>[]>(initialNodes);
@@ -74,73 +85,41 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
 
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent) => {
-      if (!connectingNodeId.current) return;
-
-      const targetIsPane = (event.target as Element).classList.contains("react-flow__pane");
-
-      if (targetIsPane) {
-        const position = screenToFlowPosition({
-          x: (event as MouseEvent).clientX,
-          y: (event as MouseEvent).clientY,
-        });
-
-        let newNodes: Node<DialogNodeData>[] = [];
-        let newEdges: Edge[] = [];
-
-        setNodes((nds) => {
-          const newNodeId = `${nds.length + 1}`;
-          const newNode: Node<DialogNodeData> = {
-            id: newNodeId,
-            type: "dialogNode",
-            position,
-            data: {
-              botId: "#(bot_id)",
-              userId: "#(user_id)",
-              nextNodeId: "-1",
-              speechId: "SpeechId",
-              speechSpeed: "1/2/3",
-              actionId: "1001",
-              value1: "-1",
-              value2: "-1",
-              value3: "-1",
-              label: `New Node ${newNodeId}`,
-            },
-          };
-
-          setEdges((eds) => {
-            newEdges = [
-              ...eds,
-              {
-                id: `${connectingNodeId.current}-${newNodeId}`,
-                source: connectingNodeId.current!,
-                target: newNodeId,
-              },
-            ];
-            return newEdges;
-          });
-
-          newNodes = nds.map((node) => {
-            if (node.id === connectingNodeId.current) {
-              return {
-                ...node,
-                data: { ...node.data, nextNodeId: newNodeId },
-              };
-            }
-            return node;
-          }).concat(newNode);
-
-          setTimeout(() => saveToHistory(newNodes, newEdges), 0);
-          return newNodes;
-        });
-      }
-
+      // Disabled drag-to-create feature - simply reset the connecting node
       connectingNodeId.current = null;
     },
-    [screenToFlowPosition, saveToHistory]
+    []
   );
 
   const onConnect: OnConnect = useCallback(
     (params) => {
+      if (!params.source || !params.target) return;
+
+      // Validate connection rules before creating the connection
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+
+      // Rule 1: Initialize Speech can only have ONE outgoing connection
+      if (sourceNode?.type === 'initializeSpeech') {
+        const existingOutgoing = edges.find(e => e.source === params.source);
+        if (existingOutgoing) {
+          // Already has an outgoing connection, reject
+          toast.error('Initialize Speech can only have one outgoing connection');
+          return;
+        }
+      }
+
+      // Rule 2: End Dialogue can only have ONE incoming connection
+      if (targetNode?.type === 'endDialogue') {
+        const existingIncoming = edges.find(e => e.target === params.target);
+        if (existingIncoming) {
+          // Already has an incoming connection, reject
+          toast.error('End Dialogue can only have one incoming connection');
+          return;
+        }
+      }
+
+      // Connection is valid, proceed
       let newNodes: Node<DialogNodeData>[] = [];
       let newEdges: Edge[] = [];
 
@@ -149,34 +128,32 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
         return newEdges;
       });
 
-      if (params.source && params.target) {
-        setNodes((nds) => {
-          newNodes = nds.map((node) => {
-            if (node.id === params.source) {
-              return {
-                ...node,
-                data: { ...node.data, nextNodeId: params.target as string },
-              };
-            }
-            return node;
-          });
-          return newNodes;
-        });
-
-        setSelectedNode((prev) => {
-          if (prev && prev.id === params.source) {
+      setNodes((nds) => {
+        newNodes = nds.map((node) => {
+          if (node.id === params.source) {
             return {
-              ...prev,
-              data: { ...prev.data, nextNodeId: params.target as string },
+              ...node,
+              data: { ...node.data, nextNodeId: params.target as string },
             };
           }
-          return prev;
+          return node;
         });
+        return newNodes;
+      });
 
-        setTimeout(() => saveToHistory(newNodes, newEdges), 0);
-      }
+      setSelectedNode((prev) => {
+        if (prev && prev.id === params.source) {
+          return {
+            ...prev,
+            data: { ...prev.data, nextNodeId: params.target as string },
+          };
+        }
+        return prev;
+      });
+
+      setTimeout(() => saveToHistory(newNodes, newEdges), 0);
     },
-    [saveToHistory]
+    [nodes, edges, saveToHistory]
   );
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node<DialogNodeData>) => {
@@ -193,7 +170,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
 
   const addNewNode = useCallback(() => {
     setNodes((nds) => {
-      const newNodeId = `${nds.length + 1}`;
+      const newNodeId = getNextNodeId(nds);
       const newNode: Node<DialogNodeData> = {
         id: newNodeId,
         type: "dialogNode",
@@ -206,7 +183,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
           userId: "#(user_id)",
           nextNodeId: "-1",
           speechId: "SpeechId",
-          speechSpeed: "1/2/3",
+          speechSpeed: "-1",
           actionId: "1001",
           value1: "-1",
           value2: "-1",

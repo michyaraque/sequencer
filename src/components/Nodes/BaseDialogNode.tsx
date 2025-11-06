@@ -1,8 +1,8 @@
 "use client";
 
 import { memo, useCallback, useMemo, useState } from "react";
-import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
-import { DialogNodeData, ACTION_TYPES, LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
+import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { ACTION_TYPES, LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { Plus, CheckCircle2, AlertCircle, ChevronsUpDown, Check } from "lucide-react";
 import {
@@ -27,48 +27,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { CustomNodeProps, getSpeechIdInLanguage, languageNames, truncateText } from "./shared";
 
-export type DialogRFNode = Node<DialogNodeData>;
-
-function getSpeechIdInLanguage(
-  baseSpeechId: string,
-  selectedLanguage: number,
-  speechTexts: SpeechText[]
-): { speechId: string; isTranslated: boolean; localId: number } {
-  if (baseSpeechId === "-1" || !baseSpeechId) {
-    return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
-  }
-
-  const numericId = parseInt(baseSpeechId);
-  if (isNaN(numericId)) {
-    return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
-  }
-
-  const localId = numericId % 100000;
-  const targetPrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
-  const targetSpeechId = (targetPrefix + localId).toString();
-  const speechExists = speechTexts.some(st => st.id === targetSpeechId);
-
-  if (speechExists) {
-    return { speechId: targetSpeechId, isTranslated: true, localId };
-  }
-
-  const englishId = (100000 + localId).toString();
-  const englishExists = speechTexts.some(st => st.id === englishId);
-
-  if (englishExists && selectedLanguage !== 1) {
-    return { speechId: englishId, isTranslated: false, localId };
-  }
-
-  return { speechId: baseSpeechId, isTranslated: selectedLanguage === 1, localId };
-}
-
-export interface CustomNodeProps extends NodeProps<DialogRFNode> {
-  onOpenSpeechManager?: () => void;
-  onOpenNPCManager?: () => void;
-}
-
-interface BaseDialogNodeProps extends CustomNodeProps {
+export interface BaseDialogNodeProps extends CustomNodeProps {
   showTargetHandle?: boolean;
   showSourceHandle?: boolean;
   showSpeech?: boolean;
@@ -76,9 +37,10 @@ interface BaseDialogNodeProps extends CustomNodeProps {
   accentColor?: string;
   borderColor?: string;
   badgeColor?: string;
+  className?: string;
 }
 
-function BaseDialogNode({
+export const BaseDialogNode = memo(({
   data,
   selected,
   id,
@@ -90,8 +52,9 @@ function BaseDialogNode({
   borderColor = "border-neutral-300",
   badgeColor = "bg-neutral-800",
   onOpenSpeechManager,
-  onOpenNPCManager
-}: BaseDialogNodeProps) {
+  onOpenNPCManager,
+  className
+}: BaseDialogNodeProps) => {
   const actionLabel = ACTION_TYPES[data.actionId as unknown as keyof typeof ACTION_TYPES] || `Action ${data.actionId}`;
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -101,22 +64,13 @@ function BaseDialogNode({
   const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-
-  const truncateText = (text: string, maxLength: number = 50) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
-  };
-
-
   const displaySpeech = useMemo(() => {
     return getSpeechIdInLanguage(data.speechId || "-1", selectedLanguage, speechTexts);
   }, [data.speechId, selectedLanguage, speechTexts]);
 
-
   const speechTextObj = useMemo(() => {
     return speechTexts.find(st => st.id === displaySpeech.speechId);
   }, [speechTexts, displaySpeech.speechId]);
-
 
   const speechesByLanguage = useMemo(() => {
     const grouped: Record<number, SpeechText[]> = {
@@ -139,13 +93,6 @@ function BaseDialogNode({
 
     return grouped;
   }, [speechTexts]);
-
-  const languageNames: Record<number, string> = {
-    1: "English",
-    2: "Spanish",
-    3: "Portuguese",
-    4: "French",
-  };
 
   const handleSpeechChange = useCallback((value: string) => {
     updateNodeData(id, { speechId: value });
@@ -200,7 +147,7 @@ function BaseDialogNode({
         selected
           ? `border-neutral-900 shadow-xl ${accentColor}`
           : `${borderColor} shadow-md hover:shadow-lg hover:border-neutral-500 ${accentColor}`
-      }`}
+      } ${className}`}
     >
       {showTargetHandle && (
         <Handle
@@ -212,7 +159,7 @@ function BaseDialogNode({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2 mb-2 pr-24">
-          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono flex-shrink-0`}>
+          <div className={`${badgeColor} text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0`}>
             ID: {id}
           </div>
           {data.label && (
@@ -226,8 +173,9 @@ function BaseDialogNode({
           {showBotId && (
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
-              <div className="flex gap-1 min-w-0 flex-1">
+              <div className="flex gap-1 min-w-0 flex-1 ">
                 <Select
+
                   value={data.botId || "#(bot_id)"}
                   onValueChange={handleBotIdChange}
                 >
@@ -249,7 +197,7 @@ function BaseDialogNode({
                 </Select>
                 <button
                   onClick={handleCreateNPC}
-                  className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                   title="Crear nuevo NPC"
                 >
                   <Plus size={12} />
@@ -260,7 +208,7 @@ function BaseDialogNode({
 
           {showSpeech && (
             <div className="flex items-center justify-between gap-2 min-w-0">
-              <span className="font-medium text-neutral-500 whitespace-nowrap flex-shrink-0">Speech:</span>
+              <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
               <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
                 <Popover
                   open={speechComboboxOpen}
@@ -370,7 +318,7 @@ function BaseDialogNode({
                 </Popover>
                 {displaySpeech.speechId !== "-1" && data.speechId && data.speechId !== "-1" && (
                   <div
-                    className="flex-shrink-0 flex items-center"
+                    className="shrink-0 flex items-center"
                     title={displaySpeech.isTranslated
                       ? "Traducido en idioma seleccionado"
                       : "Usando versión en inglés (traducción no disponible)"}
@@ -384,7 +332,7 @@ function BaseDialogNode({
                 )}
                 <button
                   onClick={handleCreateSpeech}
-                  className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors flex-shrink-0"
+                  className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                   title="Crear nuevo speech"
                 >
                   <Plus size={10} />
@@ -413,317 +361,4 @@ function BaseDialogNode({
       )}
     </div>
   );
-}
-
-
-export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={false}
-    showSourceHandle={true}
-    showSpeech={true}
-    accentColor="bg-green-50"
-    borderColor="border-green-300"
-    badgeColor="bg-green-700"
-  />
-));
-
-
-export const ChangeVariableNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-purple-50"
-    borderColor="border-purple-300"
-    badgeColor="bg-purple-700"
-  />
-));
-
-
-export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-purple-100"
-    borderColor="border-purple-400"
-    badgeColor="bg-purple-800"
-  />
-));
-
-
-export const ConditionVariableNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-orange-50"
-    borderColor="border-orange-300"
-    badgeColor="bg-orange-700"
-  />
-));
-
-
-export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-orange-100"
-    borderColor="border-orange-400"
-    badgeColor="bg-orange-800"
-  />
-));
-
-
-export const ChoiceNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-cyan-50"
-    borderColor="border-cyan-300"
-    badgeColor="bg-cyan-700"
-  />
-));
-
-
-export const CustomActionNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-amber-50"
-    borderColor="border-amber-300"
-    badgeColor="bg-amber-700"
-  />
-));
-
-export const BotSpeechNode = memo((props: CustomNodeProps) => {
-  const { data, id } = props;
-  const { updateNodeData } = useReactFlow();
-
-  const speechModes = {
-    "1": { label: "Susurrar", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
-    "2": { label: "Hablar", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
-    "3": { label: "Gritar", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
-  };
-
-  const currentMode = speechModes[data.value1 as keyof typeof speechModes] || speechModes["2"];
-
-  const handleModeChange = (value: string) => {
-    updateNodeData(id, { value1: value });
-  };
-
-  return (
-    <div className="relative">
-      <BaseDialogNode
-        {...props}
-        showTargetHandle={true}
-        showSourceHandle={true}
-        showSpeech={true}
-        showBotId={true}
-        accentColor={currentMode.color}
-        borderColor={currentMode.border}
-        badgeColor={currentMode.badge}
-      />
-      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={data.value1 || "2"} onValueChange={handleModeChange}>
-          <SelectTrigger className="w-24 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">Susurrar</SelectItem>
-            <SelectItem value="2">Hablar</SelectItem>
-            <SelectItem value="3">Gritar</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
 });
-
-export const ShowMessageNode = memo((props: CustomNodeProps) => {
-  const { data, id } = props;
-  const { updateNodeData } = useReactFlow();
-
-  const handleValue2Change = (value: string) => {
-    updateNodeData(id, { value2: value });
-  };
-
-  const handleValue3Change = (value: string) => {
-    updateNodeData(id, { value3: value });
-  };
-
-  const isPrivate = data.value2 === "1";
-  const color = isPrivate ? "bg-violet-50" : "bg-fuchsia-50";
-  const border = isPrivate ? "border-violet-300" : "border-fuchsia-300";
-  const badge = isPrivate ? "bg-violet-700" : "bg-fuchsia-700";
-
-  return (
-    <div className="relative">
-      <BaseDialogNode
-        {...props}
-        showTargetHandle={true}
-        showSourceHandle={true}
-        showSpeech={true}
-        showBotId={false}
-        accentColor={color}
-        borderColor={border}
-        badgeColor={badge}
-      />
-      <div className="absolute top-2 right-2 z-10 flex gap-1" onClick={(e) => e.stopPropagation()}>
-        <Select value={data.value2 || "1"} onValueChange={handleValue2Change}>
-          <SelectTrigger className="w-20 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">Solo</SelectItem>
-            <SelectItem value="2">Todos</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={data.value3 || "1"} onValueChange={handleValue3Change}>
-          <SelectTrigger className="w-16 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1">User</SelectItem>
-            <SelectItem value="2">Bot</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-});
-
-
-export const WaitNode = memo((props: CustomNodeProps) => {
-  const { data, id } = props;
-  const { updateNodeData } = useReactFlow();
-
-
-  const waitTimeOptions = [];
-  for (let i = 0.5; i <= 10; i += 0.5) {
-    waitTimeOptions.push(i.toFixed(1));
-  }
-
-  const currentWaitTime = data.value1 || "1.0";
-
-  const handleWaitTimeChange = (value: string) => {
-    updateNodeData(id, { value1: value });
-  };
-
-  return (
-    <div className="relative">
-      <BaseDialogNode
-        {...props}
-        showTargetHandle={true}
-        showSourceHandle={true}
-        showSpeech={false}
-        showBotId={false}
-        accentColor="bg-emerald-50"
-        borderColor="border-emerald-300"
-        badgeColor="bg-emerald-700"
-      />
-      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={currentWaitTime} onValueChange={handleWaitTimeChange}>
-          <SelectTrigger className="w-20 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="max-h-[200px]">
-            {waitTimeOptions.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}s
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-});
-
-
-export const RandomNode = memo((props: CustomNodeProps) => {
-  const { data, id } = props;
-  const { updateNodeData } = useReactFlow();
-
-
-  const randomOutputOptions = Array.from({ length: 9 }, (_, i) => (i + 2).toString());
-  const currentOutputs = data.value1 || "2";
-
-  const handleOutputsChange = (value: string) => {
-    updateNodeData(id, { value1: value });
-  };
-
-  return (
-    <div className="relative">
-      <BaseDialogNode
-        {...props}
-        showTargetHandle={true}
-        showSourceHandle={true}
-        showSpeech={false}
-        showBotId={false}
-        accentColor="bg-teal-50"
-        borderColor="border-teal-300"
-        badgeColor="bg-teal-700"
-      />
-      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={currentOutputs} onValueChange={handleOutputsChange}>
-          <SelectTrigger className="w-20 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {randomOutputOptions.map((num) => (
-              <SelectItem key={num} value={num}>
-                {num} salidas
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-});
-
-
-export const EndDialogueNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={false}
-    showSpeech={false}
-    showBotId={false}
-    accentColor="bg-red-50"
-    borderColor="border-red-300"
-    badgeColor="bg-red-700"
-  />
-));
-
-
-const DialogNode = memo((props: CustomNodeProps) => (
-  <BaseDialogNode
-    {...props}
-    showTargetHandle={true}
-    showSourceHandle={true}
-    showSpeech={false}
-    accentColor="bg-neutral-50"
-    borderColor="border-neutral-300"
-    badgeColor="bg-neutral-800"
-  />
-));
-
-export default DialogNode;

@@ -44,14 +44,12 @@ function AnnotationNode({ data, selected, id }: NodeProps<AnnotationRFNode>) {
   }, [editText, data.text, id, updateNodeData]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Stop propagation to prevent ReactFlow from handling backspace
     e.stopPropagation();
 
     if (e.key === "Escape") {
       setIsEditing(false);
       setEditText(data.text || "");
     }
-    // Don't close on Enter since we want multiline support
   }, [data.text]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -125,16 +123,12 @@ function AnnotationNode({ data, selected, id }: NodeProps<AnnotationRFNode>) {
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <div className={`text-sm ${currentColor.text} whitespace-pre-wrap break-words cursor-text`}>
+        <div className={`text-sm ${currentColor.text} whitespace-pre-wrap wrap-break-word cursor-text`}>
           {data.text || "Double-click to edit"}
         </div>
       )}
 
-      {!isEditing && (
-        <div className={`text-xs mt-2 italic ${currentColor.icon}`}>
-          Double-click to edit
-        </div>
-      )}
+      
     </div>
   );
 }
