@@ -887,11 +887,11 @@ function FlowEditor() {
             {nodes.filter(n => n.selected).length > 0 && (
               <button
                 onClick={() => setShowSaveSequenceDialog(true)}
-                className="p-2 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                className="p-2 sm:px-3 sm:py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2"
                 title="Save Sequence"
               >
                 <Save size={16} className="sm:w-[18px] sm:h-[18px]" />
-                <span className="hidden sm:inline">Save Seq</span>
+                <span className="hidden sm:inline">Save Sequence</span>
               </button>
             )}
           </div>
@@ -975,6 +975,8 @@ function FlowEditor() {
               <Background className="bg-neutral-100" />
               <Controls />
               <MiniMap
+                zoomable
+                pannable
                 nodeColor={(node) => {
                   return node.selected ? "#171717" : "#d4d4d4";
                 }}
