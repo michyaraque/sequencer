@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node, Edge } from "@xyflow/react";
-import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData } from "@/types/dialog";
+import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData, ExportSettings } from "@/types/dialog";
 
 interface GameDialogStore {
   projectName: string;
@@ -13,8 +13,10 @@ interface GameDialogStore {
   variables: Variable[];
   choices: Choice[];
   choiceTexts: ChoiceText[];
+  exportSettings: ExportSettings;
 
   setProjectName: (projectName: string) => void;
+  setExportSettings: (settings: ExportSettings) => void;
   setSelectedLanguage: (language: number) => void;
   setNodes: (nodes: Node<DialogNodeData>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -54,7 +56,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
   persist(
     (set) => ({
       projectName: "Untitled Project",
-      selectedLanguage: 1, // Default to English
+      selectedLanguage: 1,
       nodes: [],
       edges: [],
       speechTexts: [],
@@ -62,8 +64,20 @@ export const useGameDialogStore = create<GameDialogStore>()(
       variables: [],
       choices: [],
       choiceTexts: [],
+      exportSettings: {
+        defaultBotId: "-1",
+        defaultUserId: "#(user_id)",
+        defaultNextNodeId: "-1",
+        defaultSpeechId: "-1",
+        defaultSpeechSpeed: "-1",
+        defaultActionId: "1001",
+        defaultValue1: "-1",
+        defaultValue2: "-1",
+        defaultValue3: "-1",
+      },
 
       setProjectName: (projectName) => set({ projectName }),
+      setExportSettings: (exportSettings) => set({ exportSettings }),
       setSelectedLanguage: (selectedLanguage) => set({ selectedLanguage }),
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),

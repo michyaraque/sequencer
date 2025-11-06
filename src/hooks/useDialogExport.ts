@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { Node, Edge } from "@xyflow/react";
-import { DialogNodeData } from "@/types/dialog";
+import { DialogNodeData, ExportSettings } from "@/types/dialog";
 import { exportToDialogFormat, downloadDialogFile, importFromDialogFormat } from "@/utils/export";
 
 interface UseDialogExportProps {
@@ -9,6 +9,7 @@ interface UseDialogExportProps {
   setEdges: (edges: Edge[]) => void;
   setSelectedNode: (node: Node<DialogNodeData> | null) => void;
   saveToHistory: (nodes: Node<DialogNodeData>[], edges: Edge[]) => void;
+  exportSettings?: ExportSettings;
   onShowAlert?: (message: string, variant?: 'default' | 'success' | 'error') => void;
 }
 
@@ -18,20 +19,21 @@ export function useDialogExport({
   setEdges,
   setSelectedNode,
   saveToHistory,
+  exportSettings,
   onShowAlert,
 }: UseDialogExportProps) {
   const handleExport = useCallback(() => {
-    const exportContent = exportToDialogFormat(nodes);
+    const exportContent = exportToDialogFormat(nodes, exportSettings);
     downloadDialogFile(exportContent, "dialog_export.txt");
-  }, [nodes]);
+  }, [nodes, exportSettings]);
 
   const handleCopyToClipboard = useCallback(() => {
-    const exportContent = exportToDialogFormat(nodes);
+    const exportContent = exportToDialogFormat(nodes, exportSettings);
     navigator.clipboard.writeText(exportContent);
     if (onShowAlert) {
       onShowAlert("Dialog data copied to clipboard!", "success");
     }
-  }, [nodes, onShowAlert]);
+  }, [nodes, exportSettings, onShowAlert]);
 
   const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

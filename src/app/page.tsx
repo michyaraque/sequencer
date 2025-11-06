@@ -36,6 +36,7 @@ import SpeechTextManager from "@/components/SpeechTextManager";
 import NPCManager from "@/components/NPCManager";
 import VariableManager from "@/components/VariableManager";
 import ChoicesTextManager from "@/components/ChoicesTextManager";
+import ExportSettingsDialog from "@/components/ExportSettingsDialog";
 import Sidebar from "@/components/Sidebar";
 import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
@@ -110,6 +111,7 @@ function FlowEditor() {
   const [showVariableManager, setShowVariableManager] = useState(false);
   const [showChoicesManager, setShowChoicesManager] = useState(false);
   const [showSequenceManager, setShowSequenceManager] = useState(false);
+  const [showExportSettings, setShowExportSettings] = useState(false);
   const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -121,6 +123,7 @@ function FlowEditor() {
   const variables = useGameDialogStore((state) => state.variables);
   const choices = useGameDialogStore((state) => state.choices);
   const choiceTexts = useGameDialogStore((state) => state.choiceTexts);
+  const exportSettings = useGameDialogStore((state) => state.exportSettings);
   const projectName = useGameDialogStore((state) => state.projectName);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const setSelectedLanguage = useGameDialogStore((state) => state.setSelectedLanguage);
@@ -154,6 +157,9 @@ function FlowEditor() {
       useGameDialogStore.getState().setChoiceTexts(currentRoom.choiceTexts || []);
       useGameDialogStore.getState().setProjectName(currentRoom.projectName);
       useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
+      if (currentRoom.exportSettings) {
+        useGameDialogStore.getState().setExportSettings(currentRoom.exportSettings);
+      }
 
       setTimeout(() => {
         isLoadingRoom.current = false;
@@ -172,6 +178,7 @@ function FlowEditor() {
           variables,
           choices,
           choiceTexts,
+          exportSettings,
           projectName,
           selectedLanguage,
         });
@@ -179,7 +186,7 @@ function FlowEditor() {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, projectName, selectedLanguage, currentRoomId, updateRoomData]);
+  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, exportSettings, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
@@ -394,6 +401,7 @@ function FlowEditor() {
     setEdges,
     setSelectedNode,
     saveToHistory,
+    exportSettings,
     onShowAlert: (message, variant) => {
       if (variant === 'success') {
         toast.success(message);
@@ -800,6 +808,7 @@ function FlowEditor() {
           onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
           onOpenChoicesManager={() => setShowChoicesManager(!showChoicesManager)}
           onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
+          onOpenExportSettings={() => setShowExportSettings(!showExportSettings)}
           onExportProject={handleExportProject}
           onImportProject={handleImportProject}
           onExitProject={handleExitProject}
@@ -828,6 +837,10 @@ function FlowEditor() {
             }}
             onOpenSequenceManager={() => {
               setShowSequenceManager(!showSequenceManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenExportSettings={() => {
+              setShowExportSettings(!showExportSettings);
               setShowMobileSidebar(false);
             }}
             onExportProject={() => {
@@ -1097,6 +1110,12 @@ function FlowEditor() {
           onEdit={handleEditChoiceText}
           onDelete={handleDeleteChoiceText}
           onClose={() => setShowChoicesManager(false)}
+        />
+      )}
+
+      {showExportSettings && (
+        <ExportSettingsDialog
+          onClose={() => setShowExportSettings(false)}
         />
       )}
 

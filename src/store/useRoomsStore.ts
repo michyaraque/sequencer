@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node, Edge } from "@xyflow/react";
-import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData } from "@/types/dialog";
+import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData, ExportSettings } from "@/types/dialog";
 
 export interface RoomData {
   id: string;
@@ -15,6 +15,7 @@ export interface RoomData {
   variables: Variable[];
   choices: Choice[];
   choiceTexts: ChoiceText[];
+  exportSettings: ExportSettings;
 }
 
 interface RoomsStore {
@@ -41,6 +42,17 @@ const createDefaultRoom = (id: string, name: string): RoomData => ({
   variables: [],
   choices: [],
   choiceTexts: [],
+  exportSettings: {
+    defaultBotId: "-1",
+    defaultUserId: "#(user_id)",
+    defaultNextNodeId: "-1",
+    defaultSpeechId: "-1",
+    defaultSpeechSpeed: "-1",
+    defaultActionId: "1001",
+    defaultValue1: "-1",
+    defaultValue2: "-1",
+    defaultValue3: "-1",
+  },
 });
 
 export const useRoomsStore = create<RoomsStore>()(

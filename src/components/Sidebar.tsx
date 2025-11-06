@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers, ListOrdered } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers, ListOrdered, Settings } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -29,6 +29,7 @@ interface SidebarProps {
   onOpenVariableManager: () => void;
   onOpenChoicesManager: () => void;
   onOpenSequenceManager: () => void;
+  onOpenExportSettings: () => void;
   onExportProject: () => void;
   onImportProject: () => void;
   onExitProject: () => void;
@@ -40,6 +41,7 @@ export default function Sidebar({
   onOpenVariableManager,
   onOpenChoicesManager,
   onOpenSequenceManager,
+  onOpenExportSettings,
   onExportProject,
   onImportProject,
   onExitProject
@@ -118,6 +120,11 @@ export default function Sidebar({
               <DropdownMenuItem onClick={onImportProject}>
                 <Upload size={16} className="mr-2" />
                 Import Project
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onOpenExportSettings}>
+                <Settings size={16} className="mr-2" />
+                Export Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleExitClick} className="text-red-600 focus:text-red-600">

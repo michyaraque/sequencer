@@ -1,5 +1,5 @@
 import { Node, Edge } from "@xyflow/react";
-import { DialogNodeData, SpeechText, NPC, Variable } from "@/types/dialog";
+import { DialogNodeData, SpeechText, NPC, Variable, ExportSettings } from "@/types/dialog";
 import { RoomData } from "@/store/useRoomsStore";
 
 // Full project export/import interfaces
@@ -50,10 +50,39 @@ export function importProject(content: string): ProjectExport | null {
         npcs: project.npcs || [],
         variables: project.variables || [],
         choices: [],
-        choiceTexts: []
+        choiceTexts: [],
+        exportSettings: {
+          defaultBotId: "-1",
+          defaultUserId: "#(user_id)",
+          defaultNextNodeId: "-1",
+          defaultSpeechId: "-1",
+          defaultSpeechSpeed: "-1",
+          defaultActionId: "1001",
+          defaultValue1: "-1",
+          defaultValue2: "-1",
+          defaultValue3: "-1",
+        },
       };
 
       project.rooms = [legacyRoom];
+    }
+
+    // Ensure all rooms have exportSettings
+    if (project.rooms) {
+      project.rooms = project.rooms.map(room => ({
+        ...room,
+        exportSettings: room.exportSettings || {
+          defaultBotId: "-1",
+          defaultUserId: "#(user_id)",
+          defaultNextNodeId: "-1",
+          defaultSpeechId: "-1",
+          defaultSpeechSpeed: "-1",
+          defaultActionId: "1001",
+          defaultValue1: "-1",
+          defaultValue2: "-1",
+          defaultValue3: "-1",
+        },
+      }));
     }
 
     // Validate project structure (new format)
@@ -81,19 +110,33 @@ export function downloadProjectFile(content: string, filename: string = "dialog-
   URL.revokeObjectURL(url);
 }
 
-export function exportToDialogFormat(nodes: Node<DialogNodeData>[]): string {
+export function exportToDialogFormat(
+  nodes: Node<DialogNodeData>[],
+  exportSettings?: ExportSettings
+): string {
+  const defaults = exportSettings || {
+    defaultBotId: "-1",
+    defaultUserId: "#(user_id)",
+    defaultNextNodeId: "-1",
+    defaultSpeechId: "-1",
+    defaultSpeechSpeed: "-1",
+    defaultActionId: "1001",
+    defaultValue1: "-1",
+    defaultValue2: "-1",
+    defaultValue3: "-1",
+  };
+
   const lines = nodes.map((node, index) => {
     const data = node.data;
 
-    const botId = data.botId === "#(bot_id)" ? "-1" : (data.botId || "-1");
-    const userId = data.userId || "#(user_id)";
+    const botId = data.botId === "#(bot_id)" ? defaults.defaultBotId : (data.botId || defaults.defaultBotId);
+    const userId = data.userId || defaults.defaultUserId;
 
     const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
     const shouldExportSpeechSpeed = node.type && nodeTypesWithSpeechSpeed.includes(node.type);
-    const speechSpeed = shouldExportSpeechSpeed ? (data.speechSpeed || "-1") : "-1";
+    const speechSpeed = shouldExportSpeechSpeed ? (data.speechSpeed || defaults.defaultSpeechSpeed) : defaults.defaultSpeechSpeed;
 
-    // Format: index=#(bot_id)|#(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
-    return `${index}=${botId}¦${userId}¦${data.nextNodeId || "-1"}¦${data.speechId || "-1"}¦${speechSpeed}¦${data.actionId || "1001"}¦${data.value1 || "-1"}¦${data.value2 || "-1"}¦${data.value3 || "-1"}`;
+    return `${index}=${botId}¦${userId}¦${data.nextNodeId || defaults.defaultNextNodeId}¦${data.speechId || defaults.defaultSpeechId}¦${speechSpeed}¦${data.actionId || defaults.defaultActionId}¦${data.value1 || defaults.defaultValue1}¦${data.value2 || defaults.defaultValue2}¦${data.value3 || defaults.defaultValue3}`;
   });
 
   return lines.join("\n");
