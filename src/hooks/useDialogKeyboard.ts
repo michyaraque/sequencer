@@ -28,6 +28,18 @@ export function useDialogKeyboard({
         return;
       }
 
+      // Don't handle keyboard shortcuts if user is typing in an input/textarea
+      const target = event.target as HTMLElement;
+      const isEditingText =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.hasAttribute('contenteditable');
+
+      if (isEditingText) {
+        return;
+      }
+
       if ((event.ctrlKey || event.metaKey) && event.key === "z" && !event.shiftKey) {
         event.preventDefault();
         undo();

@@ -117,6 +117,7 @@ function FlowEditor() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileNodeEditor, setShowMobileNodeEditor] = useState(false);
   const [showMobileNodePalette, setShowMobileNodePalette] = useState(false);
+  const [showNodeEditor, setShowNodeEditor] = useState(true);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -983,6 +984,20 @@ function FlowEditor() {
             </label>
           </div>
 
+          {/* Desktop Properties Panel Toggle */}
+          <button
+            onClick={() => setShowNodeEditor(!showNodeEditor)}
+            className={`hidden lg:flex ml-auto p-2 rounded-md transition-colors items-center gap-1.5 ${
+              showNodeEditor
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400'
+            }`}
+            title={showNodeEditor ? "Hide Properties" : "Show Properties"}
+          >
+            <Variable size={18} />
+            <span className="text-sm font-medium hidden xl:inline">Properties</span>
+          </button>
+
           {/* Mobile Node Editor Toggle - Only when node selected */}
           {selectedNode && (
             <button
@@ -1055,15 +1070,17 @@ function FlowEditor() {
       </div>
 
       {/* Desktop NodeEditor - hidden on mobile */}
-      <div className="hidden lg:block">
-        <NodeEditor
-          selectedNode={selectedNode}
-          onUpdate={updateNodeData}
-          speechTexts={speechTexts}
-          npcs={npcs}
-          variables={variables}
-        />
-      </div>
+      {showNodeEditor && (
+        <div className="hidden lg:block">
+          <NodeEditor
+            selectedNode={selectedNode}
+            onUpdate={updateNodeData}
+            speechTexts={speechTexts}
+            npcs={npcs}
+            variables={variables}
+          />
+        </div>
+      )}
 
       {/* Mobile NodeEditor - Bottom Sheet */}
       <Sheet open={showMobileNodeEditor} onOpenChange={setShowMobileNodeEditor}>
