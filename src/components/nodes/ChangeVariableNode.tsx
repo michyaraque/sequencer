@@ -19,12 +19,22 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
   const [isEditingValue, setIsEditingValue] = useState(false);
   const [tempValue, setTempValue] = useState(data.value3 || "0");
 
-  // value1: VariableId (selector or hardcoded)
-  // value2: -1 (fixed)
-  // value3: Value (input)
+  const operators = [
+    { value: "1", label: "Assign" },
+    { value: "2", label: "Add" },
+    { value: "3", label: "Substract" },
+    { value: "4", label: "Multiply" },
+    { value: "5", label: "Divide" },
+    { value: "6", label: "Modulo" },
+    { value: "7", label: "Random with upper bound" },
+  ];
 
   const handleVariableChange = (value: string) => {
     updateNodeData(id, { value1: value, value2: "-1" });
+  };
+
+  const handleOperatorChange = (value: string) => {
+    updateNodeData(id, { value2: value });
   };
 
   const handleValueChange = (newValue: string) => {
@@ -35,11 +45,10 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
   return (
     <div className="relative">
       <div
-        className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${
-          selected
+        className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${selected
             ? 'border-neutral-900 shadow-xl bg-purple-50'
             : 'border-purple-300 shadow-md hover:shadow-lg hover:border-neutral-500 bg-purple-50'
-        }`}
+          }`}
       >
         <Handle
           type="target"
@@ -74,6 +83,27 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
                   {variables.map((variable) => (
                     <SelectItem key={variable.id} value={variable.id}>
                       {variable.id} - {variable.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Operator Selector */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Operator:</span>
+              <Select value={data.value2 || "1"} onValueChange={handleOperatorChange}>
+                <SelectTrigger
+                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                  size="sm"
+                >
+                  <SelectValue placeholder="Select Operator" />
+                </SelectTrigger>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
+                  {operators.map((op) => (
+                    <SelectItem key={op.value} value={op.value}>
+                      {op.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
