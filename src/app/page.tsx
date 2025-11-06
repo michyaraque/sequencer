@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -48,6 +48,7 @@ import RoomTabs from "@/components/RoomTabs";
 import SaveSequenceDialog from "@/components/SaveSequenceDialog";
 import CanvasContextMenu from "@/components/CanvasContextMenu";
 import SequenceManager from "@/components/SequenceManager";
+import MobileNodePalette from "@/components/MobileNodePalette";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
@@ -107,6 +108,7 @@ function FlowEditor() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [showMobileNodeEditor, setShowMobileNodeEditor] = useState(false);
+  const [showMobileNodePalette, setShowMobileNodePalette] = useState(false);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -662,6 +664,54 @@ function FlowEditor() {
     toast.success("Sequence updated");
   }, [updateSequence]);
 
+  // Mobile: Add node at center of viewport
+  const handleMobileAddNode = useCallback((nodeType: string) => {
+    // Get the center of the current viewport
+    const viewport = document.querySelector('.react-flow__viewport');
+    if (!viewport) return;
+
+    const rect = viewport.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const position = screenToFlowPosition({
+      x: centerX,
+      y: centerY,
+    });
+
+    const newNodeId = getNextNodeId(nodes);
+
+    let newNode: Node<any>;
+
+    if (nodeType === "annotation") {
+      newNode = {
+        id: newNodeId,
+        type: nodeType,
+        position,
+        data: {
+          text: "Double-click to edit",
+          label: "Note",
+          color: "Yellow",
+        },
+      };
+    } else {
+      newNode = {
+        id: newNodeId,
+        type: nodeType,
+        position,
+        data: getDefaultNodeData(nodeType, newNodeId),
+      };
+    }
+
+    setNodes((nds) => {
+      const newNodes = nds.concat(newNode);
+      setTimeout(() => saveToHistory(newNodes, edges), 0);
+      return newNodes;
+    });
+
+    toast.success("Node added to canvas");
+  }, [screenToFlowPosition, nodes, edges, setNodes, saveToHistory]);
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -938,6 +988,17 @@ function FlowEditor() {
               />
             </ReactFlow>
           )}
+
+          {/* Floating Add Button - Mobile Only */}
+          {hasRooms && (
+            <button
+              onClick={() => setShowMobileNodePalette(true)}
+              className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center z-40"
+              title="Add Node"
+            >
+              <Plus size={28} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -1031,6 +1092,13 @@ function FlowEditor() {
           onClose={() => setShowSequenceManager(false)}
         />
       )}
+
+      {/* Mobile Node Palette */}
+      <MobileNodePalette
+        open={showMobileNodePalette}
+        onClose={() => setShowMobileNodePalette(false)}
+        onSelectNode={handleMobileAddNode}
+      />
     </div>
   );
 }
