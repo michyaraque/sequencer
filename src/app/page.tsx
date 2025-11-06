@@ -35,6 +35,7 @@ import NodeEditor from "@/components/NodeEditor";
 import SpeechTextManager from "@/components/SpeechTextManager";
 import NPCManager from "@/components/NPCManager";
 import VariableManager from "@/components/VariableManager";
+import ChoicesTextManager from "@/components/ChoicesTextManager";
 import Sidebar from "@/components/Sidebar";
 import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
@@ -107,6 +108,7 @@ function FlowEditor() {
   const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
   const [showNPCManager, setShowNPCManager] = useState(false);
   const [showVariableManager, setShowVariableManager] = useState(false);
+  const [showChoicesManager, setShowChoicesManager] = useState(false);
   const [showSequenceManager, setShowSequenceManager] = useState(false);
   const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -117,6 +119,8 @@ function FlowEditor() {
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
   const variables = useGameDialogStore((state) => state.variables);
+  const choices = useGameDialogStore((state) => state.choices);
+  const choiceTexts = useGameDialogStore((state) => state.choiceTexts);
   const projectName = useGameDialogStore((state) => state.projectName);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const setSelectedLanguage = useGameDialogStore((state) => state.setSelectedLanguage);
@@ -146,6 +150,8 @@ function FlowEditor() {
       useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
       useGameDialogStore.getState().setNPCs(currentRoom.npcs);
       useGameDialogStore.getState().setVariables(currentRoom.variables);
+      useGameDialogStore.getState().setChoices(currentRoom.choices || []);
+      useGameDialogStore.getState().setChoiceTexts(currentRoom.choiceTexts || []);
       useGameDialogStore.getState().setProjectName(currentRoom.projectName);
       useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
 
@@ -164,6 +170,8 @@ function FlowEditor() {
           speechTexts,
           npcs,
           variables,
+          choices,
+          choiceTexts,
           projectName,
           selectedLanguage,
         });
@@ -171,7 +179,7 @@ function FlowEditor() {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [storedNodes, storedEdges, speechTexts, npcs, variables, projectName, selectedLanguage, currentRoomId, updateRoomData]);
+  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
@@ -219,6 +227,10 @@ function FlowEditor() {
   const addVariable = useGameDialogStore((state) => state.addVariable);
   const editVariable = useGameDialogStore((state) => state.editVariable);
   const deleteVariable = useGameDialogStore((state) => state.deleteVariable);
+
+  const addChoiceText = useGameDialogStore((state) => state.addChoiceText);
+  const editChoiceText = useGameDialogStore((state) => state.editChoiceText);
+  const deleteChoiceText = useGameDialogStore((state) => state.deleteChoiceText);
 
   const { history, currentHistoryIndex, saveToHistory, undo, redo } = useDialogHistory(
     initialNodes,
@@ -367,6 +379,14 @@ function FlowEditor() {
       })
     );
   }, [deleteVariable, setNodes]);
+
+  const handleEditChoiceText = useCallback((oldId: string, choiceText: any) => {
+    editChoiceText(oldId, choiceText);
+  }, [editChoiceText]);
+
+  const handleDeleteChoiceText = useCallback((id: string) => {
+    deleteChoiceText(id);
+  }, [deleteChoiceText]);
 
   const { handleExport, handleCopyToClipboard, handleImport } = useDialogExport({
     nodes,
@@ -523,7 +543,7 @@ function FlowEditor() {
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
     onDeleteEdges: deleteEdgesByIds,
-    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager || showSequenceManager,
+    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager || showChoicesManager || showSequenceManager,
   });
 
   const { screenToFlowPosition } = useReactFlow();
@@ -778,6 +798,7 @@ function FlowEditor() {
           onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
           onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
           onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
+          onOpenChoicesManager={() => setShowChoicesManager(!showChoicesManager)}
           onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
           onExportProject={handleExportProject}
           onImportProject={handleImportProject}
@@ -799,6 +820,10 @@ function FlowEditor() {
             }}
             onOpenVariableManager={() => {
               setShowVariableManager(!showVariableManager);
+              setShowMobileSidebar(false);
+            }}
+            onOpenChoicesManager={() => {
+              setShowChoicesManager(!showChoicesManager);
               setShowMobileSidebar(false);
             }}
             onOpenSequenceManager={() => {
@@ -1062,6 +1087,16 @@ function FlowEditor() {
           onEdit={handleEditVariable}
           onDelete={handleDeleteVariable}
           onClose={() => setShowVariableManager(false)}
+        />
+      )}
+
+      {showChoicesManager && (
+        <ChoicesTextManager
+          choiceTexts={choiceTexts}
+          onAdd={addChoiceText}
+          onEdit={handleEditChoiceText}
+          onDelete={handleDeleteChoiceText}
+          onClose={() => setShowChoicesManager(false)}
         />
       )}
 

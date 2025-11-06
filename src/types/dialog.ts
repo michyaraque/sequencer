@@ -98,7 +98,14 @@ export interface Variable {
 
 export interface Choice {
   id: string;
-  nodeId: string; // The ChoiceNode this belongs to
+  nodeId: string;
   text: string;
-  order: number; // To maintain order
+  speechId: string;
+  order: number;
+}
+
+export interface ChoiceText {
+  id: string;
+  text: string;
+  speechId: string;
 }

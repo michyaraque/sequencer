@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers, ListOrdered } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -27,6 +27,7 @@ interface SidebarProps {
   onOpenSpeechTextManager: () => void;
   onOpenNPCManager: () => void;
   onOpenVariableManager: () => void;
+  onOpenChoicesManager: () => void;
   onOpenSequenceManager: () => void;
   onExportProject: () => void;
   onImportProject: () => void;
@@ -37,6 +38,7 @@ export default function Sidebar({
   onOpenSpeechTextManager,
   onOpenNPCManager,
   onOpenVariableManager,
+  onOpenChoicesManager,
   onOpenSequenceManager,
   onExportProject,
   onImportProject,
@@ -184,6 +186,14 @@ export default function Sidebar({
           >
             <VariableIcon size={18} />
             Variables
+          </button>
+
+          <button
+            onClick={onOpenChoicesManager}
+            className="w-full px-3 py-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors font-medium flex items-center gap-2"
+          >
+            <ListOrdered size={18} />
+            Choices
           </button>
 
           <button

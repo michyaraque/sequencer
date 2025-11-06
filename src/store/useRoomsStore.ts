@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node, Edge } from "@xyflow/react";
-import { SpeechText, NPC, Variable, DialogNodeData } from "@/types/dialog";
+import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData } from "@/types/dialog";
 
 export interface RoomData {
   id: string;
@@ -13,6 +13,8 @@ export interface RoomData {
   speechTexts: SpeechText[];
   npcs: NPC[];
   variables: Variable[];
+  choices: Choice[];
+  choiceTexts: ChoiceText[];
 }
 
 interface RoomsStore {
@@ -37,6 +39,8 @@ const createDefaultRoom = (id: string, name: string): RoomData => ({
   speechTexts: [],
   npcs: [],
   variables: [],
+  choices: [],
+  choiceTexts: [],
 });
 
 export const useRoomsStore = create<RoomsStore>()(

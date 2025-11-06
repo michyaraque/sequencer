@@ -8,7 +8,7 @@ export interface ProjectExport {
   timestamp: string;
   projectName: string;
   rooms: RoomData[];
-  // Legacy fields for backward compatibility
+
   nodes?: Node<DialogNodeData>[];
   edges?: Edge[];
   speechTexts?: SpeechText[];
@@ -49,6 +49,8 @@ export function importProject(content: string): ProjectExport | null {
         speechTexts: project.speechTexts || [],
         npcs: project.npcs || [],
         variables: project.variables || [],
+        choices: [],
+        choiceTexts: []
       };
 
       project.rooms = [legacyRoom];
@@ -91,7 +93,7 @@ export function exportToDialogFormat(nodes: Node<DialogNodeData>[]): string {
     const speechSpeed = shouldExportSpeechSpeed ? (data.speechSpeed || "-1") : "-1";
 
     // Format: index=#(bot_id)|#(user_id)|#(next_node_id)|#(text_id)|#(text_speed)|#(action_id)|#(value_1)|#(value_2)|#(value_3)
-    return `${index}=${botId}|${userId}|${data.nextNodeId || "-1"}|${data.speechId || "-1"}|${speechSpeed}|${data.actionId || "1001"}|${data.value1 || "-1"}|${data.value2 || "-1"}|${data.value3 || "-1"}`;
+    return `${index}=${botId}¦${userId}¦${data.nextNodeId || "-1"}¦${data.speechId || "-1"}¦${speechSpeed}¦${data.actionId || "1001"}¦${data.value1 || "-1"}¦${data.value2 || "-1"}¦${data.value3 || "-1"}`;
   });
 
   return lines.join("\n");
