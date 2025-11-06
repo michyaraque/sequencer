@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { CustomNodeProps } from "./shared";
@@ -43,9 +43,12 @@ export const ChoiceNode = memo((props: CustomNodeProps) => {
   }, [allChoices, id]);
 
   const choiceCount = nodeChoices.length;
-  if (data.value1 !== choiceCount.toString()) {
-    updateNodeData(id, { value1: choiceCount.toString() });
-  }
+
+  useEffect(() => {
+    if (data.value1 !== choiceCount.toString()) {
+      updateNodeData(id, { value1: choiceCount.toString() });
+    }
+  }, [choiceCount, data.value1, id, updateNodeData]);
 
   const showChoices = data.value2 !== "0";
 

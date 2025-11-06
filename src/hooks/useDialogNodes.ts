@@ -266,14 +266,14 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
   const deleteNodesByIds = useCallback((nodeIds: string[]) => {
     let newNodes: Node<DialogNodeData>[] = [];
     let newEdges: Edge[] = [];
+    let choiceNodesToDelete: string[] = [];
 
     // Delete associated choices for all choice nodes being deleted
     setNodes((nds) => {
-      nds.forEach((node) => {
-        if (nodeIds.includes(node.id) && node.type === 'choice') {
-          deleteChoicesByNodeId(node.id);
-        }
-      });
+      // First, identify which nodes are choice nodes that will be deleted
+      choiceNodesToDelete = nds
+        .filter((node) => nodeIds.includes(node.id) && node.type === 'choice')
+        .map(node => node.id);
 
       newNodes = nds.filter((node) => !nodeIds.includes(node.id)).map((node) => {
         if (nodeIds.includes(node.data.nextNodeId)) {
@@ -285,6 +285,11 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
         return node;
       });
       return newNodes;
+    });
+
+    // Delete choices AFTER setNodes has completed (outside the state update)
+    choiceNodesToDelete.forEach((nodeId) => {
+      deleteChoicesByNodeId(nodeId);
     });
 
     setEdges((eds) => {
