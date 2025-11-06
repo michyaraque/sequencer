@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node, Edge } from "@xyflow/react";
 import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData, ExportSettings } from "@/types/dialog";
+import { getDefaultExportFields } from "@/utils/export";
 
 interface GameDialogStore {
   projectName: string;
@@ -65,15 +66,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
       choices: [],
       choiceTexts: [],
       exportSettings: {
-        defaultBotId: "-1",
-        defaultUserId: "#(user_id)",
-        defaultNextNodeId: "-1",
-        defaultSpeechId: "-1",
-        defaultSpeechSpeed: "-1",
-        defaultActionId: "1001",
-        defaultValue1: "-1",
-        defaultValue2: "-1",
-        defaultValue3: "-1",
+        fields: getDefaultExportFields(),
       },
 
       setProjectName: (projectName) => set({ projectName }),

@@ -1,6 +1,20 @@
 import { Node, Edge } from "@xyflow/react";
-import { DialogNodeData, SpeechText, NPC, Variable, ExportSettings } from "@/types/dialog";
+import { DialogNodeData, SpeechText, NPC, Variable, ExportSettings, ExportField } from "@/types/dialog";
 import { RoomData } from "@/store/useRoomsStore";
+
+export function getDefaultExportFields(): ExportField[] {
+  return [
+    { id: "botId", name: "Bot ID", value: "-1", order: 0 },
+    { id: "userId", name: "User ID", value: "#(user_id)", order: 1 },
+    { id: "nextNodeId", name: "Next Node ID", value: "-1", order: 2 },
+    { id: "speechId", name: "Speech ID", value: "-1", order: 3 },
+    { id: "speechSpeed", name: "Speech Speed", value: "-1", order: 4 },
+    { id: "actionId", name: "Action ID", value: "1001", order: 5 },
+    { id: "value1", name: "Value 1", value: "-1", order: 6 },
+    { id: "value2", name: "Value 2", value: "-1", order: 7 },
+    { id: "value3", name: "Value 3", value: "-1", order: 8 },
+  ];
+}
 
 // Full project export/import interfaces
 export interface ProjectExport {
@@ -52,15 +66,7 @@ export function importProject(content: string): ProjectExport | null {
         choices: [],
         choiceTexts: [],
         exportSettings: {
-          defaultBotId: "-1",
-          defaultUserId: "#(user_id)",
-          defaultNextNodeId: "-1",
-          defaultSpeechId: "-1",
-          defaultSpeechSpeed: "-1",
-          defaultActionId: "1001",
-          defaultValue1: "-1",
-          defaultValue2: "-1",
-          defaultValue3: "-1",
+          fields: getDefaultExportFields(),
         },
       };
 
@@ -72,15 +78,7 @@ export function importProject(content: string): ProjectExport | null {
       project.rooms = project.rooms.map(room => ({
         ...room,
         exportSettings: room.exportSettings || {
-          defaultBotId: "-1",
-          defaultUserId: "#(user_id)",
-          defaultNextNodeId: "-1",
-          defaultSpeechId: "-1",
-          defaultSpeechSpeed: "-1",
-          defaultActionId: "1001",
-          defaultValue1: "-1",
-          defaultValue2: "-1",
-          defaultValue3: "-1",
+          fields: getDefaultExportFields(),
         },
       }));
     }
@@ -114,29 +112,49 @@ export function exportToDialogFormat(
   nodes: Node<DialogNodeData>[],
   exportSettings?: ExportSettings
 ): string {
-  const defaults = exportSettings || {
-    defaultBotId: "-1",
-    defaultUserId: "#(user_id)",
-    defaultNextNodeId: "-1",
-    defaultSpeechId: "-1",
-    defaultSpeechSpeed: "-1",
-    defaultActionId: "1001",
-    defaultValue1: "-1",
-    defaultValue2: "-1",
-    defaultValue3: "-1",
-  };
+  const fields = exportSettings?.fields || getDefaultExportFields();
+  const sortedFields = [...fields].sort((a, b) => a.order - b.order);
 
   const lines = nodes.map((node, index) => {
     const data = node.data;
 
-    const botId = data.botId === "#(bot_id)" ? defaults.defaultBotId : (data.botId || defaults.defaultBotId);
-    const userId = data.userId || defaults.defaultUserId;
+    const fieldValues = sortedFields.map((field) => {
+      const fieldId = field.id;
 
-    const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
-    const shouldExportSpeechSpeed = node.type && nodeTypesWithSpeechSpeed.includes(node.type);
-    const speechSpeed = shouldExportSpeechSpeed ? (data.speechSpeed || defaults.defaultSpeechSpeed) : defaults.defaultSpeechSpeed;
+      if (fieldId === "botId") {
+        return data.botId === "#(bot_id)" ? field.value : (data.botId || field.value);
+      }
+      if (fieldId === "userId") {
+        return data.userId || field.value;
+      }
+      if (fieldId === "nextNodeId") {
+        return data.nextNodeId || field.value;
+      }
+      if (fieldId === "speechId") {
+        return data.speechId || field.value;
+      }
+      if (fieldId === "speechSpeed") {
+        const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
+        const shouldExportSpeechSpeed = node.type && nodeTypesWithSpeechSpeed.includes(node.type);
+        return shouldExportSpeechSpeed ? (data.speechSpeed || field.value) : field.value;
+      }
+      if (fieldId === "actionId") {
+        return data.actionId || field.value;
+      }
+      if (fieldId === "value1") {
+        return data.value1 || field.value;
+      }
+      if (fieldId === "value2") {
+        return data.value2 || field.value;
+      }
+      if (fieldId === "value3") {
+        return data.value3 || field.value;
+      }
 
-    return `${index}=${botId}¦${userId}¦${data.nextNodeId || defaults.defaultNextNodeId}¦${data.speechId || defaults.defaultSpeechId}¦${speechSpeed}¦${data.actionId || defaults.defaultActionId}¦${data.value1 || defaults.defaultValue1}¦${data.value2 || defaults.defaultValue2}¦${data.value3 || defaults.defaultValue3}`;
+      return field.value;
+    });
+
+    return `${index}=${fieldValues.join("¦")}`;
   });
 
   return lines.join("\n");

@@ -110,14 +110,13 @@ export interface ChoiceText {
   speechId: string;
 }
 
+export interface ExportField {
+  id: string;
+  name: string;
+  value: string;
+  order: number;
+}
+
 export interface ExportSettings {
-  defaultBotId: string;
-  defaultUserId: string;
-  defaultNextNodeId: string;
-  defaultSpeechId: string;
-  defaultSpeechSpeed: string;
-  defaultActionId: string;
-  defaultValue1: string;
-  defaultValue2: string;
-  defaultValue3: string;
+  fields: ExportField[];
 }
