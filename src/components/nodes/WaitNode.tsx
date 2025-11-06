@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { useReactFlow } from "@xyflow/react";
+import { Handle, Position, useReactFlow } from "@xyflow/react";
 import {
   Select,
   SelectContent,
@@ -9,11 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BaseDialogNode } from "./BaseDialogNode";
 import { CustomNodeProps } from "./shared";
 
 export const WaitNode = memo((props: CustomNodeProps) => {
-  const { data, id } = props;
+  const { data, id, selected } = props;
   const { updateNodeData } = useReactFlow();
 
   const waitTimeOptions = [];
@@ -29,29 +28,58 @@ export const WaitNode = memo((props: CustomNodeProps) => {
 
   return (
     <div className="relative">
-      <BaseDialogNode
-        {...props}
-        showTargetHandle={true}
-        showSourceHandle={true}
-        showSpeech={false}
-        showBotId={false}
-        accentColor="bg-emerald-50"
-        borderColor="border-emerald-300"
-        badgeColor="bg-emerald-700"
-      />
-      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-        <Select value={currentWaitTime} onValueChange={handleWaitTimeChange}>
-          <SelectTrigger className="w-20 h-6 text-xs bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="max-h-[200px]">
-            {waitTimeOptions.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}s
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div
+        className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${
+          selected
+            ? 'border-neutral-900 shadow-xl bg-emerald-50'
+            : 'border-emerald-300 shadow-md hover:shadow-lg hover:border-neutral-500 bg-emerald-50'
+        }`}
+      >
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="w-3! h-3! bg-neutral-700!"
+        />
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="bg-emerald-700 text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0">
+              ID: {id}
+            </div>
+            <div className="text-xs text-neutral-700 truncate flex-1 font-medium">
+              {data.label}
+            </div>
+          </div>
+
+          <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
+            {/* Wait Time Selector */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Wait Time:</span>
+              <Select value={currentWaitTime} onValueChange={handleWaitTimeChange}>
+                <SelectTrigger
+                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                  size="sm"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px]" onClick={(e) => e.stopPropagation()}>
+                  {waitTimeOptions.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}s
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        <Handle
+          type="source"
+          position={Position.Right}
+          className="w-3! h-3! bg-neutral-700!"
+        />
       </div>
     </div>
   );
