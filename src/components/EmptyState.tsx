@@ -26,7 +26,7 @@ import { useRecentProjectsStore, RecentProject } from "@/store/recentProjectsSto
 interface EmptyStateProps {
   onCreateProject: (projectName: string) => void;
   onImportProject: () => void;
-  onLoadRecentProject: () => void;
+  onLoadRecentProject: (projectName: string) => void;
 }
 
 export default function EmptyState({ onCreateProject, onImportProject, onLoadRecentProject }: EmptyStateProps) {
@@ -51,8 +51,8 @@ export default function EmptyState({ onCreateProject, onImportProject, onLoadRec
   };
 
   const handleLoadRecent = (project: RecentProject) => {
-    // Load the project from localStorage
-    onLoadRecentProject();
+    // Load the project from localStorage by name
+    onLoadRecentProject(project.name);
   };
 
   const handleRemoveRecent = (e: React.MouseEvent, projectId: string) => {
