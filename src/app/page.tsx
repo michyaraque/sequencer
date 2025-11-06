@@ -472,11 +472,32 @@ function FlowEditor() {
     // Reload nodes and edges from store
     const currentStoredNodes = useGameDialogStore.getState().nodes;
     const currentStoredEdges = useGameDialogStore.getState().edges;
+    const currentSpeechTexts = useGameDialogStore.getState().speechTexts;
+    const currentNPCs = useGameDialogStore.getState().npcs;
+    const currentVariables = useGameDialogStore.getState().variables;
+    const currentProjectName = useGameDialogStore.getState().projectName;
+    const currentLanguage = useGameDialogStore.getState().selectedLanguage;
 
     if (currentStoredNodes.length > 0) {
-      // Create first room if none exist
+      // Create first room if none exist and load data into it
       if (rooms.length === 0) {
-        addRoom("Room 1");
+        const roomId = `room-${Date.now()}`;
+        const newRoom = {
+          id: roomId,
+          name: "Room 1",
+          nodes: currentStoredNodes,
+          edges: currentStoredEdges,
+          speechTexts: currentSpeechTexts,
+          npcs: currentNPCs,
+          variables: currentVariables,
+          projectName: currentProjectName,
+          selectedLanguage: currentLanguage,
+        };
+
+        useRoomsStore.setState({
+          rooms: [newRoom],
+          currentRoomId: roomId,
+        });
       }
 
       setNodes(currentStoredNodes);
@@ -486,7 +507,7 @@ function FlowEditor() {
     } else {
       toast.error('No project data found in storage');
     }
-  }, [setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
+  }, [setNodes, setEdges, saveToHistory, rooms.length]);
 
   // Update recent projects when user works on the project
   useEffect(() => {
