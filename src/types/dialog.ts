@@ -95,3 +95,10 @@ export interface Variable {
   name: string;
   description?: string;
 }
+
+export interface Choice {
+  id: string;
+  nodeId: string; // The ChoiceNode this belongs to
+  text: string;
+  order: number; // To maintain order
+}

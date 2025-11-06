@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Node, Edge } from "@xyflow/react";
-import { SpeechText, NPC, Variable, DialogNodeData } from "@/types/dialog";
+import { SpeechText, NPC, Variable, Choice, DialogNodeData } from "@/types/dialog";
 
 interface GameDialogStore {
   projectName: string;
@@ -11,6 +11,7 @@ interface GameDialogStore {
   speechTexts: SpeechText[];
   npcs: NPC[];
   variables: Variable[];
+  choices: Choice[];
 
   setProjectName: (projectName: string) => void;
   setSelectedLanguage: (language: number) => void;
@@ -35,6 +36,12 @@ interface GameDialogStore {
   addVariable: (variable: Variable) => void;
   editVariable: (oldId: string, variable: Variable) => void;
   deleteVariable: (id: string) => void;
+
+  setChoices: (choices: Choice[]) => void;
+  addChoice: (choice: Choice) => void;
+  editChoice: (id: string, choice: Partial<Choice>) => void;
+  deleteChoice: (id: string) => void;
+  deleteChoicesByNodeId: (nodeId: string) => void;
 }
 
 export const useGameDialogStore = create<GameDialogStore>()(
@@ -47,6 +54,7 @@ export const useGameDialogStore = create<GameDialogStore>()(
       speechTexts: [],
       npcs: [],
       variables: [],
+      choices: [],
 
       setProjectName: (projectName) => set({ projectName }),
       setSelectedLanguage: (selectedLanguage) => set({ selectedLanguage }),
@@ -117,6 +125,25 @@ export const useGameDialogStore = create<GameDialogStore>()(
       deleteVariable: (id) =>
         set((state) => ({
           variables: state.variables.filter((v) => v.id !== id),
+        })),
+
+      setChoices: (choices) => set({ choices }),
+      addChoice: (choice) =>
+        set((state) => ({ choices: [...state.choices, choice] })),
+
+      editChoice: (id, choice) =>
+        set((state) => ({
+          choices: state.choices.map((c) => (c.id === id ? { ...c, ...choice } : c)),
+        })),
+
+      deleteChoice: (id) =>
+        set((state) => ({
+          choices: state.choices.filter((c) => c.id !== id),
+        })),
+
+      deleteChoicesByNodeId: (nodeId) =>
+        set((state) => ({
+          choices: state.choices.filter((c) => c.nodeId !== nodeId),
         })),
     }),
     {

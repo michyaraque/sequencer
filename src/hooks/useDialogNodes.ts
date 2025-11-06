@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { Node, Edge, applyNodeChanges, applyEdgeChanges, addEdge, OnNodesChange, OnEdgesChange, OnConnect, useReactFlow } from "@xyflow/react";
 import { DialogNodeData } from "@/types/dialog";
 import { toast } from "sonner";
+import { useGameDialogStore } from "@/store/gameDialogStore";
 
 interface UseDialogNodesProps {
   initialNodes: Node<DialogNodeData>[];
@@ -24,6 +25,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
   const [selectedNode, setSelectedNode] = useState<Node<DialogNodeData> | null>(null);
   const connectingNodeId = useRef<string | null>(null);
   const { screenToFlowPosition } = useReactFlow();
+  const deleteChoicesByNodeId = useGameDialogStore((state) => state.deleteChoicesByNodeId);
 
   const onNodesChange: OnNodesChange = useCallback(
     /*@ts-ignore*/
@@ -231,6 +233,11 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
       let newNodes: Node<DialogNodeData>[] = [];
       let newEdges: Edge[] = [];
 
+      // Delete associated choices if it's a choice node
+      if (selectedNode.type === 'choice') {
+        deleteChoicesByNodeId(selectedNode.id);
+      }
+
       setNodes((nds) => {
         newNodes = nds.filter((node) => node.id !== selectedNode.id).map((node) => {
           if (node.data.nextNodeId === selectedNode.id) {
@@ -254,13 +261,20 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
       setSelectedNode(null);
       setTimeout(() => saveToHistory(newNodes, newEdges), 0);
     }
-  }, [selectedNode, saveToHistory]);
+  }, [selectedNode, saveToHistory, deleteChoicesByNodeId]);
 
   const deleteNodesByIds = useCallback((nodeIds: string[]) => {
     let newNodes: Node<DialogNodeData>[] = [];
     let newEdges: Edge[] = [];
 
+    // Delete associated choices for all choice nodes being deleted
     setNodes((nds) => {
+      nds.forEach((node) => {
+        if (nodeIds.includes(node.id) && node.type === 'choice') {
+          deleteChoicesByNodeId(node.id);
+        }
+      });
+
       newNodes = nds.filter((node) => !nodeIds.includes(node.id)).map((node) => {
         if (nodeIds.includes(node.data.nextNodeId)) {
           return {
@@ -282,7 +296,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
 
     setSelectedNode(null);
     saveToHistory(newNodes, newEdges);
-  }, [saveToHistory]);
+  }, [saveToHistory, deleteChoicesByNodeId]);
 
   const deleteEdgesByIds = useCallback((edgeIds: string[]) => {
     let newNodes: Node<DialogNodeData>[] = [];
