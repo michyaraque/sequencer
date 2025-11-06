@@ -134,7 +134,7 @@ function FlowEditor() {
 
   const isLoadingRoom = useRef(false);
 
-  // Load room data when switching rooms
+  // Load room data when switching rooms or on initial mount
   useEffect(() => {
     if (currentRoom) {
       isLoadingRoom.current = true;
@@ -151,20 +151,25 @@ function FlowEditor() {
         isLoadingRoom.current = false;
       }, 100);
     }
-  }, [currentRoomId]);
+  }, [currentRoomId, currentRoom]);
 
-  // Save changes back to room (but not when loading)
+  // Save changes back to room (but not when loading) - debounced for performance
   useEffect(() => {
     if (currentRoomId && !isLoadingRoom.current) {
-      updateRoomData(currentRoomId, {
-        nodes: storedNodes,
-        edges: storedEdges,
-        speechTexts,
-        npcs,
-        variables,
-        projectName,
-        selectedLanguage,
-      });
+      // Debounce to prevent excessive localStorage writes during drag/edit operations
+      const timeoutId = setTimeout(() => {
+        updateRoomData(currentRoomId, {
+          nodes: storedNodes,
+          edges: storedEdges,
+          speechTexts,
+          npcs,
+          variables,
+          projectName,
+          selectedLanguage,
+        });
+      }, 300); // 300ms debounce - allows batch updates to complete
+
+      return () => clearTimeout(timeoutId);
     }
   }, [storedNodes, storedEdges, speechTexts, npcs, variables, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
@@ -260,15 +265,20 @@ function FlowEditor() {
     }
   }, [rooms, currentRoomId, currentRoom]); // Watch for rooms to be rehydrated
 
-  // Sync nodes and edges back to store when they change
+  // Sync nodes and edges back to store when they change (debounced for performance)
   useEffect(() => {
     const setStoredNodes = useGameDialogStore.getState().setNodes;
     const setStoredEdges = useGameDialogStore.getState().setEdges;
 
-    if (nodes.length > 0 || edges.length > 0) {
-      setStoredNodes(nodes);
-      setStoredEdges(edges);
-    }
+    // Debounce to avoid excessive store updates during drag operations
+    const timeoutId = setTimeout(() => {
+      if (nodes.length > 0 || edges.length > 0) {
+        setStoredNodes(nodes);
+        setStoredEdges(edges);
+      }
+    }, 150); // 150ms debounce - balances responsiveness with performance
+
+    return () => clearTimeout(timeoutId);
   }, [nodes, edges]);
 
   const handleEditSpeechText = useCallback((oldId: string, speechText: any) => {
@@ -504,16 +514,21 @@ function FlowEditor() {
     }
   }, []);
 
-  // Update recent projects list when user works on the project
+  // Update recent projects list when user works on the project (debounced)
   // (Rooms are auto-saved by Zustand persist middleware)
   useEffect(() => {
     if (nodes.length > 0 && projectName !== "Untitled Project" && hasRooms) {
-      const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
-      addRecentProject({
-        name: projectName,
-        nodeCount: nodes.length,
-        speechCount: speechTexts.length,
-      });
+      // Debounce to avoid excessive updates when adding/removing multiple nodes
+      const timeoutId = setTimeout(() => {
+        const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
+        addRecentProject({
+          name: projectName,
+          nodeCount: nodes.length,
+          speechCount: speechTexts.length,
+        });
+      }, 500); // 500ms debounce - only update after user stops making changes
+
+      return () => clearTimeout(timeoutId);
     }
   }, [nodes.length, speechTexts.length, projectName, hasRooms]);
 
@@ -533,9 +548,8 @@ function FlowEditor() {
   const { screenToFlowPosition } = useReactFlow();
 
   const handleExitProject = useCallback(() => {
-    // Clear all rooms
+    // Only clear the current room ID, but keep all saved rooms intact
     useRoomsStore.setState({
-      rooms: [],
       currentRoomId: "",
     });
 
@@ -793,7 +807,7 @@ function FlowEditor() {
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {/* Desktop Sidebar - hidden on mobile */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block h-full">
         <Sidebar
           onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
           onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
@@ -842,7 +856,7 @@ function FlowEditor() {
       </Sheet>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {hasRooms && <RoomTabs />}
+        {currentRoomId && <RoomTabs />}
 
         {/* Toolbar - Responsive */}
         <div className="bg-white border-b border-neutral-200 px-2 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 overflow-x-auto">
@@ -964,7 +978,7 @@ function FlowEditor() {
         </div>
 
         <div className="flex-1 relative">
-          {!hasRooms ? (
+          {!currentRoomId ? (
             <EmptyState
               onCreateProject={handleCreateProject}
               onImportProject={handleImportProject}
@@ -1007,7 +1021,7 @@ function FlowEditor() {
           )}
 
           {/* Floating Add Button - Mobile Only */}
-          {hasRooms && (
+          {currentRoomId && (
             <button
               onClick={() => setShowMobileNodePalette(true)}
               className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center z-40"

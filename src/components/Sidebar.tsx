@@ -77,7 +77,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-64 bg-neutral-50 border-r border-neutral-200 flex flex-col">
+    <div className="w-64 h-full bg-neutral-50 border-r border-neutral-200 flex flex-col">
       {/* Project Management Section */}
       <div className="p-4 border-b border-neutral-200 bg-white">
         <div className="flex items-center justify-between mb-2">
