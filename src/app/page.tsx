@@ -26,9 +26,9 @@ import {
   CustomActionNode,
   EndDialogueNode,
   CustomNodeProps,
-  DialogNode
+  DialogNode,
+  AnnotationNode
 } from "@/components/nodes";
-import AnnotationNode from "@/components/nodes/AnnotationNode";
 import CustomEdge from "@/components/CustomEdge";
 import EmptyState from "@/components/EmptyState";
 import NodeEditor from "@/components/NodeEditor";

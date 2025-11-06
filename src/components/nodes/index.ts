@@ -12,6 +12,7 @@ export { ShowMessageNode } from "./ShowMessageNode";
 export { WaitNode } from "./WaitNode";
 export { RandomNode } from "./RandomNode";
 export { EndDialogueNode } from "./EndDialogueNode";
+export {default as AnnotationNode} from "./AnnotationNode";
 
 export type { DialogRFNode, CustomNodeProps } from "./shared";
 export { getSpeechIdInLanguage, truncateText, languageNames } from "./shared";
