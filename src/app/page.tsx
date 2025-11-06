@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import DialogNode, {
+import {
   InitializeSpeechNode,
   BotSpeechNode,
   ShowMessageNode,
@@ -25,9 +25,10 @@ import DialogNode, {
   WaitNode,
   CustomActionNode,
   EndDialogueNode,
-  CustomNodeProps
-} from "@/components/DialogNode";
-import AnnotationNode from "@/components/AnnotationNode";
+  CustomNodeProps,
+  DialogNode
+} from "@/components/nodes";
+import AnnotationNode from "@/components/nodes/AnnotationNode";
 import CustomEdge from "@/components/CustomEdge";
 import EmptyState from "@/components/EmptyState";
 import NodeEditor from "@/components/NodeEditor";
@@ -54,7 +55,6 @@ import { useReactFlow } from "@xyflow/react";
 import { exportProject, importProject, downloadProjectFile } from "@/utils/export";
 import { toast } from "sonner";
 
-// Helper function to get default node data based on node type
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
   const baseData = {
     botId: "-1",
@@ -134,7 +134,6 @@ function FlowEditor() {
 
   const isLoadingRoom = useRef(false);
 
-  // Load room data when switching rooms or on initial mount
   useEffect(() => {
     if (currentRoom) {
       isLoadingRoom.current = true;
@@ -146,17 +145,14 @@ function FlowEditor() {
       useGameDialogStore.getState().setProjectName(currentRoom.projectName);
       useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
 
-      // Allow saving again after a brief delay
       setTimeout(() => {
         isLoadingRoom.current = false;
       }, 100);
     }
   }, [currentRoomId, currentRoom]);
 
-  // Save changes back to room (but not when loading) - debounced for performance
   useEffect(() => {
     if (currentRoomId && !isLoadingRoom.current) {
-      // Debounce to prevent excessive localStorage writes during drag/edit operations
       const timeoutId = setTimeout(() => {
         updateRoomData(currentRoomId, {
           nodes: storedNodes,
@@ -167,13 +163,12 @@ function FlowEditor() {
           projectName,
           selectedLanguage,
         });
-      }, 300); // 300ms debounce - allows batch updates to complete
+      }, 300);
 
       return () => clearTimeout(timeoutId);
     }
   }, [storedNodes, storedEdges, speechTexts, npcs, variables, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
-  // Create node types with callbacks
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
       return (props: CustomNodeProps) => (
@@ -203,7 +198,6 @@ function FlowEditor() {
     };
   }, []);
 
-  // Create edge types
   const edgeTypes: EdgeTypes = useMemo(() => {
     return {
       default: CustomEdge,
@@ -247,7 +241,6 @@ function FlowEditor() {
     deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
 
-  // Initialize: Load first room when Zustand rehydrates rooms from localStorage
   const hasInitialized = useRef(false);
   useEffect(() => {
     if (!hasInitialized.current && rooms.length > 0 && currentRoomId && nodes.length === 0) {
@@ -263,20 +256,18 @@ function FlowEditor() {
         }, 100);
       }
     }
-  }, [rooms, currentRoomId, currentRoom]); // Watch for rooms to be rehydrated
+  }, [rooms, currentRoomId, currentRoom]);
 
-  // Sync nodes and edges back to store when they change (debounced for performance)
   useEffect(() => {
     const setStoredNodes = useGameDialogStore.getState().setNodes;
     const setStoredEdges = useGameDialogStore.getState().setEdges;
 
-    // Debounce to avoid excessive store updates during drag operations
     const timeoutId = setTimeout(() => {
       if (nodes.length > 0 || edges.length > 0) {
         setStoredNodes(nodes);
         setStoredEdges(edges);
       }
-    }, 150); // 150ms debounce - balances responsiveness with performance
+    }, 150);
 
     return () => clearTimeout(timeoutId);
   }, [nodes, edges]);
@@ -390,9 +381,7 @@ function FlowEditor() {
     },
   });
 
-  // Project-wide export/import handlers
   const handleExportProject = useCallback(() => {
-    // Save current room data before exporting
     if (currentRoomId && !isLoadingRoom.current) {
       updateRoomData(currentRoomId, {
         nodes: storedNodes,
@@ -405,7 +394,6 @@ function FlowEditor() {
       });
     }
 
-    // Export all rooms
     const content = exportProject(rooms, projectName);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${projectName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${timestamp}.json`;
@@ -425,13 +413,11 @@ function FlowEditor() {
           const project = importProject(content);
 
           if (project && project.rooms) {
-            // Clear existing rooms and import all rooms from project
             useRoomsStore.setState({
               rooms: project.rooms,
               currentRoomId: project.rooms[0]?.id || "",
             });
 
-            // Load first room's data into active state
             const firstRoom = project.rooms[0];
             if (firstRoom) {
               isLoadingRoom.current = true;
@@ -462,7 +448,6 @@ function FlowEditor() {
   }, [saveToHistory]);
 
   const handleCreateProject = useCallback((projectName: string) => {
-    // Create first room if none exist
     if (rooms.length === 0) {
       addRoom("Room 1");
     }
@@ -470,7 +455,6 @@ function FlowEditor() {
     // Set project name
     setProjectName(projectName);
 
-    // Create initial node
     const initialNode: Node<DialogNodeData> = {
       id: "1",
       type: "initializeSpeech",
@@ -497,15 +481,11 @@ function FlowEditor() {
   }, [setProjectName, setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
 
   const handleLoadRecentProject = useCallback((projectName: string) => {
-    // Rooms are already persisted in Zustand and loaded on mount
-    // Just switch to the first room to trigger loading
     const roomsState = useRoomsStore.getState();
 
     if (roomsState.rooms.length > 0) {
-      // Find room with matching project name or use first room
       const targetRoom = roomsState.rooms.find(r => r.projectName === projectName) || roomsState.rooms[0];
 
-      // Switch to that room - this will trigger the room loading effect
       useRoomsStore.getState().switchRoom(targetRoom.id);
 
       toast.success(`Loaded "${targetRoom.projectName}"`);
@@ -514,11 +494,8 @@ function FlowEditor() {
     }
   }, []);
 
-  // Update recent projects list when user works on the project (debounced)
-  // (Rooms are auto-saved by Zustand persist middleware)
   useEffect(() => {
     if (nodes.length > 0 && projectName !== "Untitled Project" && hasRooms) {
-      // Debounce to avoid excessive updates when adding/removing multiple nodes
       const timeoutId = setTimeout(() => {
         const addRecentProject = useRecentProjectsStore.getState().addRecentProject;
         addRecentProject({
@@ -526,7 +503,7 @@ function FlowEditor() {
           nodeCount: nodes.length,
           speechCount: speechTexts.length,
         });
-      }, 500); // 500ms debounce - only update after user stops making changes
+      }, 500);
 
       return () => clearTimeout(timeoutId);
     }
@@ -548,12 +525,10 @@ function FlowEditor() {
   const { screenToFlowPosition } = useReactFlow();
 
   const handleExitProject = useCallback(() => {
-    // Only clear the current room ID, but keep all saved rooms intact
     useRoomsStore.setState({
       currentRoomId: "",
     });
 
-    // Clear game dialog store
     useGameDialogStore.getState().setNodes([]);
     useGameDialogStore.getState().setEdges([]);
     useGameDialogStore.getState().setSpeechTexts([]);
@@ -565,7 +540,6 @@ function FlowEditor() {
     toast.success("Project closed");
   }, []);
 
-  // Sequence handlers
   const handleSaveSequence = useCallback((name: string, description: string) => {
     const selectedNodes = nodes.filter(node => node.selected);
 
@@ -574,7 +548,6 @@ function FlowEditor() {
       return;
     }
 
-    // Get edges that connect selected nodes
     const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
     const selectedEdges = edges.filter(edge =>
       selectedNodeIds.has(edge.source) && selectedNodeIds.has(edge.target)
@@ -597,15 +570,12 @@ function FlowEditor() {
       return;
     }
 
-    // Calculate bounding box of original sequence
     const originalNodes = sequence.nodes;
     const minX = Math.min(...originalNodes.map((n: Node) => n.position.x));
     const minY = Math.min(...originalNodes.map((n: Node) => n.position.y));
 
-    // Convert click position to flow coordinates
     const flowPosition = screenToFlowPosition(clickPosition);
 
-    // Create ID mapping for nodes
     const idMap = new Map<string, string>();
     let currentMaxId = Math.max(...nodes.map(n => parseInt(n.id, 10)).filter(id => !isNaN(id)), 0);
 
@@ -615,7 +585,6 @@ function FlowEditor() {
       idMap.set(node.id, newId);
     });
 
-    // Create new nodes with updated positions and IDs
     const newNodes: Node<DialogNodeData>[] = originalNodes.map((node: Node<DialogNodeData>) => {
       const newId = idMap.get(node.id)!;
       const offsetX = node.position.x - minX;
@@ -632,7 +601,6 @@ function FlowEditor() {
       };
     });
 
-    // Create new edges with updated IDs
     const newEdges: Edge[] = sequence.edges.map((edge: Edge) => {
       const newSource = idMap.get(edge.source);
       const newTarget = idMap.get(edge.target);
@@ -647,7 +615,6 @@ function FlowEditor() {
       };
     }).filter(Boolean) as Edge[];
 
-    // Update nodes data to reference new IDs in nextNodeId
     const finalNodes = newNodes.map(node => {
       if (node.data.nextNodeId && idMap.has(node.data.nextNodeId)) {
         return {
@@ -661,7 +628,6 @@ function FlowEditor() {
       return node;
     });
 
-    // Add to canvas
     setNodes((nds) => {
       const updatedNodes = [...nds, ...finalNodes];
       setTimeout(() => saveToHistory(updatedNodes, [...edges, ...newEdges]), 0);
@@ -695,9 +661,7 @@ function FlowEditor() {
     toast.success("Sequence updated");
   }, [updateSequence]);
 
-  // Mobile: Add node at center of viewport
   const handleMobileAddNode = useCallback((nodeType: string) => {
-    // Get the center of the current viewport
     const viewport = document.querySelector('.react-flow__viewport');
     if (!viewport) return;
 
@@ -765,7 +729,6 @@ function FlowEditor() {
 
       const newNodeId = getNextNodeId(nodes);
 
-      // Handle annotation nodes separately as they have different data structure
       let newNode: Node<any>;
 
       if (type === "annotation") {
@@ -797,7 +760,6 @@ function FlowEditor() {
     [screenToFlowPosition, nodes, edges, setNodes, saveToHistory]
   );
 
-  // Auto-show mobile node editor when node is selected on mobile
   useEffect(() => {
     if (selectedNode && window.innerWidth < 1024) {
       setShowMobileNodeEditor(true);
@@ -934,7 +896,7 @@ function FlowEditor() {
             )}
           </div>
 
-          <div className="hidden sm:block w-px h-8 bg-neutral-300 flex-shrink-0" />
+          <div className="hidden sm:block w-px h-8 bg-neutral-300 shrink-0" />
 
           {/* Export/Import Actions */}
           <div className="flex items-center gap-1 sm:gap-2">
@@ -1005,6 +967,7 @@ function FlowEditor() {
               defaultViewport={{ x: 90, y: 200, zoom: 1 }}
               fitViewOptions={{ padding: 0.5 }}
               className="bg-neutral-100"
+              connectionRadius={30}
               proOptions={{
                 hideAttribution: true
               }}
