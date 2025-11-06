@@ -150,25 +150,28 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Speech Speed
-          </label>
-          <Select
-            value={selectedNode.data.speechSpeed || "2"}
-            onValueChange={(value) => handleChange("speechSpeed", value)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Speed" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">0 (Default)</SelectItem>
-              <SelectItem value="1">1 (Slow)</SelectItem>
-              <SelectItem value="2">2 (Normal)</SelectItem>
-              <SelectItem value="3">3 (Fast)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Only show Speech Speed for specific node types */}
+        {(selectedNode.type === "botSpeech" || selectedNode.type === "showMessage" || selectedNode.type === "choice") && (
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Speech Speed
+            </label>
+            <Select
+              value={selectedNode.data.speechSpeed || "2"}
+              onValueChange={(value) => handleChange("speechSpeed", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Speed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">0 (Default)</SelectItem>
+                <SelectItem value="1">1 (Slow)</SelectItem>
+                <SelectItem value="2">2 (Normal)</SelectItem>
+                <SelectItem value="3">3 (Fast)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">

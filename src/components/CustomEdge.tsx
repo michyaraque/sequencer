@@ -46,6 +46,11 @@ function CustomEdge({
   // Get the source node to access its speechSpeed
   const sourceNode = nodes.find((node) => node.id === source);
   const speechSpeed = sourceNode?.data?.speechSpeed;
+  const sourceNodeType = sourceNode?.type;
+
+  // Only show speech speed for specific node types
+  const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
+  const shouldShowSpeechSpeed = sourceNodeType && nodeTypesWithSpeechSpeed.includes(sourceNodeType);
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -66,7 +71,7 @@ function CustomEdge({
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
-      {speechSpeed && speechSpeed !== "-1" && (
+      {shouldShowSpeechSpeed && speechSpeed && speechSpeed !== "-1" && (
         <EdgeLabelRenderer>
           <div
             style={{

@@ -56,12 +56,16 @@ import { exportProject, importProject, downloadProjectFile } from "@/utils/expor
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
+  // Only nodes of type botSpeech, showMessage, and choice should have speechSpeed
+  const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
+  const defaultSpeechSpeed = nodeTypesWithSpeechSpeed.includes(nodeType) ? "2" : "-1";
+
   const baseData = {
     botId: "-1",
     userId: "#(user_id)",
     nextNodeId: "-1",
     speechId: "-1",
-    speechSpeed: "0",
+    speechSpeed: defaultSpeechSpeed,
     value1: "-1",
     value2: "-1",
     value3: "-1",
@@ -464,7 +468,7 @@ function FlowEditor() {
         userId: "#(user_id)",
         nextNodeId: "0",
         speechId: "-1",
-        speechSpeed: "2",
+        speechSpeed: "-1",
         actionId: "1",
         value1: "-1",
         value2: "-1",

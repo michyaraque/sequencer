@@ -183,7 +183,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
           userId: "#(user_id)",
           nextNodeId: "-1",
           speechId: "SpeechId",
-          speechSpeed: "1/2/3",
+          speechSpeed: "-1",
           actionId: "1001",
           value1: "-1",
           value2: "-1",
