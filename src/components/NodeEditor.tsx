@@ -27,7 +27,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
 
   if (!selectedNode) {
     return (
-      <div className="w-80 bg-neutral-50 border-l border-neutral-200 p-4">
+      <div className="w-80 h-screen bg-neutral-50 border-l border-neutral-200 p-4">
         <h2 className="text-lg font-bold text-neutral-800 mb-4">Node Properties</h2>
         <p className="text-neutral-500 text-sm">Select a node to edit its properties</p>
       </div>
@@ -39,7 +39,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
   };
 
   return (
-    <div className="w-80 bg-neutral-50 border-l border-neutral-200 p-4 overflow-y-auto">
+    <div className="w-80 h-screen bg-neutral-50 border-l border-neutral-200 p-4 overflow-y-auto">
       <h2 className="text-lg font-bold text-neutral-800 mb-4">Node Properties</h2>
       <div className="bg-neutral-800 text-white px-2 py-1 rounded text-xs font-bold font-mono mb-4 inline-block">
         Node ID: {selectedNode.id}
