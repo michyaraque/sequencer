@@ -161,7 +161,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={speechComboboxOpen}
-                    className="h-[35px] px-2 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden bg-neutral-900/10 hover:bg-neutral-900/15"
+                    className="h-[35px] px-2 text-xs border-neutral-300 font-mono min-w-0 flex-1 justify-between overflow-hidden bg-neutral-900/5 hover:bg-neutral-900/10"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <span className="truncate flex-1 text-left">
