@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wired Sequencer Designer",
-  description: "Visual dialog node editor for habbo game development",
+  title: "Wired Sequence Designer",
+  description: "Visual node editor for Habbo game developtment.",
 };
 
 export default function RootLayout({
