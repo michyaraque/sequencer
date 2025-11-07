@@ -1,3 +1,5 @@
+**Disclaimer**: Some features and code contributions in this project were co-created with the assistance of Claude. The editor, logic flow patterns, and documentation may include AI-generated or AI-refined parts. All code has been reviewed and adjusted by human developers before use.
+
 # Game Dialog for Wired
 
 A visual branching dialogue editor for Habbo using node-based flow. Built with **React** and **React-Flow**, this tool allows creating complex NPC dialog systems without placing endless WIRED boxes in a room.
@@ -91,16 +93,17 @@ Multiple bots can be used to distribute load.
 ## Installation
 
 ```bash
-git clone https://github.com/michyaraque/game-dialog-for-wired.git
-cd game-dialog-for-wired
-npm install
-npm run dev
+git clone https://github.com/michyaraque/sequencer.git
+cd sequencer
+pnpm install
+pnpm dev
 ```
 
 ## Tech Stack
 
 * Nextjs 16
 * React-Flow
+* Tailwind V4
 * Zustand
 * Optional JSON or DB persistence layer
 
