@@ -3,15 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus, MessageSquare, ListChecks } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+import { X, Plus } from "lucide-react";
 import {
   InitializeSpeechNode,
   BotSpeechNode,
@@ -38,23 +30,26 @@ import VariableManager from "@/components/VariableManager";
 import ChoicesTextManager from "@/components/ChoicesTextManager";
 import ExportSettingsDialog from "@/components/ExportSettingsDialog";
 import Sidebar from "@/components/Sidebar";
-import { DialogNodeData } from "@/types/dialog";
-import { useDialogHistory } from "@/hooks/useDialogHistory";
-import { useDialogNodes, getNextNodeId } from "@/hooks/useDialogNodes";
-import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
-import { useDialogExport } from "@/hooks/useNodeExport";
-import { useGameDialogStore } from "@/store/gameDialogStore";
-import { useRecentProjectsStore } from "@/store/recentProjectsStore";
-import { useRoomsStore } from "@/store/useRoomsStore";
-import { useSequencesStore } from "@/store/useSequencesStore";
 import RoomTabs from "@/components/RoomTabs";
 import SaveSequenceDialog from "@/components/SaveSequenceDialog";
 import CanvasContextMenu from "@/components/CanvasContextMenu";
 import SequenceManager from "@/components/SequenceManager";
 import MobileNodePalette from "@/components/MobileNodePalette";
+import { Toolbar } from "@/components/flow-editor/Toolbar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DialogNodeData } from "@/types/dialog";
+import { useDialogHistory } from "@/hooks/useDialogHistory";
+import { useDialogNodes, getNextNodeId } from "@/hooks/useDialogNodes";
+import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
+import { useDialogExport } from "@/hooks/useNodeExport";
+import { useModalManager } from "@/hooks/useModalManager";
+import { useResourceHandlers } from "@/hooks/useResourceHandlers";
+import { useGameDialogStore } from "@/store/gameDialogStore";
+import { useRecentProjectsStore } from "@/store/recentProjectsStore";
+import { useRoomsStore } from "@/store/useRoomsStore";
+import { useSequencesStore } from "@/store/useSequencesStore";
 import { useReactFlow } from "@xyflow/react";
-import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile, downloadChoicesFile } from "@/utils/export";
+import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile } from "@/utils/export";
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -105,18 +100,21 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
 const initialNodes: Node<DialogNodeData>[] = [];
 
 function FlowEditor() {
-  const [showSpeechTextManager, setShowSpeechTextManager] = useState(false);
-  const [showNPCManager, setShowNPCManager] = useState(false);
-  const [showVariableManager, setShowVariableManager] = useState(false);
-  const [showChoicesManager, setShowChoicesManager] = useState(false);
-  const [showSequenceManager, setShowSequenceManager] = useState(false);
-  const [showExportSettings, setShowExportSettings] = useState(false);
-  const [showSaveSequenceDialog, setShowSaveSequenceDialog] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [showMobileNodeEditor, setShowMobileNodeEditor] = useState(false);
-  const [showMobileNodePalette, setShowMobileNodePalette] = useState(false);
+  const { isOpen, openModal, closeModal, toggleModal } = useModalManager([
+    'speechTextManager',
+    'npcManager',
+    'variableManager',
+    'choicesManager',
+    'sequenceManager',
+    'exportSettings',
+    'saveSequenceDialog',
+    'mobileSidebar',
+    'mobileNodeEditor',
+    'mobileNodePalette',
+  ]);
+
   const [showNodeEditor, setShowNodeEditor] = useState(true);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
   const npcs = useGameDialogStore((state) => state.npcs);
@@ -150,8 +148,8 @@ function FlowEditor() {
       return (props: CustomNodeProps) => (
         <Component
           {...props}
-          onOpenSpeechManager={() => setShowSpeechTextManager(true)}
-          onOpenNPCManager={() => setShowNPCManager(true)}
+          onOpenSpeechManager={() => openModal('speechTextManager')}
+          onOpenNPCManager={() => openModal('npcManager')}
         />
       );
     };
@@ -172,7 +170,7 @@ function FlowEditor() {
       endDialogue: createNodeWithProps(EndDialogueNode),
       annotation: AnnotationNode,
     };
-  }, []);
+  }, [openModal]);
 
   const edgeTypes: EdgeTypes = useMemo(() => {
     return {
@@ -303,105 +301,16 @@ function FlowEditor() {
     return () => clearTimeout(timeoutId);
   }, [nodes, edges]);
 
-  const handleEditSpeechText = useCallback((oldId: string, speechText: any) => {
-    editSpeechText(oldId, speechText);
-    if (oldId !== speechText.id) {
-      setNodes((nds) =>
-        nds.map((node) => {
-          if (node.data.speechId === oldId) {
-            return { ...node, data: { ...node.data, speechId: speechText.id } };
-          }
-          return node;
-        })
-      );
-    }
-  }, [editSpeechText, setNodes]);
-
-  const handleDeleteSpeechText = useCallback((id: string) => {
-    deleteSpeechText(id);
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.data.speechId === id) {
-          return { ...node, data: { ...node.data, speechId: "-1" } };
-        }
-        return node;
-      })
-    );
-  }, [deleteSpeechText, setNodes]);
-
-  const handleEditNPC = useCallback((oldId: string, npc: any) => {
-    editNPC(oldId, npc);
-    if (oldId !== npc.id) {
-      setNodes((nds) =>
-        nds.map((node) => {
-          const updates: any = {};
-          if (node.data.botId === oldId) updates.botId = npc.id;
-          if (node.data.userId === oldId) updates.userId = npc.id;
-          if (Object.keys(updates).length > 0) {
-            return { ...node, data: { ...node.data, ...updates } };
-          }
-          return node;
-        })
-      );
-    }
-  }, [editNPC, setNodes]);
-
-  const handleDeleteNPC = useCallback((id: string) => {
-    deleteNPC(id);
-    setNodes((nds) =>
-      nds.map((node) => {
-        const updates: any = {};
-        if (node.data.botId === id) updates.botId = "#(bot_id)";
-        if (node.data.userId === id) updates.userId = "$(user_id)";
-        if (Object.keys(updates).length > 0) {
-          return { ...node, data: { ...node.data, ...updates } };
-        }
-        return node;
-      })
-    );
-  }, [deleteNPC, setNodes]);
-
-  const handleEditVariable = useCallback((oldId: string, variable: any) => {
-    editVariable(oldId, variable);
-    if (oldId !== variable.id) {
-      setNodes((nds) =>
-        nds.map((node) => {
-          const updates: any = {};
-          if (node.data.value1 === oldId) updates.value1 = variable.id;
-          if (node.data.value2 === oldId) updates.value2 = variable.id;
-          if (node.data.value3 === oldId) updates.value3 = variable.id;
-          if (Object.keys(updates).length > 0) {
-            return { ...node, data: { ...node.data, ...updates } };
-          }
-          return node;
-        })
-      );
-    }
-  }, [editVariable, setNodes]);
-
-  const handleDeleteVariable = useCallback((id: string) => {
-    deleteVariable(id);
-    setNodes((nds) =>
-      nds.map((node) => {
-        const updates: any = {};
-        if (node.data.value1 === id) updates.value1 = "-1";
-        if (node.data.value2 === id) updates.value2 = "-1";
-        if (node.data.value3 === id) updates.value3 = "-1";
-        if (Object.keys(updates).length > 0) {
-          return { ...node, data: { ...node.data, ...updates } };
-        }
-        return node;
-      })
-    );
-  }, [deleteVariable, setNodes]);
-
-  const handleEditChoiceText = useCallback((oldId: string, choiceText: any) => {
-    editChoiceText(oldId, choiceText);
-  }, [editChoiceText]);
-
-  const handleDeleteChoiceText = useCallback((id: string) => {
-    deleteChoiceText(id);
-  }, [deleteChoiceText]);
+  const {
+    handleEditSpeechText,
+    handleDeleteSpeechText,
+    handleEditNPC,
+    handleDeleteNPC,
+    handleEditVariable,
+    handleDeleteVariable,
+    handleEditChoiceText,
+    handleDeleteChoiceText,
+  } = useResourceHandlers({ setNodes });
 
   const { handleExport, handleCopyToClipboard, handleImport } = useDialogExport({
     nodes,
@@ -543,7 +452,7 @@ function FlowEditor() {
     redo: handleRedo,
     onDeleteNodes: deleteNodesByIds,
     onDeleteEdges: deleteEdgesByIds,
-    isModalOpen: showSpeechTextManager || showNPCManager || showVariableManager || showChoicesManager || showSequenceManager,
+    isModalOpen: isOpen('speechTextManager') || isOpen('npcManager') || isOpen('variableManager') || isOpen('choicesManager') || isOpen('sequenceManager'),
   });
 
   const { screenToFlowPosition } = useReactFlow();
@@ -584,7 +493,7 @@ function FlowEditor() {
       edges: selectedEdges,
     });
 
-    setShowSaveSequenceDialog(false);
+    closeModal('saveSequenceDialog');
     toast.success(`Sequence "${name}" saved with ${selectedNodes.length} nodes`);
   }, [nodes, edges, addSequence]);
 
@@ -786,66 +695,64 @@ function FlowEditor() {
 
   useEffect(() => {
     if (selectedNode && window.innerWidth < 1024) {
-      setShowMobileNodeEditor(true);
+      openModal('mobileNodeEditor');
     }
   }, [selectedNode]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      {/* Desktop Sidebar - hidden on mobile */}
       <div className="hidden lg:block h-full">
         <Sidebar
-          onOpenNPCManager={() => setShowNPCManager(!showNPCManager)}
-          onOpenSpeechTextManager={() => setShowSpeechTextManager(!showSpeechTextManager)}
-          onOpenVariableManager={() => setShowVariableManager(!showVariableManager)}
-          onOpenChoicesManager={() => setShowChoicesManager(!showChoicesManager)}
-          onOpenSequenceManager={() => setShowSequenceManager(!showSequenceManager)}
-          onOpenExportSettings={() => setShowExportSettings(!showExportSettings)}
+          onOpenNPCManager={() => toggleModal('npcManager')}
+          onOpenSpeechTextManager={() => toggleModal('speechTextManager')}
+          onOpenVariableManager={() => toggleModal('variableManager')}
+          onOpenChoicesManager={() => toggleModal('choicesManager')}
+          onOpenSequenceManager={() => toggleModal('sequenceManager')}
+          onOpenExportSettings={() => toggleModal('exportSettings')}
           onExportProject={handleExportProject}
           onImportProject={handleImportProject}
           onExitProject={handleExitProject}
         />
       </div>
 
-      {/* Mobile Sidebar Drawer */}
-      <Sheet open={showMobileSidebar} onOpenChange={setShowMobileSidebar}>
+      <Sheet open={isOpen('mobileSidebar')} onOpenChange={(open) => !open && closeModal('mobileSidebar')}>
         <SheetContent side="left" className="w-[280px] p-0 overflow-y-auto">
           <Sidebar
             onOpenNPCManager={() => {
-              setShowNPCManager(!showNPCManager);
-              setShowMobileSidebar(false);
+              toggleModal('npcManager');
+              closeModal('mobileSidebar');
             }}
             onOpenSpeechTextManager={() => {
-              setShowSpeechTextManager(!showSpeechTextManager);
-              setShowMobileSidebar(false);
+              toggleModal('speechTextManager');
+              closeModal('mobileSidebar');
             }}
             onOpenVariableManager={() => {
-              setShowVariableManager(!showVariableManager);
-              setShowMobileSidebar(false);
+              toggleModal('variableManager');
+              closeModal('mobileSidebar');
             }}
             onOpenChoicesManager={() => {
-              setShowChoicesManager(!showChoicesManager);
-              setShowMobileSidebar(false);
+              toggleModal('choicesManager');
+              closeModal('mobileSidebar');
             }}
             onOpenSequenceManager={() => {
-              setShowSequenceManager(!showSequenceManager);
-              setShowMobileSidebar(false);
+              toggleModal('sequenceManager');
+              closeModal('mobileSidebar');
             }}
             onOpenExportSettings={() => {
-              setShowExportSettings(!showExportSettings);
-              setShowMobileSidebar(false);
+              toggleModal('exportSettings');
+              closeModal('mobileSidebar');
             }}
             onExportProject={() => {
               handleExportProject();
-              setShowMobileSidebar(false);
+              closeModal('mobileSidebar');
             }}
             onImportProject={() => {
               handleImportProject();
-              setShowMobileSidebar(false);
+              closeModal('mobileSidebar');
             }}
             onExitProject={() => {
               handleExitProject();
-              setShowMobileSidebar(false);
+              closeModal('mobileSidebar');
             }}
           />
         </SheetContent>
@@ -854,146 +761,26 @@ function FlowEditor() {
       <div className="flex-1 flex flex-col min-w-0">
         {currentRoomId && <RoomTabs />}
 
-        {/* Toolbar - Responsive */}
-        <div className="bg-white border-b border-neutral-200 px-2 sm:px-4 py-2 flex items-center gap-2 sm:gap-3 overflow-x-auto">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setShowMobileSidebar(true)}
-            className="lg:hidden p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors"
-            title="Menu"
-          >
-            <Menu size={18} />
-          </button>
-
-          {/* Undo/Redo */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            <button
-              onClick={handleUndo}
-              disabled={currentHistoryIndex === 0}
-              className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Undo"
-            >
-              <Undo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-            <button
-              onClick={handleRedo}
-              disabled={currentHistoryIndex === history.length - 1}
-              className="p-2 bg-neutral-800 text-white rounded-md hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Redo"
-            >
-              <Redo2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-          </div>
-
-          <div className="hidden sm:block w-px h-8 bg-neutral-300" />
-
-          {/* Language Selector - Hidden on small mobile */}
-          <div className="hidden md:flex items-center gap-2">
-            <Languages size={18} className="text-neutral-600" />
-            <Select
-              value={selectedLanguage.toString()}
-              onValueChange={(value) => setSelectedLanguage(parseInt(value))}
-            >
-              <SelectTrigger className="w-32 lg:w-40">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">English</SelectItem>
-                <SelectItem value="2">Español</SelectItem>
-                <SelectItem value="3">Português</SelectItem>
-                <SelectItem value="4">Français</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Delete & Save Sequence */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {selectedNode && (
-              <button
-                onClick={deleteSelectedNode}
-                className="p-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors"
-                title="Delete"
-              >
-                <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
-              </button>
-            )}
-
-            {nodes.filter(n => n.selected).length > 1 && (
-              <button
-                onClick={() => setShowSaveSequenceDialog(true)}
-                className="md:px-2 md:py-1.5 px-3 py-2 bg-neutral-600 text-white rounded-md hover:bg-neutral-700 transition-colors flex items-center gap-2 h-full"
-                title="Save Sequence"
-              >
-                <Save size={16} className="w-[18px] h-[16px]" />
-                <span className="hidden sm:inline">Save Sequence</span>
-              </button>
-            )}
-          </div>
-
-          <div className="hidden sm:block w-px h-8 bg-neutral-300 shrink-0" />
-
-          {/* Export/Import Actions */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            <button
-              onClick={handleExport}
-              className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors"
-              title="Export Nodes"
-            >
-              <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-
-            <button
-              onClick={handleExportSpeeches}
-              className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              title="Export Speeches"
-            >
-              <MessageSquare size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-
-            <button
-              onClick={handleCopyToClipboard}
-              className="hidden sm:flex p-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors"
-              title="Copy"
-            >
-              <Copy size={18} />
-            </button>
-
-            <label className="p-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors cursor-pointer inline-flex items-center">
-              <Upload size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <input
-                type="file"
-                accept=".txt"
-                onChange={handleImport}
-                className="hidden"
-              />
-            </label>
-          </div>
-
-          {/* Desktop Properties Panel Toggle */}
-          <button
-            onClick={() => setShowNodeEditor(!showNodeEditor)}
-            className={`hidden lg:flex ml-auto p-2 rounded-md transition-colors items-center gap-1.5 ${
-              showNodeEditor
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400'
-            }`}
-            title={showNodeEditor ? "Hide Properties" : "Show Properties"}
-          >
-            <Variable size={18} />
-            <span className="text-sm font-medium hidden xl:inline">Properties</span>
-          </button>
-
-          {/* Mobile Node Editor Toggle - Only when node selected */}
-          {selectedNode && (
-            <button
-              onClick={() => setShowMobileNodeEditor(true)}
-              className="lg:hidden ml-auto p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-              title="Edit Node"
-            >
-              <Variable size={16} />
-            </button>
-          )}
-        </div>
+        <Toolbar
+          selectedLanguage={selectedLanguage}
+          onLanguageChange={setSelectedLanguage}
+          handleUndo={handleUndo}
+          handleRedo={handleRedo}
+          canUndo={currentHistoryIndex > 0}
+          canRedo={currentHistoryIndex < history.length - 1}
+          selectedNode={selectedNode}
+          deleteSelectedNode={deleteSelectedNode}
+          nodes={nodes}
+          onSaveSequence={() => openModal('saveSequenceDialog')}
+          handleExport={handleExport}
+          handleExportSpeeches={handleExportSpeeches}
+          handleCopyToClipboard={handleCopyToClipboard}
+          handleImport={handleImport}
+          showNodeEditor={showNodeEditor}
+          toggleNodeEditor={() => setShowNodeEditor(!showNodeEditor)}
+          onMobileMenuOpen={() => openModal('mobileSidebar')}
+          onMobileNodeEditorOpen={() => openModal('mobileNodeEditor')}
+        />
 
         <div className="flex-1 relative">
           {!currentRoomId ? (
@@ -1041,10 +828,9 @@ function FlowEditor() {
             </ReactFlow>
           )}
 
-          {/* Floating Add Button - Mobile Only */}
           {currentRoomId && (
             <button
-              onClick={() => setShowMobileNodePalette(true)}
+              onClick={() => openModal('mobileNodePalette')}
               className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center z-40"
               title="Add Node"
             >
@@ -1054,7 +840,6 @@ function FlowEditor() {
         </div>
       </div>
 
-      {/* Desktop NodeEditor - hidden on mobile */}
       {showNodeEditor && (
         <div className="hidden lg:block">
           <NodeEditor
@@ -1067,13 +852,12 @@ function FlowEditor() {
         </div>
       )}
 
-      {/* Mobile NodeEditor - Bottom Sheet */}
-      <Sheet open={showMobileNodeEditor} onOpenChange={setShowMobileNodeEditor}>
+      <Sheet open={isOpen('mobileNodeEditor')} onOpenChange={(open) => !open && closeModal('mobileNodeEditor')}>
         <SheetContent side="bottom" className="h-[85vh] p-0 overflow-y-auto">
           <div className="sticky top-0 bg-white border-b border-neutral-200 p-4 flex items-center justify-between z-10">
             <h3 className="font-bold text-lg">Edit Node</h3>
             <button
-              onClick={() => setShowMobileNodeEditor(false)}
+              onClick={() => closeModal('mobileNodeEditor')}
               className="p-2 hover:bg-neutral-100 rounded-md transition-colors"
             >
               <X size={20} />
@@ -1089,57 +873,57 @@ function FlowEditor() {
         </SheetContent>
       </Sheet>
 
-      {showSpeechTextManager && (
+      {isOpen('speechTextManager') && (
         <SpeechTextManager
           speechTexts={speechTexts}
           onAdd={addSpeechText}
           onEdit={handleEditSpeechText}
           onDelete={handleDeleteSpeechText}
-          onClose={() => setShowSpeechTextManager(false)}
+          onClose={() => closeModal('speechTextManager')}
         />
       )}
 
-      {showNPCManager && (
+      {isOpen('npcManager') && (
         <NPCManager
           npcs={npcs}
           onAdd={addNPC}
           onEdit={handleEditNPC}
           onDelete={handleDeleteNPC}
-          onClose={() => setShowNPCManager(false)}
+          onClose={() => closeModal('npcManager')}
         />
       )}
 
-      {showVariableManager && (
+      {isOpen('variableManager') && (
         <VariableManager
           variables={variables}
           onAdd={addVariable}
           onEdit={handleEditVariable}
           onDelete={handleDeleteVariable}
-          onClose={() => setShowVariableManager(false)}
+          onClose={() => closeModal('variableManager')}
         />
       )}
 
-      {showChoicesManager && (
+      {isOpen('choicesManager') && (
         <ChoicesTextManager
           choiceTexts={choiceTexts}
           onAdd={addChoiceText}
           onEdit={handleEditChoiceText}
           onDelete={handleDeleteChoiceText}
-          onClose={() => setShowChoicesManager(false)}
+          onClose={() => closeModal('choicesManager')}
         />
       )}
 
-      {showExportSettings && (
+      {isOpen('exportSettings') && (
         <ExportSettingsDialog
-          onClose={() => setShowExportSettings(false)}
+          onClose={() => closeModal('exportSettings')}
         />
       )}
 
-      {showSaveSequenceDialog && (
+      {isOpen('saveSequenceDialog') && (
         <SaveSequenceDialog
           selectedNodes={nodes.filter(n => n.selected)}
           onSave={handleSaveSequence}
-          onClose={() => setShowSaveSequenceDialog(false)}
+          onClose={() => closeModal('saveSequenceDialog')}
         />
       )}
 
@@ -1154,19 +938,18 @@ function FlowEditor() {
         />
       )}
 
-      {showSequenceManager && (
+      {isOpen('sequenceManager') && (
         <SequenceManager
           sequences={sequences}
           onEdit={handleEditSequence}
           onDelete={handleDeleteSequence}
-          onClose={() => setShowSequenceManager(false)}
+          onClose={() => closeModal('sequenceManager')}
         />
       )}
 
-      {/* Mobile Node Palette */}
       <MobileNodePalette
-        open={showMobileNodePalette}
-        onClose={() => setShowMobileNodePalette(false)}
+        open={isOpen('mobileNodePalette')}
+        onClose={() => closeModal('mobileNodePalette')}
         onSelectNode={handleMobileAddNode}
       />
     </div>
