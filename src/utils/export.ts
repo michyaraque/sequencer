@@ -242,52 +242,6 @@ export function downloadSpeechTextsFile(content: string, filename: string = "spe
   URL.revokeObjectURL(url);
 }
 
-// Export choices linked to nodes
-export function exportChoices(choices: Choice[]): string {
-  if (choices.length === 0) return "";
-
-  const lines = ["# Choices (linked to choice nodes)", "# Format: nodeId¦order¦speechId=text"];
-
-  const sortedChoices = [...choices].sort((a, b) => {
-    if (a.nodeId !== b.nodeId) return a.nodeId.localeCompare(b.nodeId);
-    return a.order - b.order;
-  });
-
-  sortedChoices.forEach((choice) => {
-    lines.push(`${choice.nodeId}¦${choice.order}¦${choice.speechId}=${choice.text}`);
-  });
-
-  return lines.join("\n");
-}
-
-// Export reusable choice texts
-export function exportChoiceTexts(choiceTexts: ChoiceText[]): string {
-  if (choiceTexts.length === 0) return "";
-
-  const lines = ["# Choice Texts (reusable templates)", "# Format: id¦speechId=text"];
-
-  choiceTexts.forEach((ct) => {
-    lines.push(`${ct.id}¦${ct.speechId}=${ct.text}`);
-  });
-
-  return lines.join("\n");
-}
-
-// Export both choices and choice texts in one file
-export function exportAllChoiceData(choices: Choice[], choiceTexts: ChoiceText[]): string {
-  const sections: string[] = [];
-
-  if (choices.length > 0) {
-    sections.push(exportChoices(choices));
-  }
-
-  if (choiceTexts.length > 0) {
-    sections.push(exportChoiceTexts(choiceTexts));
-  }
-
-  return sections.length > 0 ? sections.join("\n\n") : "# No choices or choice texts to export";
-}
-
 export function downloadChoicesFile(content: string, filename: string = "choices.txt") {
   const blob = new Blob([content], { type: "text/plain" });
   const url = URL.createObjectURL(blob);

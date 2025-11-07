@@ -54,11 +54,10 @@ import SequenceManager from "@/components/SequenceManager";
 import MobileNodePalette from "@/components/MobileNodePalette";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
-import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile, exportAllChoiceData, downloadChoicesFile } from "@/utils/export";
+import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile, downloadChoicesFile } from "@/utils/export";
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
-  // Only nodes of type botSpeech, showMessage, and choice should have speechSpeed
   const nodeTypesWithSpeechSpeed = ["botSpeech", "showMessage", "choice"];
   const defaultSpeechSpeed = nodeTypesWithSpeechSpeed.includes(nodeType) ? "2" : "-1";
 
@@ -447,12 +446,6 @@ function FlowEditor() {
     toast.success("Speech texts exported successfully!");
   }, [speechTexts]);
 
-  const handleExportChoices = useCallback(() => {
-    const content = exportAllChoiceData(choices, choiceTexts);
-    downloadChoicesFile(content, "choices.txt");
-    toast.success("Choices exported successfully!");
-  }, [choices, choiceTexts]);
-
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -507,9 +500,6 @@ function FlowEditor() {
 
     // Set project name
     setProjectName(projectName);
-
-    // Note: Initial node is now created automatically by createDefaultRoom in useRoomsStore
-    // The room sync useEffect will load it into the gameDialogStore
 
     toast.success(`Project "${projectName}" created successfully!`);
   }, [setProjectName, addRoom, rooms.length]);
@@ -958,14 +948,6 @@ function FlowEditor() {
               title="Export Speeches"
             >
               <MessageSquare size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-
-            <button
-              onClick={handleExportChoices}
-              className="p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-              title="Export Choices"
-            >
-              <ListChecks size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             <button
