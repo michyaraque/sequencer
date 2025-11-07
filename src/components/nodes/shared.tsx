@@ -1,5 +1,6 @@
 import { NodeProps, Node } from "@xyflow/react";
-import { DialogNodeData, LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
+import { DialogNodeData, SpeechText } from "@/types/dialog";
+import { extractLocalId, getSpeechIdForLanguage, LANGUAGE_MAP } from "@/constants/languages";
 
 export type DialogRFNode = Node<DialogNodeData>;
 
@@ -22,16 +23,15 @@ export function getSpeechIdInLanguage(
     return { speechId: baseSpeechId, isTranslated: true, localId: 0 };
   }
 
-  const localId = numericId % 100000;
-  const targetPrefix = LANGUAGE_PREFIXES[selectedLanguage as keyof typeof LANGUAGE_PREFIXES] || 100000;
-  const targetSpeechId = (targetPrefix + localId).toString();
+  const localId = extractLocalId(numericId);
+  const targetSpeechId = getSpeechIdForLanguage(localId, selectedLanguage);
   const speechExists = speechTexts.some(st => st.id === targetSpeechId);
 
   if (speechExists) {
     return { speechId: targetSpeechId, isTranslated: true, localId };
   }
 
-  const englishId = (100000 + localId).toString();
+  const englishId = getSpeechIdForLanguage(localId, 1);
   const englishExists = speechTexts.some(st => st.id === englishId);
 
   if (englishExists && selectedLanguage !== 1) {
@@ -46,9 +46,6 @@ export function truncateText(text: string, maxLength: number = 50): string {
   return text.substring(0, maxLength) + "...";
 }
 
-export const languageNames: Record<number, string> = {
-  1: "English",
-  2: "Spanish",
-  3: "Portuguese",
-  4: "French",
-};
+export const languageNames: Record<number, string> = Object.fromEntries(
+  Object.entries(LANGUAGE_MAP).map(([id, lang]) => [id, lang.name])
+);

@@ -36,6 +36,7 @@ import CanvasContextMenu from "@/components/CanvasContextMenu";
 import SequenceManager from "@/components/SequenceManager";
 import MobileNodePalette from "@/components/MobileNodePalette";
 import { Toolbar } from "@/components/flow-editor/Toolbar";
+import { ManagersRenderer } from "@/components/flow-editor/ManagersRenderer";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DialogNodeData } from "@/types/dialog";
 import { useDialogHistory } from "@/hooks/useDialogHistory";
@@ -44,6 +45,7 @@ import { useDialogKeyboard } from "@/hooks/useDialogKeyboard";
 import { useDialogExport } from "@/hooks/useNodeExport";
 import { useModalManager } from "@/hooks/useModalManager";
 import { useResourceHandlers } from "@/hooks/useResourceHandlers";
+import { useRoomSync } from "@/hooks/useRoomSync";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useRoomsStore } from "@/store/useRoomsStore";
@@ -141,8 +143,6 @@ function FlowEditor() {
   const deleteSequence = useSequencesStore((state) => state.deleteSequence);
   const updateSequence = useSequencesStore((state) => state.updateSequence);
 
-  const isLoadingRoom = useRef(false);
-
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
       return (props: CustomNodeProps) => (
@@ -219,73 +219,16 @@ function FlowEditor() {
     deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
 
-  // Sync room data when switching rooms
-  useEffect(() => {
-    if (currentRoom) {
-      isLoadingRoom.current = true;
-
-      // Update gameDialogStore (working copy)
-      useGameDialogStore.getState().setNodes(currentRoom.nodes);
-      useGameDialogStore.getState().setEdges(currentRoom.edges);
-      useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
-      useGameDialogStore.getState().setNPCs(currentRoom.npcs);
-      useGameDialogStore.getState().setVariables(currentRoom.variables);
-      useGameDialogStore.getState().setChoices(currentRoom.choices || []);
-      useGameDialogStore.getState().setChoiceTexts(currentRoom.choiceTexts || []);
-      useGameDialogStore.getState().setProjectName(currentRoom.projectName);
-      useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
-      if (currentRoom.exportSettings) {
-        useGameDialogStore.getState().setExportSettings(currentRoom.exportSettings);
-      }
-
-      // CRITICAL: Update ReactFlow state to prevent stale nodes from previous room
-      setNodes(currentRoom.nodes);
-      setEdges(currentRoom.edges);
-
-      setTimeout(() => {
-        isLoadingRoom.current = false;
-      }, 100);
-    }
-  }, [currentRoomId, currentRoom, setNodes, setEdges]);
-
-  // Save room data changes to persistent store
-  useEffect(() => {
-    if (currentRoomId && !isLoadingRoom.current) {
-      const timeoutId = setTimeout(() => {
-        updateRoomData(currentRoomId, {
-          nodes: storedNodes,
-          edges: storedEdges,
-          speechTexts,
-          npcs,
-          variables,
-          choices,
-          choiceTexts,
-          exportSettings,
-          projectName,
-          selectedLanguage,
-        });
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, exportSettings, projectName, selectedLanguage, currentRoomId, updateRoomData]);
-
-  const hasInitialized = useRef(false);
-  useEffect(() => {
-    if (!hasInitialized.current && rooms.length > 0 && currentRoomId && nodes.length === 0) {
-      const firstRoom = currentRoom;
-      if (firstRoom && firstRoom.nodes.length > 0) {
-        isLoadingRoom.current = true;
-        setNodes(firstRoom.nodes);
-        setEdges(firstRoom.edges);
-        saveToHistory(firstRoom.nodes, firstRoom.edges);
-        hasInitialized.current = true;
-        setTimeout(() => {
-          isLoadingRoom.current = false;
-        }, 100);
-      }
-    }
-  }, [rooms, currentRoomId, currentRoom]);
+  const { isLoadingRoom } = useRoomSync({
+    currentRoomId,
+    currentRoom,
+    rooms,
+    nodes,
+    edges,
+    setNodes,
+    setEdges,
+    saveToHistory,
+  });
 
   useEffect(() => {
     const setStoredNodes = useGameDialogStore.getState().setNodes;
@@ -873,59 +816,79 @@ function FlowEditor() {
         </SheetContent>
       </Sheet>
 
-      {isOpen('speechTextManager') && (
-        <SpeechTextManager
-          speechTexts={speechTexts}
-          onAdd={addSpeechText}
-          onEdit={handleEditSpeechText}
-          onDelete={handleDeleteSpeechText}
-          onClose={() => closeModal('speechTextManager')}
-        />
-      )}
-
-      {isOpen('npcManager') && (
-        <NPCManager
-          npcs={npcs}
-          onAdd={addNPC}
-          onEdit={handleEditNPC}
-          onDelete={handleDeleteNPC}
-          onClose={() => closeModal('npcManager')}
-        />
-      )}
-
-      {isOpen('variableManager') && (
-        <VariableManager
-          variables={variables}
-          onAdd={addVariable}
-          onEdit={handleEditVariable}
-          onDelete={handleDeleteVariable}
-          onClose={() => closeModal('variableManager')}
-        />
-      )}
-
-      {isOpen('choicesManager') && (
-        <ChoicesTextManager
-          choiceTexts={choiceTexts}
-          onAdd={addChoiceText}
-          onEdit={handleEditChoiceText}
-          onDelete={handleDeleteChoiceText}
-          onClose={() => closeModal('choicesManager')}
-        />
-      )}
-
-      {isOpen('exportSettings') && (
-        <ExportSettingsDialog
-          onClose={() => closeModal('exportSettings')}
-        />
-      )}
-
-      {isOpen('saveSequenceDialog') && (
-        <SaveSequenceDialog
-          selectedNodes={nodes.filter(n => n.selected)}
-          onSave={handleSaveSequence}
-          onClose={() => closeModal('saveSequenceDialog')}
-        />
-      )}
+      <ManagersRenderer
+        managers={[
+          {
+            isOpen: isOpen('speechTextManager'),
+            Component: SpeechTextManager,
+            props: {
+              speechTexts,
+              onAdd: addSpeechText,
+              onEdit: handleEditSpeechText,
+              onDelete: handleDeleteSpeechText,
+            },
+            onClose: () => closeModal('speechTextManager'),
+          },
+          {
+            isOpen: isOpen('npcManager'),
+            Component: NPCManager,
+            props: {
+              npcs,
+              onAdd: addNPC,
+              onEdit: handleEditNPC,
+              onDelete: handleDeleteNPC,
+            },
+            onClose: () => closeModal('npcManager'),
+          },
+          {
+            isOpen: isOpen('variableManager'),
+            Component: VariableManager,
+            props: {
+              variables,
+              onAdd: addVariable,
+              onEdit: handleEditVariable,
+              onDelete: handleDeleteVariable,
+            },
+            onClose: () => closeModal('variableManager'),
+          },
+          {
+            isOpen: isOpen('choicesManager'),
+            Component: ChoicesTextManager,
+            props: {
+              choiceTexts,
+              onAdd: addChoiceText,
+              onEdit: handleEditChoiceText,
+              onDelete: handleDeleteChoiceText,
+            },
+            onClose: () => closeModal('choicesManager'),
+          },
+          {
+            isOpen: isOpen('exportSettings'),
+            Component: ExportSettingsDialog,
+            props: {},
+            onClose: () => closeModal('exportSettings'),
+          },
+          {
+            isOpen: isOpen('saveSequenceDialog'),
+            Component: SaveSequenceDialog,
+            props: {
+              selectedNodes: nodes.filter(n => n.selected),
+              onSave: handleSaveSequence,
+            },
+            onClose: () => closeModal('saveSequenceDialog'),
+          },
+          {
+            isOpen: isOpen('sequenceManager'),
+            Component: SequenceManager,
+            props: {
+              sequences,
+              onEdit: handleEditSequence,
+              onDelete: handleDeleteSequence,
+            },
+            onClose: () => closeModal('sequenceManager'),
+          },
+        ]}
+      />
 
       {contextMenu && (
         <CanvasContextMenu
@@ -935,15 +898,6 @@ function FlowEditor() {
           onClose={handleCloseContextMenu}
           onCreateSequence={(sequence) => handleCreateFromSequence(sequence, contextMenu)}
           onDeleteSequence={handleDeleteSequence}
-        />
-      )}
-
-      {isOpen('sequenceManager') && (
-        <SequenceManager
-          sequences={sequences}
-          onEdit={handleEditSequence}
-          onDelete={handleDeleteSequence}
-          onClose={() => closeModal('sequenceManager')}
         />
       )}
 

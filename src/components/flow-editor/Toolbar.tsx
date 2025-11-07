@@ -2,6 +2,7 @@ import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Node } from "@xyflow/react";
 import { DialogNodeData } from "@/types/dialog";
+import { LANGUAGES } from "@/constants/languages";
 
 interface ToolbarProps {
   selectedLanguage: number;
@@ -87,10 +88,12 @@ export function Toolbar({
             <SelectValue placeholder="Language" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">English</SelectItem>
-            <SelectItem value="2">Español</SelectItem>
-            <SelectItem value="3">Português</SelectItem>
-            <SelectItem value="4">Français</SelectItem>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.id} value={lang.id.toString()}>
+                {lang.flag && <span className="mr-2">{lang.flag}</span>}
+                {lang.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
