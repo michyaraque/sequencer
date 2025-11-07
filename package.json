@@ -1,6 +1,6 @@
 {
-  "name": "dialog-maker-wired",
-  "version": "0.1.0",
+  "name": "sequencer",
+  "version": "0.1.9",
   "private": true,
   "scripts": {
     "dev": "next dev",
