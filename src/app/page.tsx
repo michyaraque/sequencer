@@ -146,49 +146,6 @@ function FlowEditor() {
 
   const isLoadingRoom = useRef(false);
 
-  useEffect(() => {
-    if (currentRoom) {
-      isLoadingRoom.current = true;
-      useGameDialogStore.getState().setNodes(currentRoom.nodes);
-      useGameDialogStore.getState().setEdges(currentRoom.edges);
-      useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
-      useGameDialogStore.getState().setNPCs(currentRoom.npcs);
-      useGameDialogStore.getState().setVariables(currentRoom.variables);
-      useGameDialogStore.getState().setChoices(currentRoom.choices || []);
-      useGameDialogStore.getState().setChoiceTexts(currentRoom.choiceTexts || []);
-      useGameDialogStore.getState().setProjectName(currentRoom.projectName);
-      useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
-      if (currentRoom.exportSettings) {
-        useGameDialogStore.getState().setExportSettings(currentRoom.exportSettings);
-      }
-
-      setTimeout(() => {
-        isLoadingRoom.current = false;
-      }, 100);
-    }
-  }, [currentRoomId, currentRoom]);
-
-  useEffect(() => {
-    if (currentRoomId && !isLoadingRoom.current) {
-      const timeoutId = setTimeout(() => {
-        updateRoomData(currentRoomId, {
-          nodes: storedNodes,
-          edges: storedEdges,
-          speechTexts,
-          npcs,
-          variables,
-          choices,
-          choiceTexts,
-          exportSettings,
-          projectName,
-          selectedLanguage,
-        });
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, exportSettings, projectName, selectedLanguage, currentRoomId, updateRoomData]);
-
   const nodeTypes: NodeTypes = useMemo(() => {
     const createNodeWithProps = (Component: React.ComponentType<CustomNodeProps>) => {
       return (props: CustomNodeProps) => (
@@ -264,6 +221,57 @@ function FlowEditor() {
     deleteNodesByIds,
     deleteEdgesByIds,
   } = useDialogNodes({ initialNodes, saveToHistory });
+
+  // Sync room data when switching rooms
+  useEffect(() => {
+    if (currentRoom) {
+      isLoadingRoom.current = true;
+
+      // Update gameDialogStore (working copy)
+      useGameDialogStore.getState().setNodes(currentRoom.nodes);
+      useGameDialogStore.getState().setEdges(currentRoom.edges);
+      useGameDialogStore.getState().setSpeechTexts(currentRoom.speechTexts);
+      useGameDialogStore.getState().setNPCs(currentRoom.npcs);
+      useGameDialogStore.getState().setVariables(currentRoom.variables);
+      useGameDialogStore.getState().setChoices(currentRoom.choices || []);
+      useGameDialogStore.getState().setChoiceTexts(currentRoom.choiceTexts || []);
+      useGameDialogStore.getState().setProjectName(currentRoom.projectName);
+      useGameDialogStore.getState().setSelectedLanguage(currentRoom.selectedLanguage);
+      if (currentRoom.exportSettings) {
+        useGameDialogStore.getState().setExportSettings(currentRoom.exportSettings);
+      }
+
+      // CRITICAL: Update ReactFlow state to prevent stale nodes from previous room
+      setNodes(currentRoom.nodes);
+      setEdges(currentRoom.edges);
+
+      setTimeout(() => {
+        isLoadingRoom.current = false;
+      }, 100);
+    }
+  }, [currentRoomId, currentRoom, setNodes, setEdges]);
+
+  // Save room data changes to persistent store
+  useEffect(() => {
+    if (currentRoomId && !isLoadingRoom.current) {
+      const timeoutId = setTimeout(() => {
+        updateRoomData(currentRoomId, {
+          nodes: storedNodes,
+          edges: storedEdges,
+          speechTexts,
+          npcs,
+          variables,
+          choices,
+          choiceTexts,
+          exportSettings,
+          projectName,
+          selectedLanguage,
+        });
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [storedNodes, storedEdges, speechTexts, npcs, variables, choices, choiceTexts, exportSettings, projectName, selectedLanguage, currentRoomId, updateRoomData]);
 
   const hasInitialized = useRef(false);
   useEffect(() => {
