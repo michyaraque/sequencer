@@ -4,6 +4,30 @@ import { Node, Edge } from "@xyflow/react";
 import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData, ExportSettings } from "@/types/dialog";
 import { getDefaultExportFields } from "@/utils/export";
 
+/**
+ * GameDialogStore - Working Copy Store
+ *
+ * Architecture Pattern: Working Copy + Persistent Store
+ *
+ * This store acts as the "working copy" of the currently active room.
+ * It provides fast, direct access to the current room's data for all components.
+ *
+ * Relationship with useRoomsStore:
+ * - useRoomsStore: Persistent store containing ALL rooms (source of truth)
+ * - gameDialogStore: Working copy of CURRENT room (for active editing)
+ *
+ * Synchronization:
+ * - When switching rooms: useRoomsStore -> gameDialogStore (load room data)
+ * - When editing: gameDialogStore -> useRoomsStore (save changes with debounce)
+ *
+ * This pattern allows:
+ * 1. Fast component access without room context
+ * 2. Efficient rendering (no deep object comparisons)
+ * 3. Clean separation between current work and persistent storage
+ *
+ * @see /src/store/useRoomsStore.ts for the persistent multi-room store
+ * @see /src/app/page.tsx lines 149-190 for synchronization logic
+ */
 interface GameDialogStore {
   projectName: string;
   selectedLanguage: number; // 1 = English, 2 = Spanish, 3 = Portuguese, 4 = French

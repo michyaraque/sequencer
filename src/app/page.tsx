@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, NodeTypes, EdgeTypes, Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus, MessageSquare } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, X, Plus, MessageSquare, ListChecks } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -54,7 +54,7 @@ import SequenceManager from "@/components/SequenceManager";
 import MobileNodePalette from "@/components/MobileNodePalette";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useReactFlow } from "@xyflow/react";
-import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile } from "@/utils/export";
+import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile, exportAllChoiceData, downloadChoicesFile } from "@/utils/export";
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -439,6 +439,12 @@ function FlowEditor() {
     toast.success("Speech texts exported successfully!");
   }, [speechTexts]);
 
+  const handleExportChoices = useCallback(() => {
+    const content = exportAllChoiceData(choices, choiceTexts);
+    downloadChoicesFile(content, "choices.txt");
+    toast.success("Choices exported successfully!");
+  }, [choices, choiceTexts]);
+
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -494,30 +500,11 @@ function FlowEditor() {
     // Set project name
     setProjectName(projectName);
 
-    const initialNode: Node<DialogNodeData> = {
-      id: "1",
-      type: "initializeSpeech",
-      position: { x: 250, y: 100 },
-      data: {
-        botId: "-1",
-        userId: "$(user_id)",
-        nextNodeId: "0",
-        speechId: "-1",
-        speechSpeed: "-1",
-        actionId: "1",
-        value1: "-1",
-        value2: "-1",
-        value3: "-1",
-        label: "Initialize Speech",
-      },
-    };
-
-    setNodes([initialNode]);
-    setEdges([]);
-    saveToHistory([initialNode], []);
+    // Note: Initial node is now created automatically by createDefaultRoom in useRoomsStore
+    // The room sync useEffect will load it into the gameDialogStore
 
     toast.success(`Project "${projectName}" created successfully!`);
-  }, [setProjectName, setNodes, setEdges, saveToHistory, addRoom, rooms.length]);
+  }, [setProjectName, addRoom, rooms.length]);
 
   const handleLoadRecentProject = useCallback((projectName: string) => {
     const roomsState = useRoomsStore.getState();
@@ -963,6 +950,14 @@ function FlowEditor() {
               title="Export Speeches"
             >
               <MessageSquare size={16} className="sm:w-[18px] sm:h-[18px]" />
+            </button>
+
+            <button
+              onClick={handleExportChoices}
+              className="p-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+              title="Export Choices"
+            >
+              <ListChecks size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
 
             <button

@@ -4,6 +4,31 @@ import { Node, Edge } from "@xyflow/react";
 import { SpeechText, NPC, Variable, Choice, ChoiceText, DialogNodeData, ExportSettings } from "@/types/dialog";
 import { getDefaultExportFields } from "@/utils/export";
 
+/**
+ * RoomsStore - Persistent Multi-Room Store
+ *
+ * Architecture Pattern: Working Copy + Persistent Store
+ *
+ * This store manages ALL rooms in the project and persists them to localStorage.
+ * It is the single source of truth for all room data.
+ *
+ * Relationship with gameDialogStore:
+ * - useRoomsStore: Contains ALL rooms (this file)
+ * - gameDialogStore: Working copy of CURRENT room
+ *
+ * Room Structure:
+ * - Each room is an independent workspace with its own:
+ *   - Canvas nodes and edges
+ *   - NPCs, variables, choices
+ *   - Speech texts and settings
+ *
+ * Room Creation:
+ * - New rooms automatically include an "Initialize Speech" node
+ * - Rooms are created via addRoom() or during project creation
+ *
+ * @see /src/store/gameDialogStore.ts for the working copy store
+ * @see /src/app/page.tsx lines 149-190 for synchronization logic
+ */
 export interface RoomData {
   id: string;
   name: string;
@@ -31,22 +56,43 @@ interface RoomsStore {
   renameRoom: (id: string, name: string) => void;
 }
 
-const createDefaultRoom = (id: string, name: string): RoomData => ({
-  id,
-  name,
-  projectName: "Untitled Project",
-  selectedLanguage: 1,
-  nodes: [],
-  edges: [],
-  speechTexts: [],
-  npcs: [],
-  variables: [],
-  choices: [],
-  choiceTexts: [],
-  exportSettings: {
-    fields: getDefaultExportFields(),
-  },
-});
+const createDefaultRoom = (id: string, name: string): RoomData => {
+  // Create initial node for the room
+  const initialNode: Node<DialogNodeData> = {
+    id: "1",
+    type: "initializeSpeech",
+    position: { x: 250, y: 100 },
+    data: {
+      botId: "-1",
+      userId: "$(user_id)",
+      nextNodeId: "0",
+      speechId: "-1",
+      speechSpeed: "-1",
+      actionId: "1",
+      value1: "-1",
+      value2: "-1",
+      value3: "-1",
+      label: "Initialize Speech",
+    },
+  };
+
+  return {
+    id,
+    name,
+    projectName: "Untitled Project",
+    selectedLanguage: 1,
+    nodes: [initialNode],
+    edges: [],
+    speechTexts: [],
+    npcs: [],
+    variables: [],
+    choices: [],
+    choiceTexts: [],
+    exportSettings: {
+      fields: getDefaultExportFields(),
+    },
+  };
+};
 
 export const useRoomsStore = create<RoomsStore>()(
   persist(

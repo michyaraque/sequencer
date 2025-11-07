@@ -1,5 +1,5 @@
 import { Node, Edge } from "@xyflow/react";
-import { DialogNodeData, SpeechText, NPC, Variable, ExportSettings, ExportField } from "@/types/dialog";
+import { DialogNodeData, SpeechText, NPC, Variable, ExportSettings, ExportField, Choice, ChoiceText } from "@/types/dialog";
 import { RoomData } from "@/store/useRoomsStore";
 
 export function getDefaultExportFields(): ExportField[] {
@@ -240,4 +240,120 @@ export function downloadSpeechTextsFile(content: string, filename: string = "spe
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// Export choices linked to nodes
+export function exportChoices(choices: Choice[]): string {
+  if (choices.length === 0) return "";
+
+  const lines = ["# Choices (linked to choice nodes)", "# Format: nodeId¦order¦speechId=text"];
+
+  const sortedChoices = [...choices].sort((a, b) => {
+    if (a.nodeId !== b.nodeId) return a.nodeId.localeCompare(b.nodeId);
+    return a.order - b.order;
+  });
+
+  sortedChoices.forEach((choice) => {
+    lines.push(`${choice.nodeId}¦${choice.order}¦${choice.speechId}=${choice.text}`);
+  });
+
+  return lines.join("\n");
+}
+
+// Export reusable choice texts
+export function exportChoiceTexts(choiceTexts: ChoiceText[]): string {
+  if (choiceTexts.length === 0) return "";
+
+  const lines = ["# Choice Texts (reusable templates)", "# Format: id¦speechId=text"];
+
+  choiceTexts.forEach((ct) => {
+    lines.push(`${ct.id}¦${ct.speechId}=${ct.text}`);
+  });
+
+  return lines.join("\n");
+}
+
+// Export both choices and choice texts in one file
+export function exportAllChoiceData(choices: Choice[], choiceTexts: ChoiceText[]): string {
+  const sections: string[] = [];
+
+  if (choices.length > 0) {
+    sections.push(exportChoices(choices));
+  }
+
+  if (choiceTexts.length > 0) {
+    sections.push(exportChoiceTexts(choiceTexts));
+  }
+
+  return sections.length > 0 ? sections.join("\n\n") : "# No choices or choice texts to export";
+}
+
+export function downloadChoicesFile(content: string, filename: string = "choices.txt") {
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Import choices from text format
+export function importChoices(content: string): Choice[] {
+  if (!content.trim()) return [];
+
+  const lines = content.trim().split("\n");
+  const choices: Choice[] = [];
+
+  lines.forEach((line) => {
+    // Skip comments and empty lines
+    if (line.startsWith("#") || !line.trim()) return;
+
+    // Parse format: nodeId¦order¦speechId=text
+    const [nodeData, text] = line.split("=");
+    if (!nodeData || text === undefined) return;
+
+    const [nodeId, orderStr, speechId] = nodeData.split("¦");
+    if (!nodeId || !orderStr || !speechId) return;
+
+    choices.push({
+      id: `choice-${nodeId}-${orderStr}`,
+      nodeId,
+      order: parseInt(orderStr, 10),
+      speechId,
+      text: text,
+    });
+  });
+
+  return choices;
+}
+
+// Import choice texts from text format
+export function importChoiceTexts(content: string): ChoiceText[] {
+  if (!content.trim()) return [];
+
+  const lines = content.trim().split("\n");
+  const choiceTexts: ChoiceText[] = [];
+
+  lines.forEach((line) => {
+    // Skip comments and empty lines
+    if (line.startsWith("#") || !line.trim()) return;
+
+    // Parse format: id¦speechId=text
+    const [idData, text] = line.split("=");
+    if (!idData || text === undefined) return;
+
+    const [id, speechId] = idData.split("¦");
+    if (!id || !speechId) return;
+
+    choiceTexts.push({
+      id,
+      speechId,
+      text,
+    });
+  });
+
+  return choiceTexts;
 }
