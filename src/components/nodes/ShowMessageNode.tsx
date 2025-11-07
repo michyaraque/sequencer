@@ -120,11 +120,10 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 min-w-[370px] max-w-[420px] transition-all ${
-        selected
+      className={`px-4 py-3 rounded-lg border-2 min-w-[370px] max-w-[420px] transition-all ${selected
           ? `border-neutral-900 shadow-xl ${color}`
           : `${border} shadow-md hover:shadow-lg hover:border-neutral-500 ${color}`
-      }`}
+        }`}
     >
       <Handle
         type="target"
@@ -147,7 +146,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
           {/* Speech */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Text:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
               <Popover
                 open={speechComboboxOpen}
@@ -281,7 +280,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
 
           {/* Value1 - Notification Style */}
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Value1:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Style:</span>
             <div className="flex gap-1 min-w-0 flex-1">
               <Select value={data.value1 || "-1"} onValueChange={handleValue1Change}>
                 <SelectTrigger
@@ -319,7 +318,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
 
           {/* Value2 - Visibility */}
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Value2:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Visibility:</span>
             <div className="flex gap-1 min-w-0 flex-1">
               <Select value={data.value2 || "1"} onValueChange={handleValue2Change}>
                 <SelectTrigger
@@ -338,24 +337,27 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
           </div>
 
           {/* Value3 - Sender */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Value3:</span>
-            <div className="flex gap-1 min-w-0 flex-1">
-              <Select value={data.value3 || "1"} onValueChange={handleValue3Change}>
-                <SelectTrigger
-                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
-                  onClick={(e) => e.stopPropagation()}
-                  size="sm"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="1">1 - User</SelectItem>
-                  <SelectItem value="2">2 - Bot</SelectItem>
-                </SelectContent>
-              </Select>
+          {data.value2 == "2" && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Origin:</span>
+              <div className="flex gap-1 min-w-0 flex-1">
+                <Select value={data.value3 || "1"} onValueChange={handleValue3Change}>
+                  <SelectTrigger
+                    className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
+                    onClick={(e) => e.stopPropagation()}
+                    size="sm"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent onClick={(e) => e.stopPropagation()}>
+                    <SelectItem value="1">1 - User</SelectItem>
+                    <SelectItem value="2">2 - Bot</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
+
         </div>
       </div>
 

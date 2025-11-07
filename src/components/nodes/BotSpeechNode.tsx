@@ -154,7 +154,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
         <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
           {/* Bot ID */}
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Bot ID:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Bot:</span>
             <div className="flex gap-1 min-w-0 flex-1">
               <Select
                 value={data.botId || "#(bot_id)"}
@@ -188,7 +188,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
 
           {/* Speech */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Speech:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap shrink-0">Text:</span>
             <div className="flex gap-1 min-w-0 flex-1 items-center overflow-hidden">
               <Popover
                 open={speechComboboxOpen}
@@ -322,7 +322,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
 
           {/* Value1 - Speech Mode */}
           <div className="flex items-center justify-between gap-2">
-            <span className="font-medium text-neutral-500 whitespace-nowrap">Value1:</span>
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Mode:</span>
             <div className="flex gap-1 min-w-0 flex-1">
               <Select value={data.value1 || "2"} onValueChange={handleModeChange}>
                 <SelectTrigger

@@ -343,7 +343,7 @@ export default function Sidebar({
             </p>
           </div>
 
-          <div
+          {/* <div
             draggable
             onDragStart={(e) => onDragStart(e, "wait")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
@@ -355,7 +355,7 @@ export default function Sidebar({
             <p className="text-xs text-neutral-600">
               Wait for specified time (0.5s - 10s)
             </p>
-          </div>
+          </div> */}
 
           <div
             draggable

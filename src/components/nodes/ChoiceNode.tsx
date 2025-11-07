@@ -176,7 +176,7 @@ export const ChoiceNode = memo((props: CustomNodeProps) => {
                           variant="outline"
                           role="combobox"
                           aria-expanded={openPopovers[choice.id] || false}
-                          className="h-6 px-2 py-0 text-xs border-neutral-300 font-mono flex-1 justify-between overflow-hidden bg-white hover:bg-neutral-50"
+                          className="h-8 px-2 py-0 text-xs border-neutral-300 font-mono flex-1 justify-between overflow-hidden bg-neutral-900/5 hover:bg-neutral-900/10"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <span className="truncate flex-1 text-left">

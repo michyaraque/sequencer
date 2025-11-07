@@ -70,7 +70,7 @@ export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => {
           <div className="text-xs space-y-1.5 text-neutral-700 border-t border-neutral-200 pt-2">
             {/* Left Variable Selector */}
             <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-neutral-500 whitespace-nowrap">Left Var:</span>
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Variable:</span>
               <Select value={data.value1 || "-1"} onValueChange={handleLeftVariableChange}>
                 <SelectTrigger
                   className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono flex-1"
@@ -113,7 +113,7 @@ export const ConditionVariableVariableNode = memo((props: CustomNodeProps) => {
 
             {/* Right Variable Selector */}
             <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-neutral-500 whitespace-nowrap">Right Var:</span>
+              <span className="font-medium text-neutral-500 whitespace-nowrap">Variable:</span>
               <Select value={data.value3 || "-1"} onValueChange={handleRightVariableChange}>
                 <SelectTrigger
                   className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono flex-1"

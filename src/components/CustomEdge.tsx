@@ -67,8 +67,8 @@ function CustomEdge({
 
   const handleSpeedChange = (valueInSeconds: string) => {
     if (sourceNode) {
-      const milliseconds = (parseFloat(valueInSeconds) * 1000).toString();
-      updateNodeData(sourceNode.id, { speechSpeed: milliseconds });
+      const steps = (parseFloat(valueInSeconds) * 1000) / 500;
+      updateNodeData(sourceNode.id, { speechSpeed: steps });
       setIsEditing(false);
     }
   };
@@ -76,7 +76,7 @@ function CustomEdge({
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
-      {shouldShowNodeSpeed && nodeSpeed && nodeSpeed !== "-1" && (
+      {nodeSpeed && nodeSpeed !== "-1" && (
         <EdgeLabelRenderer>
           <div
             style={{

@@ -46,8 +46,8 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
     <div className="relative">
       <div
         className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${selected
-            ? 'border-neutral-900 shadow-xl bg-purple-50'
-            : 'border-purple-300 shadow-md hover:shadow-lg hover:border-neutral-500 bg-purple-50'
+          ? 'border-neutral-900 shadow-xl bg-purple-50'
+          : 'border-purple-300 shadow-md hover:shadow-lg hover:border-neutral-500 bg-purple-50'
           }`}
       >
         <Handle
@@ -125,7 +125,7 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
                     if (e.key === 'Escape') setIsEditingValue(false);
                   }}
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-1 px-2 py-1 text-xs border border-neutral-300 rounded font-mono"
+                  className="flex-1 px-2 py-2 text-xs border bg-neutral-900/5 hover:bg-neutral-900/10 border-neutral-300 rounded-md font-mono"
                   autoFocus
                 />
               ) : (
@@ -135,7 +135,7 @@ export const ChangeVariableNode = memo((props: CustomNodeProps) => {
                     setTempValue(data.value3 || "0");
                     setIsEditingValue(true);
                   }}
-                  className="flex-1 px-2 py-1 text-xs border border-neutral-300 rounded font-mono cursor-text hover:bg-neutral-50"
+                  className="flex-1 px-2 py-2 text-xs border border-neutral-300 rounded-md font-mono cursor-text bg-neutral-900/5 hover:bg-neutral-900/10"
                 >
                   {data.value3 || "0"}
                 </div>
