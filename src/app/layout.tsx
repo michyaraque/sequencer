@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wired Dialog Designer - Dialog System Editor",
+  title: "Wired Sequencer Designer",
   description: "Visual dialog node editor for habbo game development",
 };
 
