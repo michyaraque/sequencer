@@ -143,11 +143,15 @@ export const BaseDialogNode = memo(({
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${
+      className={cn(
+        "px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all",
+        accentColor,
         selected
-          ? `border-neutral-900 shadow-xl ${accentColor}`
-          : `${borderColor} shadow-md hover:shadow-lg hover:border-neutral-500 ${accentColor}`
-      } ${className}`}
+          ? "border-neutral-900 shadow-xl"
+          : "shadow-md hover:shadow-lg hover:border-neutral-500",
+        selected ? accentColor : borderColor,
+        className
+      )}
     >
       {showTargetHandle && (
         <Handle
