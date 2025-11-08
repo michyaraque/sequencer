@@ -178,7 +178,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                   >
                     <span className="truncate flex-1 text-left">
                       {displaySpeech.speechId === "-1"
-                        ? "-1 (None)"
+                        ? "None (-1)"
                         : speechTextObj
                           ? truncateText(speechTextObj.text)
                           : data.speechId
@@ -226,7 +226,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                             setSearchQuery("");
                           }}
                         >
-                          -1 (None)
+                          None (-1)
                           <Check
                             className={cn(
                               "ml-auto h-4 w-4",
@@ -304,7 +304,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="-1">-1 (Default)</SelectItem>
+                  <SelectItem value="-1">Default (-1)</SelectItem>
                   <SelectItem value="200">Notification Red</SelectItem>
                   <SelectItem value="201">Notification Green</SelectItem>
                   <SelectItem value="202">Notification Blue</SelectItem>
@@ -342,8 +342,8 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="1">1 - Only the user</SelectItem>
-                  <SelectItem value="2">2 - Everyone</SelectItem>
+                  <SelectItem value="1">Only the user (1)</SelectItem>
+                  <SelectItem value="2">Everyone (2)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -362,8 +362,8 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent onClick={(e) => e.stopPropagation()}>
-                    <SelectItem value="1">1 - User</SelectItem>
-                    <SelectItem value="2">2 - Bot</SelectItem>
+                    <SelectItem value="1">User (1)</SelectItem>
+                    <SelectItem value="2">Bot (2)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -389,7 +389,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                   <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
                   {npcs.map((npc) => (
                     <SelectItem key={npc.id} value={npc.id}>
-                      {npc.id} - {npc.name}
+                      {npc.name} ({npc.id})
                     </SelectItem>
                   ))}
                 </SelectContent>

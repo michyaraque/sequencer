@@ -32,11 +32,10 @@ export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => {
   return (
     <div className="relative">
       <div
-        className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${
-          selected
+        className={`px-4 py-3 rounded-lg border-2 min-w-[220px] max-w-[320px] transition-all ${selected
             ? 'border-neutral-900 shadow-xl bg-purple-100'
             : 'border-purple-400 shadow-md hover:shadow-lg hover:border-neutral-500 bg-purple-100'
-        }`}
+          }`}
       >
         <Handle
           type="target"
@@ -67,10 +66,10 @@ export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => {
                   <SelectValue placeholder="Select Variable" />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="-1">-1 (None)</SelectItem>
+                  <SelectItem value="-1">None (-1)</SelectItem>
                   {variables.map((variable) => (
                     <SelectItem key={variable.id} value={variable.id}>
-                      {variable.id} - {variable.name}
+                      {variable.name} ({variable.id})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -89,10 +88,10 @@ export const ChangeVariableVariableNode = memo((props: CustomNodeProps) => {
                   <SelectValue placeholder="Select Variable" />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="-1">-1 (None)</SelectItem>
+                  <SelectItem value="-1">None (-1)</SelectItem>
                   {variables.map((variable) => (
                     <SelectItem key={variable.id} value={variable.id}>
-                      {variable.id} - {variable.name}
+                      {variable.name} ({variable.id})
                     </SelectItem>
                   ))}
                 </SelectContent>

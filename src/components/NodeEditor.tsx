@@ -128,7 +128,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
               <SelectValue placeholder="Select Speech" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="-1">-1 (None)</SelectItem>
+              <SelectItem value="-1">None (-1)</SelectItem>
               {speechTexts.map((st) => (
                 <SelectItem key={st.id} value={st.id}>
                   {st.id} - {truncateText(st.text)}
@@ -232,10 +232,10 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                       <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      <SelectItem value="-1">None (-1)</SelectItem>
                       {variables.map((variable) => (
                         <SelectItem key={variable.id} value={variable.id}>
-                          {variable.id} - {variable.name}
+                         {variable.name} ({variable.id})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -254,7 +254,7 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                       <SelectValue placeholder="Select Change Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      <SelectItem value="-1">None (-1)</SelectItem>
                       {Object.entries(CHANGE_TYPES).map(([id, label]) => (
                         <SelectItem key={id} value={id}>
                           {id} - {label}
@@ -292,10 +292,10 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                       <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      <SelectItem value="-1">None (-1)</SelectItem>
                       {variables.map((variable) => (
                         <SelectItem key={variable.id} value={variable.id}>
-                          {variable.id} - {variable.name}
+                         {variable.name} ({variable.id})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -314,10 +314,10 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                       <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      <SelectItem value="-1">None (-1)</SelectItem>
                       {variables.map((variable) => (
                         <SelectItem key={variable.id} value={variable.id}>
-                          {variable.id} - {variable.name}
+                         {variable.name} ({variable.id})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -336,10 +336,10 @@ export default function NodeEditor({ selectedNode, onUpdate, speechTexts, npcs, 
                       <SelectValue placeholder="Select Variable" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="-1">-1 (None)</SelectItem>
+                      <SelectItem value="-1">None (-1)</SelectItem>
                       {variables.map((variable) => (
                         <SelectItem key={variable.id} value={variable.id}>
-                          {variable.id} - {variable.name}
+                         {variable.name} ({variable.id})
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -18,7 +18,6 @@ import {
   CustomActionNode,
   EndSequenceNode,
   CustomNodeProps,
-  DialogNode,
   AnnotationNode
 } from "@/components/nodes";
 import CustomEdge from "@/components/CustomEdge";
@@ -155,7 +154,6 @@ function FlowEditor() {
     };
 
     return {
-      dialogNode: createNodeWithProps(DialogNode),
       startSequence: createNodeWithProps(StartSequenceNode),
       botSpeech: createNodeWithProps(BotSpeechNode),
       showMessage: createNodeWithProps(ShowMessageNode),

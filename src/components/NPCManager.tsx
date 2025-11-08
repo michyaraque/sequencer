@@ -158,7 +158,7 @@ export default function NPCManager({ npcs, onAdd, onEdit, onDelete, onClose }: N
                         {npc.name}
                       </span>
                     </div>
-                    <div className="flex gap-1 flex-shrink-0">
+                    <div className="flex gap-1 shrink-0">
                       <button
                         onClick={() => handleEdit(npc)}
                         className="px-3 py-1 bg-neutral-600 text-white rounded hover:bg-neutral-700 transition-colors text-sm"

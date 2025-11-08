@@ -1,4 +1,3 @@
-export { default as DialogNode } from "./DialogNode";
 export { BaseDialogNode } from "./BaseDialogNode";
 export { StartSequenceNode } from "./StartSequenceNode";
 export { ChangeVariableNode } from "./ChangeVariableNode";

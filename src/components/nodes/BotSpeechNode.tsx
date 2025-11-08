@@ -4,7 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import { LANGUAGE_PREFIXES, SpeechText } from "@/types/dialog";
 import { useGameDialogStore } from "@/store/gameDialogStore";
-import { Plus, CheckCircle2, AlertCircle, ChevronsUpDown, Check } from "lucide-react";
+import { Plus, CheckCircle2, AlertCircle, ChevronsUpDown, Check, MessageSquare } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -40,9 +40,9 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const speechModes = {
-    "1": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700" },
-    "2": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700" },
-    "3": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700" },
+    "1": { label: "Whisper", color: "bg-indigo-50", border: "border-indigo-300", badge: "bg-indigo-700/40" },
+    "2": { label: "Talk", color: "bg-blue-50", border: "border-blue-300", badge: "bg-blue-700/40" },
+    "3": { label: "Shout", color: "bg-sky-50", border: "border-sky-300", badge: "bg-sky-700/40" },
   };
 
   const currentMode = speechModes[data.value1 as keyof typeof speechModes] || speechModes["2"];
@@ -140,13 +140,18 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
       />
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-2 mb-2 pr-24">
-          <div className={`${currentMode.badge} text-white px-2 py-1 rounded text-xs font-bold font-mono shrink-0`}>
-            ID: {id}
+        <div className={cn(
+          "flex items-center justify-between gap-2 py-3 px-4 rounded-md", 
+          currentMode.badge
+          )}>
+          <div className={`${currentMode.badge} text-white p-3 rounded text-xs font-bold font-mono shrink-0`}>
+           <MessageSquare size={20} className={cn(currentMode.border)} />
           </div>
           {data.label && (
-            <div className="text-xs text-neutral-700 truncate flex-1 font-medium">
-              {data.label}
+            <div className="text-xs text-neutral-700 truncate flex-1 flex flex-col gap2-">
+
+              <span className="font-medium text-lg">{data.label}</span>
+              <span className="text-neutral-700/70">Bot Speaks - Whisper, Talk, or Shout</span>
             </div>
           )}
         </div>
@@ -207,7 +212,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                   >
                     <span className="truncate flex-1 text-left">
                       {displaySpeech.speechId === "-1"
-                        ? "-1 (None)"
+                        ? "None (-1)"
                         : speechTextObj
                           ? truncateText(speechTextObj.text)
                           : data.speechId
@@ -255,7 +260,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                             setSearchQuery("");
                           }}
                         >
-                          -1 (None)
+                          None (-1)
                           <Check
                             className={cn(
                               "ml-auto h-4 w-4",
@@ -333,9 +338,9 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="1">1 - Whisper</SelectItem>
-                  <SelectItem value="2">2 - Talk</SelectItem>
-                  <SelectItem value="3">3 - Shout</SelectItem>
+                  <SelectItem value="1">Whisper (1)</SelectItem>
+                  <SelectItem value="2">Talk (2)</SelectItem>
+                  <SelectItem value="3">Shout (3)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -146,7 +146,7 @@ export default function ChoiceTextEditor({
               >
                 <span className="truncate">
                   {displaySpeech.speechId === "-1"
-                    ? "-1 (None)"
+                    ? "None (-1)"
                     : speechTextObj
                       ? truncateText(speechTextObj.text)
                       : speechId
@@ -174,7 +174,7 @@ export default function ChoiceTextEditor({
                         setSearchQuery("");
                       }}
                     >
-                      -1 (None)
+                      None (-1)
                       <Check
                         className={cn(
                           "ml-auto h-4 w-4",

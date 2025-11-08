@@ -79,10 +79,10 @@ export const ConditionVariableNode = memo((props: CustomNodeProps) => {
                   <SelectValue placeholder="Select Variable" />
                 </SelectTrigger>
                 <SelectContent onClick={(e) => e.stopPropagation()}>
-                  <SelectItem value="-1">-1 (None)</SelectItem>
+                  <SelectItem value="-1">None (-1)</SelectItem>
                   {variables.map((variable) => (
                     <SelectItem key={variable.id} value={variable.id}>
-                      {variable.id} - {variable.name}
+                     {variable.name} ({variable.id})
                     </SelectItem>
                   ))}
                 </SelectContent>

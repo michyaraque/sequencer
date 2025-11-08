@@ -231,7 +231,7 @@ export const BaseDialogNode = memo(({
                     >
                       <span className="truncate flex-1 text-left">
                         {displaySpeech.speechId === "-1"
-                          ? "-1 (None)"
+                          ? "None (-1)"
                           : speechTextObj
                             ? truncateText(speechTextObj.text)
                             : data.speechId
