@@ -101,7 +101,7 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
       const sourceNode = nodes.find(n => n.id === params.source);
       const targetNode = nodes.find(n => n.id === params.target);
 
-      if (sourceNode?.type === 'initializeSpeech') {
+      if (sourceNode?.type === 'startSequence') {
         const existingOutgoing = edges.find(e => e.source === params.source);
         if (existingOutgoing) {
           // Already has an outgoing connection, reject
@@ -110,11 +110,11 @@ export function useDialogNodes({ initialNodes, saveToHistory }: UseDialogNodesPr
         }
       }
 
-     /* if (targetNode?.type === 'endDialogue') {
+     /* if (targetNode?.type === 'endSequence') {
         const existingIncoming = edges.find(e => e.target === params.target);
         if (existingIncoming) {
           // Already has an incoming connection, reject
-          toast.error('End Dialogue can only have one incoming connection');
+          toast.error('End Sequence can only have one incoming connection');
           return;
         }
       } */

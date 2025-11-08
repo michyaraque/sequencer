@@ -60,7 +60,7 @@ const createDefaultRoom = (id: string, name: string): RoomData => {
   // Create initial node for the room
   const initialNode: Node<DialogNodeData> = {
     id: "1",
-    type: "initializeSpeech",
+    type: "startSequence",
     position: { x: 250, y: 100 },
     data: {
       botId: "-1",

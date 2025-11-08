@@ -1,6 +1,6 @@
 export { default as DialogNode } from "./DialogNode";
 export { BaseDialogNode } from "./BaseDialogNode";
-export { InitializeSpeechNode } from "./InitializeSpeechNode";
+export { StartSequenceNode } from "./StartSequenceNode";
 export { ChangeVariableNode } from "./ChangeVariableNode";
 export { ChangeVariableVariableNode } from "./ChangeVariableVariableNode";
 export { ConditionVariableNode } from "./ConditionVariableNode";
@@ -11,7 +11,7 @@ export { BotSpeechNode } from "./BotSpeechNode";
 export { ShowMessageNode } from "./ShowMessageNode";
 export { WaitNode } from "./WaitNode";
 export { RandomNode } from "./RandomNode";
-export { EndDialogueNode } from "./EndDialogueNode";
+export { EndSequenceNode } from "./EndSequenceNode";
 export {default as AnnotationNode} from "./AnnotationNode";
 
 export type { DialogRFNode, CustomNodeProps } from "./shared";

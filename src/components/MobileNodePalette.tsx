@@ -13,9 +13,9 @@ interface NodeType {
 
 const nodeTypes: NodeType[] = [
   {
-    type: "initializeSpeech",
-    label: "Initialize Dialogue",
-    description: "Start dialogue - bot initiates conversation",
+    type: "startSequence",
+    label: "Start Sequence",
+    description: "Start sequence - initiates sequence",
     icon: <MessageSquareDashed size={20} className="text-green-600" />,
     color: "border-green-300 hover:border-green-500"
   },
@@ -90,9 +90,9 @@ const nodeTypes: NodeType[] = [
     color: "border-yellow-300 hover:border-yellow-500"
   },
   {
-    type: "endDialogue",
-    label: "End Dialogue",
-    description: "End the dialogue - no further connections",
+    type: "endSequence",
+    label: "End Sequence",
+    description: "End sequence - no further connections",
     icon: <XCircle size={20} className="text-red-600" />,
     color: "border-red-300 hover:border-red-500"
   },

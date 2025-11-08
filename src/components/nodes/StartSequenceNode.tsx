@@ -4,7 +4,7 @@ import { memo } from "react";
 import { BaseDialogNode } from "./BaseDialogNode";
 import { CustomNodeProps } from "./shared";
 
-export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
+export const StartSequenceNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={false}
@@ -17,4 +17,4 @@ export const InitializeSpeechNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-InitializeSpeechNode.displayName = "InitializeSpeechNode";
+StartSequenceNode.displayName = "StartSequenceNode";

@@ -5,7 +5,7 @@ import { ReactFlow, Background, Controls, MiniMap, ReactFlowProvider, Node, Node
 import "@xyflow/react/dist/style.css";
 import { X, Plus } from "lucide-react";
 import {
-  InitializeSpeechNode,
+  StartSequenceNode,
   BotSpeechNode,
   ShowMessageNode,
   ChangeVariableNode,
@@ -16,7 +16,7 @@ import {
   RandomNode,
   WaitNode,
   CustomActionNode,
-  EndDialogueNode,
+  EndSequenceNode,
   CustomNodeProps,
   DialogNode,
   AnnotationNode
@@ -70,8 +70,8 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
   };
 
   switch (nodeType) {
-    case "initializeSpeech":
-      return { ...baseData, actionId: "1", label: "Initialize Dialogue" };
+    case "startSequence":
+      return { ...baseData, actionId: "1", label: "Start Sequence" };
     case "botSpeech":
       return { ...baseData, actionId: "2", label: "Bot Speech", value1: "2" }; // Default to Talk
     case "showMessage":
@@ -92,8 +92,8 @@ function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
       return { ...baseData, actionId: "97", label: "Wait", value1: "1000" };
     case "customAction":
       return { ...baseData, actionId: "98", label: "Custom Wired Action" };
-    case "endDialogue":
-      return { ...baseData, actionId: "99", label: "End Dialogue", nextNodeId: "-1" };
+    case "endSequence":
+      return { ...baseData, actionId: "99", label: "End Sequence", nextNodeId: "-1" };
     default:
       return { ...baseData, actionId: "1001", label: `New Node ${nodeId}` };
   }
@@ -156,7 +156,7 @@ function FlowEditor() {
 
     return {
       dialogNode: createNodeWithProps(DialogNode),
-      initializeSpeech: createNodeWithProps(InitializeSpeechNode),
+      startSequence: createNodeWithProps(StartSequenceNode),
       botSpeech: createNodeWithProps(BotSpeechNode),
       showMessage: createNodeWithProps(ShowMessageNode),
       changeVariable: createNodeWithProps(ChangeVariableNode),
@@ -167,7 +167,7 @@ function FlowEditor() {
       random: createNodeWithProps(RandomNode),
       wait: createNodeWithProps(WaitNode),
       customAction: createNodeWithProps(CustomActionNode),
-      endDialogue: createNodeWithProps(EndDialogueNode),
+      endSequence: createNodeWithProps(EndSequenceNode),
       annotation: AnnotationNode,
     };
   }, [openModal]);
@@ -179,20 +179,9 @@ function FlowEditor() {
   }, []);
 
   const addSpeechText = useGameDialogStore((state) => state.addSpeechText);
-  const editSpeechText = useGameDialogStore((state) => state.editSpeechText);
-  const deleteSpeechText = useGameDialogStore((state) => state.deleteSpeechText);
-
   const addNPC = useGameDialogStore((state) => state.addNPC);
-  const editNPC = useGameDialogStore((state) => state.editNPC);
-  const deleteNPC = useGameDialogStore((state) => state.deleteNPC);
-
   const addVariable = useGameDialogStore((state) => state.addVariable);
-  const editVariable = useGameDialogStore((state) => state.editVariable);
-  const deleteVariable = useGameDialogStore((state) => state.deleteVariable);
-
   const addChoiceText = useGameDialogStore((state) => state.addChoiceText);
-  const editChoiceText = useGameDialogStore((state) => state.editChoiceText);
-  const deleteChoiceText = useGameDialogStore((state) => state.deleteChoiceText);
 
   const { history, currentHistoryIndex, saveToHistory, undo, redo } = useDialogHistory(
     initialNodes,
@@ -212,7 +201,6 @@ function FlowEditor() {
     onConnectEnd,
     onNodeClick,
     onPaneClick,
-    addNewNode,
     updateNodeData,
     deleteSelectedNode,
     deleteNodesByIds,

@@ -4,7 +4,7 @@ import { memo } from "react";
 import { BaseDialogNode } from "./BaseDialogNode";
 import { CustomNodeProps } from "./shared";
 
-export const EndDialogueNode = memo((props: CustomNodeProps) => (
+export const EndSequenceNode = memo((props: CustomNodeProps) => (
   <BaseDialogNode
     {...props}
     showTargetHandle={true}
@@ -17,4 +17,4 @@ export const EndDialogueNode = memo((props: CustomNodeProps) => (
   />
 ));
 
-EndDialogueNode.displayName = "EndDialogueNode";
+EndSequenceNode.displayName = "EndSequenceNode";

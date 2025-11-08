@@ -219,15 +219,15 @@ export default function Sidebar({
         <div className="space-y-2">
           <div
             draggable
-            onDragStart={(e) => onDragStart(e, "initializeSpeech")}
+            onDragStart={(e) => onDragStart(e, "startSequence")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
               <MessageSquareDashed size={18} className="text-green-600" />
-              <span className="font-semibold text-neutral-800">Initialize Dialogue</span>
+              <span className="font-semibold text-neutral-800">Start Sequence</span>
             </div>
             <p className="text-xs text-neutral-600">
-              Start dialogue - bot initiates conversation
+              Start sequence - initiates sequence
             </p>
           </div>
 
@@ -373,15 +373,15 @@ export default function Sidebar({
 
           <div
             draggable
-            onDragStart={(e) => onDragStart(e, "endDialogue")}
+            onDragStart={(e) => onDragStart(e, "endSequence")}
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
               <XCircle size={18} className="text-red-600" />
-              <span className="font-semibold text-neutral-800">End Dialogue</span>
+              <span className="font-semibold text-neutral-800">End Sequence</span>
             </div>
             <p className="text-xs text-neutral-600">
-              End the dialogue - no further connections
+              End the sequence - no further connections
             </p>
           </div>
 

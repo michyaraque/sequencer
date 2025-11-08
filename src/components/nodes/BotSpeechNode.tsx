@@ -181,7 +181,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                 className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new NPC"
               >
-                <Plus size={12} />
+                <Plus />
               </button>
             </div>
           </div>
@@ -315,7 +315,7 @@ export const BotSpeechNode = memo((props: CustomNodeProps) => {
                 className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new speech"
               >
-                <Plus size={10} />
+                <Plus />
               </button>
             </div>
           </div>

@@ -33,6 +33,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
   const { data, id, selected } = props;
   const { updateNodeData } = useReactFlow();
   const speechTexts = useGameDialogStore((state) => state.speechTexts);
+  const npcs = useGameDialogStore((state) => state.npcs);
   const selectedLanguage = useGameDialogStore((state) => state.selectedLanguage);
   const addSpeechText = useGameDialogStore((state) => state.addSpeechText);
   const [speechComboboxOpen, setSpeechComboboxOpen] = useState(false);
@@ -118,11 +119,23 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
     return grouped;
   }, [speechTexts]);
 
+
+  const handleBotIdChange = useCallback((value: string) => {
+    updateNodeData(id, { botId: value });
+  }, [id, updateNodeData]);
+
+  const handleCreateNPC = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (props.onOpenNPCManager) {
+      props.onOpenNPCManager();
+    }
+  }, [props]);
+
   return (
     <div
       className={`px-4 py-3 rounded-lg border-2 min-w-[370px] max-w-[420px] transition-all ${selected
-          ? `border-neutral-900 shadow-xl ${color}`
-          : `${border} shadow-md hover:shadow-lg hover:border-neutral-500 ${color}`
+        ? `border-neutral-900 shadow-xl ${color}`
+        : `${border} shadow-md hover:shadow-lg hover:border-neutral-500 ${color}`
         }`}
     >
       <Handle
@@ -273,7 +286,7 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                 className="px-1.5 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
                 title="Create new speech"
               >
-                <Plus size={10} />
+                <Plus />
               </button>
             </div>
           </div>
@@ -337,7 +350,6 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
           </div>
 
           {/* Value3 - Sender */}
-          {data.value2 == "2" && (
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-neutral-500 whitespace-nowrap">Origin:</span>
               <div className="flex gap-1 min-w-0 flex-1">
@@ -356,7 +368,43 @@ export const ShowMessageNode = memo((props: CustomNodeProps) => {
                 </Select>
               </div>
             </div>
+
+          {data.value3 == "2" && (
+
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium text-neutral-500 whitespace-nowrap">Bot:</span>
+            <div className="flex gap-1 min-w-0 flex-1">
+              <Select
+                value={data.botId || "#(bot_id)"}
+                onValueChange={handleBotIdChange}
+              >
+                <SelectTrigger
+                  className="h-auto px-2 py-1 text-xs border-neutral-300 font-mono min-w-0 w-full"
+                  onClick={(e) => e.stopPropagation()}
+                  size="sm"
+                >
+                  <SelectValue placeholder="Select Bot ID" />
+                </SelectTrigger>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
+                  <SelectItem value="#(bot_id)">#(bot_id)</SelectItem>
+                  {npcs.map((npc) => (
+                    <SelectItem key={npc.id} value={npc.id}>
+                      {npc.id} - {npc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <button
+                onClick={handleCreateNPC}
+                className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-800 transition-colors shrink-0"
+                title="Create new NPC"
+              >
+                <Plus />
+              </button>
+            </div>
+          </div>
           )}
+
 
         </div>
       </div>
