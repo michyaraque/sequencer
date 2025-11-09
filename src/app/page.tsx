@@ -50,7 +50,7 @@ import { useRecentProjectsStore } from "@/store/recentProjectsStore";
 import { useRoomsStore } from "@/store/useRoomsStore";
 import { useSequencesStore } from "@/store/useSequencesStore";
 import { useReactFlow } from "@xyflow/react";
-import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile } from "@/utils/export";
+import { exportProject, importProject, downloadProjectFile, exportSpeechTexts, downloadSpeechTextsFile, exportChoices } from "@/utils/export";
 import { toast } from "sonner";
 
 function getDefaultNodeData(nodeType: string, nodeId: string): DialogNodeData {
@@ -283,6 +283,12 @@ function FlowEditor() {
     downloadSpeechTextsFile(content, "speech_texts.txt");
     toast.success("Speech texts exported successfully!");
   }, [speechTexts]);
+
+  const handleExportChoices = useCallback(() => {
+    const content = exportChoices(choiceTexts);
+    downloadSpeechTextsFile(content, "choices_texts.txt");
+    toast.success("Choices texts exported successfully!");
+  }, [choiceTexts]);
 
   const handleImportProject = useCallback(() => {
     const input = document.createElement('input');
@@ -703,6 +709,7 @@ function FlowEditor() {
           onSaveSequence={() => openModal('saveSequenceDialog')}
           handleExport={handleExport}
           handleExportSpeeches={handleExportSpeeches}
+          handleExportChoices={handleExportChoices}
           handleCopyToClipboard={handleCopyToClipboard}
           handleImport={handleImport}
           showNodeEditor={showNodeEditor}

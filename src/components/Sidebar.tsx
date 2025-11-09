@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers, ListOrdered, Settings } from "lucide-react";
+import { MessageSquareDashed, MessageSquare, Users, Variable as VariableIcon, FolderOpen, Download, Upload, Edit2, StickyNote, Clock, Shuffle, XCircle, LogOut, Layers, ListOrdered, Settings, GitFork, BotMessageSquare, Replace, ReplaceAll, ListCheck, ListChecks, Columns3Cog, Play, OctagonX } from "lucide-react";
 import { useState } from "react";
 import { useGameDialogStore } from "@/store/gameDialogStore";
 import {
@@ -223,7 +223,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <MessageSquareDashed size={18} className="text-green-600" />
+              <Play size={18} className="text-green-600" />
               <span className="font-semibold text-neutral-800">Start Sequence</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -237,7 +237,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <MessageSquare size={18} className="text-indigo-600" />
+              <BotMessageSquare size={20} className="text-indigo-600" />
               <span className="font-semibold text-neutral-800">Bot Speech</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -265,7 +265,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <VariableIcon size={18} className="text-purple-600" />
+              <Replace size={18} className="text-purple-600" />
               <span className="font-semibold text-neutral-800">Change Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -279,7 +279,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <VariableIcon size={18} className="text-orange-600" />
+              <ReplaceAll size={18} className="text-orange-600" />
               <span className="font-semibold text-neutral-800">Condition Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -293,7 +293,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <VariableIcon size={18} className="text-purple-700" />
+              <ListCheck size={18} className="text-purple-700" />
               <span className="font-semibold text-neutral-800">Change Var. Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -307,7 +307,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <VariableIcon size={18} className="text-orange-700" />
+              <ListChecks size={18} className="text-orange-700" />
               <span className="font-semibold text-neutral-800">Cond. Var. Variable</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -321,7 +321,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <MessageSquare size={18} className="text-cyan-600" />
+              <GitFork size={18} className="text-cyan-600" />
               <span className="font-semibold text-neutral-800">Choice</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -363,7 +363,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <MessageSquareDashed size={18} className="text-yellow-600" />
+              <Columns3Cog size={18} className="text-yellow-600" />
               <span className="font-semibold text-neutral-800">Custom Wired Action</span>
             </div>
             <p className="text-xs text-neutral-600">
@@ -377,7 +377,7 @@ export default function Sidebar({
             className="bg-white p-3 rounded-lg border-2 border-neutral-300 cursor-grab active:cursor-grabbing hover:border-neutral-500 hover:shadow-md transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <XCircle size={18} className="text-red-600" />
+              <OctagonX size={18} className="text-red-600" />
               <span className="font-semibold text-neutral-800">End Sequence</span>
             </div>
             <p className="text-xs text-neutral-600">

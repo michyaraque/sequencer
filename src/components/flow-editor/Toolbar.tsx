@@ -1,4 +1,4 @@
-import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, MessageSquare } from "lucide-react";
+import { Undo2, Redo2, Trash2, Variable, Download, Copy, Upload, Languages, Save, Menu, MessageSquare, Layers, ListOrdered } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Node } from "@xyflow/react";
 import { DialogNodeData } from "@/types/dialog";
@@ -17,6 +17,7 @@ interface ToolbarProps {
   onSaveSequence: () => void;
   handleExport: () => void;
   handleExportSpeeches: () => void;
+  handleExportChoices: () => void;
   handleCopyToClipboard: () => void;
   handleImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   showNodeEditor: boolean;
@@ -38,6 +39,7 @@ export function Toolbar({
   onSaveSequence,
   handleExport,
   handleExportSpeeches,
+  handleExportChoices,
   handleCopyToClipboard,
   handleImport,
   showNodeEditor,
@@ -126,29 +128,39 @@ export function Toolbar({
       <div className="flex items-center gap-1 sm:gap-2">
         <button
           onClick={handleExport}
-          className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors"
+          className="p-2 bg-neutral-700 text-white rounded-md hover:bg-neutral-800 transition-colors relative cursor-pointer"
           title="Export Nodes"
         >
-          <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <Layers size={18} />
+          <Download size={9} className="absolute bottom-1 right-1" />
         </button>
 
         <button
           onClick={handleExportSpeeches}
-          className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+          className="p-2 bg-neutral-700 text-white rounded-md hover:bg-indigo-700 transition-colors relative"
           title="Export Speeches"
         >
-          <MessageSquare size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <MessageSquare size={18} className="sm:w-[18px] sm:h-[18px]" />
+          <Download size={9} className="absolute bottom-1 right-1" />
+        </button>
+        <button
+          onClick={handleExportChoices}
+          className="p-2 bg-neutral-700 text-white rounded-md hover:bg-indigo-700 transition-colors relative"
+          title="Export Speeches"
+        >
+          <ListOrdered size={18} className="sm:w-[18px] sm:h-[18px]" />
+          <Download size={9} className="absolute bottom-1 right-1" />
         </button>
 
-        <button
+        {/* <button
           onClick={handleCopyToClipboard}
           className="hidden sm:flex p-2 bg-neutral-500 text-white rounded-md hover:bg-neutral-600 transition-colors"
           title="Copy"
         >
           <Copy size={18} />
-        </button>
+        </button> */}
 
-        <label className="p-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors cursor-pointer inline-flex items-center">
+        {/* <label className="p-2 bg-neutral-400 text-white rounded-md hover:bg-neutral-500 transition-colors cursor-pointer inline-flex items-center">
           <Upload size={16} className="sm:w-[18px] sm:h-[18px]" />
           <input
             type="file"
@@ -156,16 +168,15 @@ export function Toolbar({
             onChange={handleImport}
             className="hidden"
           />
-        </label>
+        </label> */}
       </div>
 
       <button
         onClick={toggleNodeEditor}
-        className={`hidden lg:flex ml-auto p-2 rounded-md transition-colors items-center gap-1.5 ${
-          showNodeEditor
+        className={`hidden lg:flex ml-auto p-2 rounded-md transition-colors items-center gap-1.5 ${showNodeEditor
             ? 'bg-indigo-600 text-white hover:bg-indigo-700'
             : 'bg-neutral-300 text-neutral-700 hover:bg-neutral-400'
-        }`}
+          }`}
         title={showNodeEditor ? "Hide Properties" : "Show Properties"}
       >
         <Variable size={18} />

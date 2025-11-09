@@ -37,10 +37,6 @@ function CustomEdge({
 
   const sourceNode = nodes.find((node) => node.id === source);
   const nodeSpeed = sourceNode?.data?.speechSpeed;
-  const sourceNodeType = sourceNode?.type;
-
-  const nodeTypesWithNodeSpeed = ["botSpeech", "showMessage", "choice"];
-  const shouldShowNodeSpeed = sourceNodeType && nodeTypesWithNodeSpeed.includes(sourceNodeType);
 
   const nodeSpeedOptions = [];
   for (let i = 0.5; i <= 10; i += 0.5) {
@@ -63,15 +59,19 @@ function CustomEdge({
     currentSpeedInMs = (parseFloat(rawValue) * 1000).toString();
   }
 
-  const currentSpeedInSeconds = (parseFloat(currentSpeedInMs) / 1000).toFixed(1);
+  const storedSteps = Number(sourceNode?.data?.speechSpeed ?? 1);
+  const currentSpeed = (storedSteps * 0.5).toFixed(1);
 
   const handleSpeedChange = (valueInSeconds: string) => {
-    if (sourceNode) {
-      const steps = (parseFloat(valueInSeconds) * 1000) / 500;
-      updateNodeData(sourceNode.id, { speechSpeed: steps });
-      setIsEditing(false);
-    }
+    if (!sourceNode) return;
+
+    const seconds = Number(valueInSeconds);
+    const steps = Math.round(seconds / 0.5);
+
+    updateNodeData(sourceNode.id, { speechSpeed: steps });
+    setIsEditing(false);
   };
+
 
   return (
     <>
@@ -86,19 +86,19 @@ function CustomEdge({
             }}
             className="nodrag nopan"
           >
-              <Select value={currentSpeedInSeconds} onValueChange={handleSpeedChange}>
-                <SelectTrigger className="w-18 h-auto text-xs bg-neutral-200 hover:bg-neutral-100">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-[200px]">
-                  {nodeSpeedOptions.map((time) => (
-                    <SelectItem key={time} value={time}>
-                      {time}s
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-         
+            <Select value={currentSpeed} onValueChange={handleSpeedChange}>
+              <SelectTrigger className="w-18 h-auto text-xs bg-neutral-200 hover:bg-neutral-100">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-[200px]">
+                {nodeSpeedOptions.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}s
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
           </div>
         </EdgeLabelRenderer>
       )}

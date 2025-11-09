@@ -205,6 +205,15 @@ export function exportSpeechTexts(speechTexts: SpeechText[]): string {
   return lines.join("\n");
 }
 
+export function exportChoices(choiceTexts: ChoiceText[]): string {
+  const lines = choiceTexts.map((st) => {
+    // Format: id=text
+    return `${st.id}=${st.text}`;
+  });
+
+  return lines.join("\n");
+}
+
 export function importSpeechTexts(content: string): SpeechText[] {
   if (!content.trim()) return [];
 
