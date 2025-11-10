@@ -110,7 +110,6 @@ export const ChoiceNode = memo((props: CustomNodeProps) => {
       icon={<GitFork size={20} />}
       label={data.label}
       subtitle="Choice node"
-      showTargetHandle={false}
     >
       <div className="flex items-center space-x-2 py-1" onClick={(e) => e.stopPropagation()}>
         <Checkbox
