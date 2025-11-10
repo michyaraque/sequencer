@@ -17,9 +17,7 @@ export const EndSequenceNode = memo((props: CustomNodeProps) => {
       subtitle="End the sequence - no further connections"
       showTargetHandle={false}
       showTopBorder={false}
-    >
-      <></>
-    </NodeContainer>
+    />
   );
 });
 

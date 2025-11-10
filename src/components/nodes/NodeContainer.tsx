@@ -85,7 +85,7 @@ type NodeContainerProps = {
   icon: React.ReactNode
   label?: string
   subtitle?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   minW?: string
   maxW?: string
   showSourceHandle?: boolean
@@ -124,45 +124,43 @@ export function NodeContainer({
         <Handle type="target"
           position={Position.Left}
           className={cn(
-            "w-4! h-8! bg-neutral-50! border-2! border-neutral-300! rounded-xs!",
-            "hover:scale-110 transform-gpu transition-all"
+            "w-4! h-8! bg-neutral-50! border-2! border-neutral-300! rounded-xs! cursor-default!",
+            "hover:scale-110 transform-gpu transition origin-center"
           )} />
       )}
 
-      <div className="space-y-2">
+      <div className={cn(
+        "flex items-center justify-between gap-2 py-3 px-4 rounded-md",
+        styles.headerBg
+      )}>
         <div className={cn(
-          "flex items-center justify-between gap-2 py-3 px-4 rounded-md",
-          styles.headerBg
+          "text-white p-3 rounded text-xs font-bold font-mono shrink-0",
+          styles.iconBg
         )}>
-          <div className={cn(
-            "text-white p-3 rounded text-xs font-bold font-mono shrink-0",
-            styles.iconBg
-          )}>
-            {icon}
+          {icon}
+        </div>
+
+        {label && (
+          <div className="text-xs text-white truncate flex-1 flex flex-col">
+            <span className="font-medium text-lg">{label}</span>
+            {subtitle && <span className="text-white/70">{subtitle}</span>}
           </div>
+        )}
+      </div>
 
-          {label && (
-            <div className="text-xs text-white truncate flex-1 flex flex-col">
-              <span className="font-medium text-lg">{label}</span>
-              {subtitle && <span className="text-white/70">{subtitle}</span>}
-            </div>
-          )}
-        </div>
-
-        <div className={cn(
-          "text-xs space-y-1.5 text-neutral-700 border-neutral-200",
-          showTopBorder && "border-t pt-2"
-        )}>
-          {children}
-        </div>
+      <div className={cn(
+        "text-xs space-y-1.5 text-neutral-700 border-neutral-200",
+        showTopBorder && "border-t pt-2"
+      )}>
+        {children}
       </div>
 
       {showTargetHandle && (
         <Handle type="source"
           position={Position.Right}
           className={cn(
-            "w-4! h-8! bg-neutral-50! border-2! border-neutral-300! rounded-xs!",
-            "hover:scale-110 transform-gpu transition-all"
+            "w-4! h-8! bg-neutral-50! border-2! border-neutral-300! rounded-xs! cursor-default!",
+            "hover:scale-110 transform-gpu transition origin-center"
           )}
         />
       )}
